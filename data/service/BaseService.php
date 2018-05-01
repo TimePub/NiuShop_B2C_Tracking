@@ -18,6 +18,8 @@ namespace data\service;
 use \think\Session as Session;
 use think\Cache;
 use think\Request;
+use data\model\UserLogModel;
+use data\model\UserModel;
 class BaseService
 {
     protected $uid;
@@ -122,5 +124,51 @@ class BaseService
         }
         return $model;
     }
+   /**
+    * 添加日志
+    * @param unknown $uid
+    * @param unknown $is_system
+    * @param unknown $controller  控制器中文名
+    * @param unknown $method  方法中文名
+    * @param unknown $ip      ip地址
+    * @param unknown $get_data  操作数据详情
+    * @return boolean
+    */
+    public function addUserLog($uid, $is_system, $controller, $method, $get_data)
+    {
+        $url = Request::instance()->url(true);
+        $ip = Request::instance()->ip();
+        //查询用户名称
+        
+        if($uid == 0)
+        {
+            $user_name = '系统';
+        }else{
+            $user_model = new UserModel();
+            $user_info = $user_model->getInfo(['uid' => $uid], 'nick_name');
+            if(!empty($user_info))
+            {
+                $user_name = $user_info['nick_name'];
+            }else{
+                $user_name = '未知';
+            }
+           
+        }
+        $data = array(
+            'uid' => $uid,
+            'url' => $url,
+            'user_name' => $user_name,
+            'is_system' => $is_system,
+            'controller' => $controller,
+            'method' => $method,
+            'ip' => $ip,
+            'data' => $get_data,
+            'create_time' => time()
+        );
+        $user_log = new UserLogModel();
+        $res = $user_log->save($data);
+        return $res;
+    }
+    
     
 }

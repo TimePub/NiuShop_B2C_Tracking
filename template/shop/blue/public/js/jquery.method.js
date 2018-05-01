@@ -598,7 +598,7 @@
 							$.msg(result.message);
 						}
 					} catch (e) {
-						console.info(e);
+						//console.log(e);
 						//alert("失败" + XMLHttpRequest.status);
 					}
 				}

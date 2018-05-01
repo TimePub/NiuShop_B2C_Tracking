@@ -35,6 +35,10 @@
 				var w = i * conWidth,
 					h = i * conHeight;
 				btn.children().removeClass('current').eq(i).addClass('current');
+				$(".j-tab-con img.lazy_load").lazyload({
+					threshold : 50,
+					effect : "fadeIn", //淡入效果
+				})
 				switch(anim){
 					case '0':
 					con.children().hide().eq(i).show();

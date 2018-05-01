@@ -3,7 +3,7 @@
 <link href="__TEMP__/{$style}/public/css/order/ns_order_detail.css" rel="stylesheet">
 <style>
 .goods-items td{padding:2px 5px;}
-.virtual-goods-list{width:500px;text-align: center;position: fixed;z-index: 99999;top:50%;left:50%;background: #ffffff;margin-left:-250px;border-radius:5px;display:none;}
+.virtual-goods-list{width:800px;text-align: center;position: fixed;z-index: 99999;top:50%;left:50%;background: #ffffff;margin-left:-250px;border-radius:5px;display:none;}
 .virtual-goods-list table{width:100%;text-align: center;}
 .virtual-goods-list th{padding:10px;border-bottom:1px solid #e5e5e5;}
 .virtual-goods-list td{padding:10px;border-bottom:1px solid #e5e5e5;}
@@ -160,7 +160,7 @@
 					<td align="center" bgcolor="#ffffff">{$goodsData.num}</td>
 					<td align="center" bgcolor="#ffffff">{$goodsData.goods_money}</td>
 					{if condition="$order.order_status eq 4"}
-					<td align="center" bgcolor="#ffffff"><a href="javascript:selectVirtualCode();" style="color: #0D84D4;">{:lang('view_virtual_code')}</a></td>
+					<td align="center" bgcolor="#ffffff"><a href="javascript:selectVirtualCode();" style="color: #0D84D4;">{:lang('view_details')}</a></td>
 					{/if}
 				</tr>
 				{/volist}
@@ -211,36 +211,46 @@
 	<table>
 		<colgroup>
 		{if condition="count($order.virtual_goods_list) >10"}
-			<col width="23%">
-			<col width="30%">
-			<col width="25%">
+			<col width="18%">
+			<col width="18%">
+			<col width="18%">
+			<col width="18%">
+			<col width="28%">
 		{else/}
-			<col width="25%">
-			<col width="30%">
-			<col width="25%">
+			<col width="18%">
+			<col width="18%">
+			<col width="18%">
+			<col width="18%">
+			<col width="28%">
 		{/if}
 		</colgroup>
 		<tr>
-			<th colspan='4' align="left" style="font-size:18px;color:#0088cc;">{:lang('virtual_goods')}</th>
+			<th colspan='5' align="left" style="font-size:18px;color:#0088cc;">{:lang('virtual_goods')}</th>
 		</tr>
 		<tr>
 			<th>{:lang('virtual_code')}</th>
 			<th>{:lang('virtual_goods_name')}</th>
 			<th>{:lang('expiration_time')}</th>
+			<th>{:lang('status')}</th>
+			<th>{:lang('remark')}</th>
 		</tr>
 	</table>
 	<div class="items">
 		<table>
 			<colgroup>
-				<col width="20%">
-				<col width="30%">
-				<col width="25%">
+				<col width="18%">
+				<col width="18%">
+				<col width="18%">
+				<col width="18%">
+				<col width="28%">
 			</colgroup>
 			{foreach name="order.virtual_goods_list" item="vg"}
 			<tr>
 				<td>{$vg.virtual_code}</td>
 				<td>{$vg.virtual_goods_name}</td>
 				<td>{$vg.end_time|getTimeStampTurnTime}</td>
+				<td>{$vg.use_status_msg}</td>
+				<td>{$vg.remark}{if condition="$vg['remark'] eq ''"}--{/if}</td>
 			</tr>
 			{/foreach}
 		</table>
@@ -264,7 +274,10 @@ $(function(){
 	});
 });
 function selectVirtualCode(){
-	$(".virtual-goods-list").css("margin-top","-" + ($(".virtual-goods-list").outerHeight()/2) + "px").fadeIn();
+	$(".virtual-goods-list").css({
+	"margin-top" : "-" + (($('.virtual-goods-list').outerHeight())/2)+"px",
+	"margin-left" : "-" + (($('.virtual-goods-list').outerWidth())/2)+"px"
+	}).fadeIn();
 	$(".mask-layer-virtual-goods").fadeIn();
 }
 </script>

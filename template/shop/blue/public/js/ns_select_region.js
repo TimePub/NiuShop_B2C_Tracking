@@ -209,7 +209,6 @@ function setRegion(){
 		type: "post",
 		data: { "goods_id":goods_id,"provice_id":provice_id,"city_id":city_id ,"disctrict_id" : disctrict_id, "goods_sku_list" : goods_sku_list },
 		success: function (data) {
-//			console.log(data);
 			var html = '';
 			if (data.length > 0) {
 				if(data[0]['co_id'] > 0){

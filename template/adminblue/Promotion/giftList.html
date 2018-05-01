@@ -4,6 +4,7 @@
 .modal-infp-style{width:100%;margin:10px auto;}
 .modal-infp-style table{width:100%;}
 .modal-infp-style table tr td{border: 1px solid #e5e5e5;padding: 10px;}
+.ns-main{margin-top: 0;}
 </style>
 {/block}
 {block name="main"}
@@ -17,14 +18,23 @@
 	</tr>
 </table>
 <table class="table-class">
+	<colgroup>
+	<col style="width: 2%;">
+	<col style="width: 36%;">
+	<col style="width: 8%;">
+	<col style="width: 8%;">
+	<col style="width: 8%;">
+	<col style="width: 20%;">
+	<col style="width: 16%;">
+	</colgroup>
 	<thead>
 		<tr align="center">
-			<th width="3%"></th>
+			<th><i class="checkbox-common"><input type="checkbox"  onclick="CheckAll(this)"></i></th>
 			<th align="left">活动名称</th>
-			<th>有效时间</th>
 			<th>活动状态</th>
 			<th>已赠送</th>
 			<th>已领取</th>
+			<th>有效时间</th>
 			<th>操作</th>
 		</tr>
 	</thead>
@@ -79,6 +89,7 @@
 <script type="text/javascript">
 function LoadingInfo(page_index) {
 	var search_text = $("#search_text").val();
+	
 	$.ajax({
 		type : "post",
 		url : "{:__URL('ADMIN_MAIN/promotion/giftlist')}",
@@ -88,28 +99,32 @@ function LoadingInfo(page_index) {
 			"search_text" : search_text
 		},
 		success : function(data) {
-			var html = '';
 			if (data["data"].length > 0) {
+				$(".table-class tbody").empty();
 				for (var i = 0; i < data["data"].length; i++) {
+					var html = '';
 					html += '<tr align="center">';
-					html += '<td></td>';
+					html += '<td><i class="checkbox-common"><input name="sub" type="checkbox" value="'+ data["data"][i]["gift_id"] +'" ></i></td>';
 					html += '<td align="left">' + data["data"][i]["gift_name"] + '</td>';;
-					html += '<td>' + timeStampTurnTime(data["data"][i]["start_time"]) + ' 至 ' + timeStampTurnTime(data["data"][i]["end_time"]) + '</td>';
+					
 					html += '<td>'+ data['data'][i]['type_name'] +'</td>';
 					html += '<td> - </td>';
 					html += '<td> - </td>';
+					html += '<td>开始时间：' + timeStampTurnTime(data["data"][i]["start_time"]) + '<br/>结束时间：' + timeStampTurnTime(data["data"][i]["end_time"]) + '</td>';
 					html += '<td><a href="'+__URL('ADMIN_MAIN/promotion/updategift?gift_id=' + data["data"][i]["gift_id"])+'">编辑</a>&nbsp;';
 					html += '<a href="javascript:void(0);"onclick="giftInfo('+data["data"][i]["gift_id"]+')">详情</a> ';
 					if(data['data'][i]['type'] != 1){
 						html += '<a href="javascript:void(0);"onclick="deleteGift('+data["data"][i]["gift_id"]+')">删除</a>';
 					}
+					html += '<br/><a href="'+__URL('ADMIN_MAIN/promotion/giftGrantRecordsList?gift_id=' + data["data"][i]["gift_id"])+'")">发放记录</a> ';
 					html += '</td>';
 					html += '</tr>';
+					$(".table-class tbody").append(html);
 				}
 			} else {
-				html += '<tr align="center"><td colspan="9">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr align="center"><td colspan="9">暂无符合条件的数据记录</td></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}
@@ -161,12 +176,18 @@ function deleteGift(gift_id){
 			})
 			$(this).dialog('close');
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 			},
 		},
 		contentText:"确定要删除该赠品吗？",
 	});
+}
+//全选
+function CheckAll(event){
+	var checked = event.checked;
+	if(checked) $(".table-class tbody input[type = 'checkbox']").prop("checked",checked).parent("i").addClass("selected");
+	else  $(".table-class tbody input[type = 'checkbox']").prop("checked",checked).parent("i").removeClass("selected");
 }
 </script>
 {/block}

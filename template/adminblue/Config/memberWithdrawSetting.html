@@ -1,41 +1,51 @@
 {extend name="adminblue/base" /}
 {block name="resources"/}
 <link rel="stylesheet" type="text/css" href="ADMIN_CSS/defau.css">
-<script src="ADMIN_JS/art_dialog.source.js"></script>
-<script src="ADMIN_JS/iframe_tools.source.js"></script>
-<script src="ADMIN_JS/material_managedialog.js"></script>
+<style>
+.common-label{display: inline-block;vertical-align: middle;margin: 0 10px 0 5px;}
+.set-style dl dt { width: 11%;}
+</style>
 {/block}
 {block name="main"}
 <input type="hidden" id="withdraw_id" value="{$list['id']}">
 <div class="set-style">
 	<dl>
-		<dt>最低提现金额:</dt>
+		<dt>最低提现金额：</dt>
 		<dd>
-			<input id="cash_min" type="number" min="0.00" value="{$list['value']['withdraw_cash_min']}" class="input-common"/>
+			<input id="cash_min" type="number" min="0.00" value="{$list['value']['withdraw_cash_min']}" class="input-common harf"/><em class="unit">元</em>
 			<span class="withdraw_rule" id="verification_cash">提现金额不能为空</span>
 			<p class="hint">提现金额将不小于此值才能提现</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>提现倍数:</dt>
+		<dt>提现倍数：</dt>
 		<dd>
-			<input id="multiple" type="number" min="0.00" value="{$list['value']['withdraw_multiple']}" class="input-common" />
+			<input id="multiple" type="number" min="0.00" value="{$list['value']['withdraw_multiple']}" class="input-common harf" /><em class="unit">倍</em>
 			<span class="withdraw_rule" id="verification_multiple">提现倍数不能为空</span>
 		</dd>
 	</dl>
 	<dl>
-		<dt>提现提示信息:</dt>
+		<dt>提现提示信息：</dt>
 		<dd>
-			<textarea rows="2" id="message" class="textarea input-common" maxlength="50">{$list['value']['withdraw_message']}</textarea>
+			<textarea rows="2" id="message" class="textarea-common" maxlength="50">{$list['value']['withdraw_message']}</textarea>
 			<span class="withdraw_rule" id="verification_message">提现提示信息不能为空</span>
 		</dd>
 	</dl>
 	<dl>
-		<dt>是否启用</dt>
+		<dt>提现账户：</dt>
+		<dd>
+			{foreach name="$list['value']['withdraw_account']" item="vo"}
+			<i class="checkbox-common {if condition='$vo.is_checked==1'}selected{/if}"><input id="{$vo.id}" type="checkbox" value="{$vo.value}" name="withdraw_account" {if condition="$vo.is_checked==1"}checked="checked"{/if} /></i>
+			<label class="common-label" for="{$vo.id}">{$vo.name}</label>
+			{/foreach}
+		</dd>
+	</dl>
+	<dl>
+		<dt>是否启用：</dt>
 		<dd>
 			<div class="controls">
-				<label class="radio inline"><input type="radio" name="enable" value="1" checked="checked" id="enableYes">启用</label> 
-				<label class="radio inline"><input type="radio" name="enable" value="0" id="enableNo">禁用</label>
+				<i class="radio-common"><input type="radio" name="enable" value="1" checked="checked" id="enableYes"></i><label class="common-label" for="enableYes">启用</label> 
+				<i class="radio-common"><input type="radio" name="enable" value="0" id="enableNo"></i><label class="common-label" for="enableNo">禁用</label>
 				<input type="hidden" id="is_open" value="{$list['is_use']}">
 			</div>
 			<p class="hint">是否启用提现设置</p>
@@ -43,11 +53,9 @@
 	</dl>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="setMemberwithdrawAjax();">提交</button></dd>
+		<dd><button class="btn-common btn-big" onclick="setMemberwithdrawAjax();">保存</button></dd>
 	</dl>
 </div>
-<script src="__STATIC__/js/ajax_file_upload.js" type="text/javascript"></script>
-<script src="__STATIC__/js/file_upload.js" type="text/javascript"></script>
 <script>
 var validation = true;//验证余额输入
 $("#poundage").live("keyup",function(){
@@ -67,6 +75,12 @@ function setMemberwithdrawAjax() {
 	// var poundage = $("#poundage").val();
 	var poundage = 0;
 	var message = $("#message").val();
+	
+	var withdraw_account = new Array();
+	$("input[name='withdraw_account']:checked").each(function(){
+		withdraw_account.push($(this).val());
+	});
+	
 	if(!(cash_min>0)){
 		$("#cash_min").focus();
 		showTip("最低提现金额必须大于0","warning");
@@ -76,8 +90,14 @@ function setMemberwithdrawAjax() {
 	if(!(/^\+?[1-9]\d*$/).test(multiple)){
 		$("#multiple").focus();
 		showTip("提现倍数必须大于0的整数","warning");
-		return false;
+		return;
 	}
+	
+	if(withdraw_account.length == 0){
+		showTip("至少选择一个提现账户","warning");
+		return;
+	}
+	
 	if(validation){
 		$.ajax({
 			type : "post",
@@ -87,11 +107,13 @@ function setMemberwithdrawAjax() {
 				'multiple' : multiple,
 				'poundage' : poundage,
 				'message' : message,
-				'is_use' : is_use
+				'is_use' : is_use,
+				'withdraw_account' : withdraw_account.toString()
 			},
 			success : function(data) {
 				if (data['code'] > 0) {
 					showMessage('success',"提交成功");
+					window.location.reload();
 				} else {
 					showMessage('error',"提交失败");
 				}
@@ -109,8 +131,10 @@ window.onload=function(){
 	}
 	if(parseInt(is_open) == 0){
 		$("#enableNo").prop("checked","checked");
+		$("#enableNo").parent().addClass("selected");
 	}else{
 		$("#enableYes").prop("checked","checked");
+		$("#enableYes").parent().addClass("selected");
 	}
 }
 </script>

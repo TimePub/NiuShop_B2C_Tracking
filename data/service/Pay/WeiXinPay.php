@@ -22,6 +22,8 @@ use data\service\Pay\PayParam;
 use data\extend\weixin\WxPayData\WxPayJsApiPay;
 use think\Log;
 use data\extend\weixin\WxPayData\WxPayRefund;
+use data\extend\weixin\WxPayData\WxPayCloseOrder;
+use data\extend\weixin\WxPayData\WxPayTransfers;
 
 /**
  * 功能说明：微信支付接口(应用于微信公众平台)
@@ -240,26 +242,27 @@ class WeiXinPay extends PayParam
         $buff = trim($buff, "&");
         return $buff;
     }
-    // 企业付款API
-    public function EnterprisePayment($openid, $msgtype, $content)
-    {
-        $xml = "<xml>
-                    <mch_appid>wxe062425f740c30d8</mch_appid>
-                    <mchid>10000098</mchid>
-                    <nonce_str>3PG2J4ILTKCH16CQ2502SI8ZNMTM67VS</nonce_str>
-                    <partner_trade_no>100000982014120919616</partner_trade_no>
-                    <openid>ohO4Gt7wVPxIT1A9GjFaMYMiZY1s</openid>
-                    <check_name>OPTION_CHECK</check_name>
-                    <re_user_name>张三</re_user_name>
-                    <amount>100</amount>
-                    <desc>节日快乐!</desc>
-                    <spbill_create_ip>10.2.3.10</spbill_create_ip>
-                    <sign>{$this->MakeSign()}</sign>
-                </xml>";
-        $url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers";
-        return $this->GetUrlReturn($url, $xml);
-    }
-
+    /*企业付款API
+            public function EnterprisePayment($openid, $msgtype, $content)
+            {
+                $xml = "<xml>
+                            <mch_appid>wxe062425f740c30d8</mch_appid>
+                            <mchid>10000098</mchid>
+                            <nonce_str>3PG2J4ILTKCH16CQ2502SI8ZNMTM67VS</nonce_str>
+                            <partner_trade_no>100000982014120919616</partner_trade_no>
+                            <openid>ohO4Gt7wVPxIT1A9GjFaMYMiZY1s</openid>
+                            <check_name>OPTION_CHECK</check_name>
+                            <re_user_name>张三</re_user_name>
+                            <amount>100</amount>
+                            <desc>节日快乐!</desc>
+                            <spbill_create_ip>10.2.3.10</spbill_create_ip>
+                            <sign>{$this->MakeSign()}</sign>
+                        </xml>";
+                $url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers";
+                return $this->GetUrlReturn($url, $xml);
+            }
+    */
+   
     /**
      * 设置微信支付参数
      *
@@ -301,6 +304,25 @@ class WeiXinPay extends PayParam
         $input->SetSpbill_create_ip($this->getIp());
         $order = $WxPayApi->unifiedOrder($input, 30);
         return $order;
+    }
+    /**
+     * 订单关闭
+     * @param unknown $orderNumber
+     * @return unknown
+     */
+    public function setOrderClose($orderNumber)
+    {
+        try {
+       $WxPayApi = new WxPayApi();
+        $input = new WxPayCloseOrder();
+        $input->SetOut_trade_no($orderNumber);
+        $result = $WxPayApi->closeOrder($input);
+        return $result;
+        } catch (\Exception $e)
+        {
+            return $e->getMessage();
+        }
+        
     }
 
     public function get_client_ip()

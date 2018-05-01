@@ -42,6 +42,14 @@ class User extends BaseService implements IUser
         $this->user = new UserModel();
     }
     /**
+     * 获取会员信息通过Openid
+     */
+    public function getUserDetailByOpentid($openid)
+    {
+        $user_info = $this->user->getInfo(['wx_openid'=>$openid],'uid,instance_id');
+        return $user_info;
+    }
+    /**
      * 
      * @return unknown
      */
@@ -154,8 +162,8 @@ class User extends BaseService implements IUser
     {
         if(empty($this->instance_name))
         {
-            $web_site = new WebSiteModel();
-            $info = $web_site->getInfo('', 'title');
+            $web_site = new WebSite();
+            $info = $web_site->getWebSiteInfo();
             return $info['title'];
         }else{
             return $this->instance_name;
@@ -194,6 +202,12 @@ class User extends BaseService implements IUser
             'current_login_time' => time(),
             'current_login_type'  => 1
         );
+        if($model != 'app')
+        {
+            $this->addUserLog($user_info['uid'], 1, '用户', '用户登录', '');
+        }
+       
+        //添加日志
         //离线购物车同步
         $goods = new Goods();
         $goods->syncUserCart($user_info['uid']);
@@ -730,37 +744,20 @@ class User extends BaseService implements IUser
         return $res;
     }
 
-    /**
-     * 添加用户登录日志
-     *
-     * @param unknown $uid            
-     * @param unknown $url            
-     * @param unknown $desc            
-     */
-    public function addUserLog($uid, $is_system, $controller, $method, $ip, $get_data)
-    {
-        $data = array(
-            'uid' => $uid,
-            'is_system' => $is_system,
-            'controller' => $controller,
-            'method' => $method,
-            'ip' => $ip,
-            'data' => $get_data,
-            'create_time' => time()
-        );
-        $user_log = new UserLogModel();
-        $res = $user_log->save($data);
-        return $res;
-    }
+  
 
     /**
      * (non-PHPdoc)
      *
      * @see \ata\api\IUser::getUserDetail()
      */
-    public function getUserDetail()
+    public function getUserDetail($uid = '')
     {
-        $user_info = $this->user->get($this->uid);
+        //获取会员ID
+        if(empty($uid)){
+            $uid = $this->uid;
+        }
+        $user_info = $this->user->get($uid);
         if (! empty($user_info['qq_openid'])) {
             $qq_info = json_decode($user_info['qq_info'], true);
             $user_info['qq_info_array'] = $qq_info;
@@ -1183,9 +1180,16 @@ class User extends BaseService implements IUser
             $level_id=$member_obj["member_level"];
             $member_level_model=new NsMemberLevelModel();
             $level_list=$member_level_model->getQuery("(upgrade=3 and relation=1 and (min_integral<=".$member_sum_point." or quota<=".$money.")) or (upgrade=3 and relation=2 and min_integral<=".$member_sum_point." and quota<=".$money.") or (upgrade=1 and min_integral<=".$member_sum_point." ) or (upgrade=2 and quota<=".$money.")", "*", "goods_discount");
+            if(!empty($level_list))
+            {
+                $count = 0;
+            }else{
+                $count = count($level_list);
+            }
             $member_level_model=new NsMemberLevelModel();
             $member_level_obj=$member_level_model->get($level_id);
-            if(!empty($level_list) && count($level_list)>0){
+            
+            if(!empty($level_list) && $count>0){
                 $update_level_obj=$level_list[0];
                 $update_goods_discount=$update_level_obj["goods_discount"];
                 $goods_discount=1;
@@ -1197,6 +1201,15 @@ class User extends BaseService implements IUser
                 }
             }
         }
+    }
+    
+    /**
+     * 获取用户操作日志列表
+     */
+    public function getUserOperationLogList($page_index, $page_size, $condition, $order = "", $field = "*"){
+        $user_log = new UserLogModel();
+        $list = $user_log -> pageQuery($page_index, $page_size, $condition, $order, $field);
+        return $list;
     }
 }
 

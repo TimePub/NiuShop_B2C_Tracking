@@ -19,7 +19,7 @@
 </table>
 <table class="table-class">
 	<colgroup>
-		<col style="width: 1%;">
+		<col style="width: 3%;">
 		<col style="width: 20%;">
 		<col style="width: 10%;">
 		<col style="width: 10%;">
@@ -30,11 +30,12 @@
 	</colgroup>
 	<thead>
 		<tr>
+
 			<th><input type="checkbox" onclick="CheckAll(this)" /></th>
 			<th align="left">虚拟商品类型名称</th>
-			<th>有效期/天</th>
+			<th align="right">有效期/天</th>
 			<th align="right">金额</th>
-			<th>限制使用次数</th>
+			<th align="right">限制使用次数</th>
 <!-- 			<th>配置信息</th> -->
 			<th>是否启用</th>
 			<th>创建时间</th>
@@ -71,7 +72,7 @@ function batchDelete(){
 	if(brand_ids.length==0){
 		$( "#dialog" ).dialog({
 			buttons: {
-				"确定,#e57373": function() {
+				"确定,#0059d6,#fff": function() {
 					$(this).dialog('close');
 				}
 			},
@@ -94,9 +95,10 @@ function LoadingInfo(page_index) {
 			"search_name" : $("#search_name").val()
 		},
 		success : function(data) {
-			var html = '';
 			if (data["data"].length > 0) {
+				$(".table-class tbody").empty();
 				for (var i = 0; i < data["data"].length; i++) {
+					var html = '';
 					var validity_period = "";
 					if(data["data"][i]["validity_period"] == 0){
 						validity_period = "不限制";
@@ -106,9 +108,9 @@ function LoadingInfo(page_index) {
 					html += '<tr align="center">';
 						html += '<td><input name="sub" type="checkbox" value="'+ data["data"][i]["virtual_goods_type_id"] +'" ></td>';
 						html += '<td align="left">' + data["data"][i]["virtual_goods_type_name"] + '</td>';
-						html += '<td>' + validity_period + '</td>';
+						html += '<td align="right">' + validity_period + '</td>';
 						html += '<td align="right">' + data['data'][i]['money'] + "</td>";
-						html += '<td>' + data['data'][i]['confine_use_number'] + '</td>';
+						html += '<td align="right">' + data['data'][i]['confine_use_number'] + '</td>';
 	// 					html += '<td>' + data['data'][i]['config_info'] + '</td>';
 						html += '<td data-virtual-goods-type-id="' + data["data"][i]["virtual_goods_type_id"] + '" data-is-enabled="' + data['data'][i]['is_enabled'] + '">';
 							if(data['data'][i]['is_enabled'] == 1){
@@ -123,11 +125,12 @@ function LoadingInfo(page_index) {
 							html += '<a href="javascript:deleteVirtualGoodsType(' + data["data"][i]["virtual_goods_type_id"] + ')">删除</a>';
 						html += '</td>';
 					html += '</tr>';
+					$(".table-class tbody").append(html);
 				}
 			} else {
-				html += '<tr align="center"><td colspan="9">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr align="center"><td colspan="9">暂无符合条件的数据记录</td></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}
@@ -153,7 +156,7 @@ function deleteVirtualGoodsType(virtual_goods_type_id) {
 						}
 					}
 				});
-			},"取消,#e57373" : function(){
+			},"取消,#f5f5f5,#666" : function(){
 				$(this).dialog('close');
 			}
 		},

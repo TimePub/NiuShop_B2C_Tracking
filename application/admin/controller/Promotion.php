@@ -16,10 +16,14 @@
 namespace app\admin\controller;
 
 use data\service\Address;
-use data\service\Config;
+use data\service\Config as ConfigService; 
 use data\service\promotion\PromoteRewardRule;
 use data\service\Promotion as PromotionService;
 use data\service\Member;
+use data\service\Goods as GoodsService;
+use data\service\GroupBuy;
+use data\service\GoodsCategory as GoodsCategory;
+use data\service\GoodsGroup as GoodsGroup;
 
 /**
  * 营销控制器
@@ -59,6 +63,37 @@ class Promotion extends BaseController
         } else {
             return view($this->style . "Promotion/couponTypeList");
         }
+    }
+    
+    /**
+     * 优惠券发放记录
+     */
+    public function couponGrantLog()
+    {	
+    	if (request()->isAjax()) {
+            $page_index = request()->post("page_index", 1);
+            $page_size = request()->post('page_size', PAGESIZE);
+            $search_text = request()->post('search_text', '');
+            $status = request()->post('status', -1);
+            $coupon_type_id = request()->post('coupon_type_id', '');
+            $coupon = new PromotionService();
+            
+            $condition = array(
+                'coupon_type_id' => $coupon_type_id
+            );
+            if ($status !== '-1') {
+                $condition['state'] = $status;
+                $list = $coupon->getCouponGrantLogList($page_index, $page_size, $condition);
+            } else {
+                $list = $coupon->getCouponGrantLogList($page_index, $page_size, $condition);
+            }
+            
+            return $list;
+        }
+        $coupon_type_id = request()->get('coupon_type_id', 0);
+    	$status = request()->get('status', -1);
+    	$this->assign('coupon_type_id', $coupon_type_id);
+    	return view($this->style."Promotion/couponGrantLog");
     }
 
     /**
@@ -120,15 +155,19 @@ class Promotion extends BaseController
             $retval = $coupon->updateCouponType($coupon_type_id, $coupon_name, $money, $count, $repair_count, $max_fetch, $at_least, $need_user_level, $range_type, $start_time, $end_time, $is_show, $goods_list);
             return AjaxReturn($retval);
         } else {
+           
             $coupon_type_id = request()->get('coupon_type_id', 0);
             if ($coupon_type_id == 0) {
                 $this->error("没有获取到类型");
             }
             $coupon_type_data = $coupon->getCouponTypeDetail($coupon_type_id);
+           
             $goods_id_array = array();
             foreach ($coupon_type_data['goods_list'] as $k => $v) {
                 $goods_id_array[] = $v['goods_id'];
             }
+            $goods_id_array = join(',',$goods_id_array);
+            
             $coupon_type_data['goods_id_array'] = $goods_id_array;
             $this->assign("coupon_type_info", $coupon_type_data);
             
@@ -245,6 +284,10 @@ class Promotion extends BaseController
             $page_index = request()->post("page_index", 1);
             $page_size = request()->post("page_size", PAGESIZE);
             $search_text = request()->post("search_text", "");
+            $condition['gift_id'] = request()->post("gift_id", 0);
+            if(empty($condition['gift_id'])){
+            	unset($condition['gift_id']);
+            }
             $condition['pgr.gift_name'] = [
                 'like',
                 "%$search_text%"
@@ -253,6 +296,8 @@ class Promotion extends BaseController
             $list = $gift->getPromotionGiftGrantRecordsList($page_index, $page_size, $condition, "pgr.id desc");
             return $list;
         }
+        $gift_id = request()->get("gift_id", 0);
+        $this->assign('gift_id', $gift_id);
         return view($this->style . "Promotion/giftGrantRecordsList");
     }
 
@@ -441,6 +486,7 @@ class Promotion extends BaseController
                 $this->error('未获取到信息');
             }
             $info = $mansong->getPromotionMansongDetail($mansong_id);
+            $info['goods_id_array'] = join(',',$info['goods_id_array']);
             $condition = array(
                 'shop_id' => $this->instance_id
             );
@@ -554,9 +600,16 @@ class Promotion extends BaseController
         if (! empty($info['goods_list'])) {
             foreach ($info['goods_list'] as $k => $v) {
                 $goods_id_array[] = $v['goods_id'];
+                $selected_data[$v['goods_id']] = $v['discount'];
             }
         }
+        //选择商品的id
+        $goods_id_array = join(',',$goods_id_array);
         $info['goods_id_array'] = $goods_id_array;
+        //包含折扣的选择商品数据
+        $selected_data = json_encode($selected_data);
+        $this->assign('selected_data',$selected_data);
+        
         $this->assign("info", $info);
         return view($this->style . "Promotion/updateDiscount");
     }
@@ -671,13 +724,18 @@ class Promotion extends BaseController
             // 目前只支持省市，不支持区县，在页面上不会体现 2017年9月14日 19:18:08 王永杰
             $address_list = $address->getAreaTree($existing_address_list);
             $this->assign("address_list", $address_list);
-            $no_mail_province_id_array = '';
-            if (! empty($existing_address_list['province_id_array'])) {
+            $no_mail_province_id_array = array();
+            if (count($existing_address_list['province_id_array']) > 0) {
                 foreach ($existing_address_list['province_id_array'] as $v) {
-                    $no_mail_province_id_array[] = $address->getProvinceName($v);
+					if(!empty($v)){
+						 $no_mail_province_id_array[] = $address->getProvinceName($v);
+					}
                 }
             }
-            $no_mail_province = implode(',', $no_mail_province_id_array);
+			$no_mail_province = "";
+			if(count($no_mail_province_id_array) > 0){
+				$no_mail_province = implode(',', $no_mail_province_id_array);
+			}
             $this->assign("no_mail_province", $no_mail_province);
             return view($this->style . "Promotion/fullShipping");
         }
@@ -718,7 +776,7 @@ class Promotion extends BaseController
             return AjaxReturn($res);
         }
         $res = $rewardRule->getRewardRuleDetail($this->instance_id);
-        $Config = new Config();
+        $Config = new ConfigService();
         $integralConfig = $Config->getIntegralConfig($this->instance_id);
         $coupon = new PromotionService();
         $condition = array(
@@ -753,8 +811,189 @@ class Promotion extends BaseController
         $comment_coupon = request()->post('comment_coupon', 0);
         $sign_coupon = request()->post('sign_coupon', 0);
         $share_coupon = request()->post('share_coupon', 0);
-        $Config = new Config();
+        $Config = new ConfigService();
         $retval = $Config->SetIntegralConfig($this->instance_id, $register, $sign, $share, $reg_coupon, $click_coupon, $comment_coupon, $sign_coupon, $share_coupon);
         return AjaxReturn($retval);
     }
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+    /**
+     * 赠送优惠券类型列表
+     *
+     */
+    public function sendCouponTypeList()
+    {
+        if (request()->isAjax()) {
+            $now_time = time();
+            $coupon = new PromotionService();
+            $condition = array(
+                'shop_id' => $this->instance_id,
+                'end_time' => array(
+                    'gt',
+                    $now_time
+                )
+            );
+            $list = $coupon->getCouponTypeList(1, 0, $condition, 'create_time desc');
+            return $list;
+        } else {
+            return view($this->style . "Promotion/couponTypeList");
+        }
+    }
+    
+
+
+    
+    /*
+     * 商品选择弹框控制器 
+     */
+    public function goodsSelectList(){
+        
+        if(request()->post()){
+            $page_index = request()->post("page_index", 1);
+            $page_size = request()->post("page_size", PAGESIZE);
+            $goods_name = request()->post("goods_name", ""); 
+       
+            $category_id_1 = request()->post('category_id_1', '');
+            $category_id_2 = request()->post('category_id_2', '');
+            $category_id_3 = request()->post('category_id_3', '');
+            $selectGoodsLabelId = request()->post('selectGoodsLabelId', '');
+            $supplier_id = request()->post('supplier_id', '');
+            $goods_type = request()->post("goods_type", ""); // 商品类型
+            $goods_code = request()->post('code', '');
+            $data = request()->post("data");
+            if(!empty($goods_type)){
+                $goods_type = $this->getValueByKey($data, 'goods_type');
+            }
+           
+            $state = $this->getValueByKey($data, 'state');
+            $is_have_sku = $this->getValueByKey($data, 'is_have_sku');
+            $stock = $this->getValueByKey($data, 'stock');
+            
+            //商品名称
+            $condition = array(
+                "goods_name" => [
+                    "like",
+                    "%$goods_name%"
+                ],
+           
+            );
+            
+            //商品类型
+            $condition['goods_type'] = ['in',$goods_type];
+            
+            //商品标签
+            
+            if (! empty($selectGoodsLabelId)) {
+                $selectGoodsLabelIdArray = explode(',', $selectGoodsLabelId);
+                $selectGoodsLabelIdArray = array_filter($selectGoodsLabelIdArray);
+                $str = "FIND_IN_SET(" . $selectGoodsLabelIdArray[0] . ",group_id_array)";
+                for ($i = 1; $i < count($selectGoodsLabelIdArray); $i ++) {
+                    $str .= "AND FIND_IN_SET(" . $selectGoodsLabelIdArray[$i] . ",group_id_array)";
+                }
+                $condition[""] = [
+                    [
+                        "EXP",
+                        $str
+                    ]
+                ];
+            }
+            //商品编码
+            if (! empty($goods_code)) {
+                $condition["code"] = array(
+                    "like",
+                    "%" . $goods_code . "%"
+                );
+            }
+            
+            //供货商
+            if ($supplier_id != '') {
+                $condition['supplier_id'] = $supplier_id;
+            }
+            
+            
+            
+            //商品状态
+            $condition['state'] = ['in',$state];
+            
+            //是否有sku
+            if($is_have_sku == 0){
+                $condition["goods_spec_format"] = '[]';
+            }
+            
+            //是否有库存
+            if($stock == 1){
+                $condition['stock'] = ['GT',0];
+            }
+            
+            //商品分类
+            if ($category_id_3 != "") {
+                $condition["category_id_3"] = $category_id_3;
+            } elseif ($category_id_2 != "") {
+                $condition["category_id_2"] = $category_id_2;
+            } elseif ($category_id_1 != "") {
+                $condition["category_id_1"] = $category_id_1;
+            }
+            
+            $goods_detail = new GoodsService();
+            $result = $goods_detail->getSearchGoodsList($page_index, $page_size, $condition);
+            return $result;
+        }else{
+            $type = request()->get('type');
+            $this->assign('type',$type);
+            
+            $data = request()->get('data');
+            $data = rtrim($data,',');
+            $this->assign('data',$data);
+            $goods_type = $this->getValueByKey($data, 'goods_type');
+            $state = $this->getValueByKey($data, 'state');
+            $is_have_sku = $this->getValueByKey($data, 'is_have_sku');
+            $stock = $this->getValueByKey($data, 'stock');
+            
+            // 查找一级商品分类
+            $goodsCategory = new GoodsCategory();
+            $oneGoodsCategory = $goodsCategory->getGoodsCategoryListByParentId(0);
+            $this->assign("oneGoodsCategory", $oneGoodsCategory);
+            $goods_group = new GoodsGroup();
+            $groupList = $goods_group->getGoodsGroupList(1, 0, [
+                'shop_id' => $this->instance_id,
+                'pid' => 0
+            ]);
+            if (! empty($groupList['data'])) {
+                foreach ($groupList['data'] as $k => $v) {
+                    $v['sub_list'] = $goods_group->getGoodsGroupList(1, 0, 'pid = ' . $v['group_id']);
+                }
+            }
+            $this->assign("goods_group", $groupList['data']);
+            return view($this->style . "Promotion/goodsSelectList");
+        }
+        
+    }
+    
+    //获取传值数组的值
+    public function getValueByKey($str,$key){
+        
+        $arr = explode(',',$str);
+        
+        foreach($arr as $k=>$v){
+            $v_arr = explode(':',$v);
+            if($key == $v_arr[0]){
+                return $v_arr[1];
+            }
+        }
+        
+        return 0;
+    }
+    
 }

@@ -59,12 +59,12 @@
 	</div>
 	<div style="text-align:center;padding:10px;">
 		<input type="hidden" value="{$id}" id="hidden_id" />
-		<button class="btn-common js-save" style="width: 90%;height:35px;margin:0 !important;">保存</button>
-		
+		<button class="btn-common btn-big js-save" >保存</button>
+		<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
 	</div>
 </article>
 <div class="js-mask-btn" style="display:none;position: fixed; bottom: 0; left: 0; z-index: 10000; width: 100%; margin: 0;background-color: rgba(204, 204, 204, 0.701961);text-align: center;">
-	<button class="btn-common btn-big js-save" style="margin: 12px auto !important;">提交</button>
+	<button class="btn-common btn-big js-save" style="margin: 12px auto !important;">保存</button>
 </div>
 {/block}
 {block name="script"}

@@ -5,17 +5,30 @@
 {block name="main"}
 <div class="set-style">
 	<dl>
-		<dt>赠品名称:</dt>
+		<dt>赠品名称：</dt>
 		<dd><input type="text" id="gift_name" maxlength="10" class="input-common"></dd></dd>
 	</dl>
 	<dl>
-		<dt>赠品有效期:</dt>
+		<dt>赠品有效期：</dt>
 		<dd>
-			<input class="input-medium input-common" type="text" id="start_time" style="width:250px;"onclick="WdatePicker({skin:'twoer',dateFmt:'yyyy-MM-dd HH:mm:ss'})">
+			<input class="input-medium input-common harf" type="text" id="start_time" style="width:250px;"onclick="WdatePicker({skin:'twoer',dateFmt:'yyyy-MM-dd HH:mm:ss'})">
 			<span class="mlr5">-</span> 
-			<input class="input-medium input-common" size="15"type="text" id="end_time" style="width:250px;"onclick="WdatePicker({skin:'twoer',dateFmt:'yyyy-MM-dd HH:mm:ss'})">
+			<input class="input-medium input-common harf" size="15"type="text" id="end_time" style="width:250px;"onclick="WdatePicker({skin:'twoer',dateFmt:'yyyy-MM-dd HH:mm:ss'})">
 		</dd>
 	</dl>
+	<!-- 所有决定商品弹框内容的条件和存放商品id的隐藏域 -->
+	<span id="goods-condition">
+		<input type="hidden" name="type" value="1"/>
+		<input type="hidden" name="stock" value="1"/>
+		<input type="hidden" name="goods_type" value="1"/>
+		<input type="hidden" name="is_have_sku" value="1"/>
+		<input type="hidden" name="state" value="1"/>
+		<input type="hidden" id="goods_id_array" value="">
+		<input type="hidden" id="range_type" value="0">
+		<input type="hidden" id="is_show_select" value="0">
+		<input type="hidden" id="action" value="">
+	</span>
+	{include file="adminblue/Promotion/goodsSelectDialog" /}
 	<!-- <dl>
 		<dt>领取有效期:</dt>
 			<dd><input class="input-mini w70 input-common" type="text" id="days"><span class="help-inline">天</span></dd>
@@ -27,147 +40,16 @@
 			<p class="hint">（0表示不限领取次数）</p>
 		</dd>
 	</dl> -->
-	{include file="adminblue/Promotion/selectGoods" /}
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="addGift();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="addGift();">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);">返回</button>
+		</dd>
 	</dl>
 </div>
 
 <script>
-$(function(){
-	$(".ump-select-tab").hide();
-	$("[name='range_type']").parents("dl").hide();
-	$('.type_dl dd').hide();
-	$("#some_pro").show();
-	LoadingInfo();
-});
-
-
-function LoadingInfo(page_index) {
-	var $goodsArr = new Array();
-	var group_id = $("#group_id").val();
-	var search_text = $("#search_text").val();
-	if($("input[name='range_type']").val() == 0){
-		$("#turn-ul").show();
-	}else{
-		$("#turn-ul").hide();
-	}
-	$.ajax({
-		type : "post",
-		url : "{:__URL('ADMIN_MAIN/goods/getsearchgoodslist')}",
-		data : {
-			"page_index" : page_index,
-			"page_size" : $("#showNumber").val(),
-			"search_text" : search_text,
-			"group_id":group_id,
-			"is_have_sku" : 0,
-			"goods_type" : 1
-		},
-		success : function(data) {
-			$data_array = data['data'];
-			var html = '';
-			if (data['data'].length > 0) {
-				$("#DiscountList").show();
-				for (var i = 0; i < data['data'].length; i++) {
-					var curr = data['data'][i];
-					if(jQuery.inArray(curr["goods_id"], $goodsArr) == "-1"){
-						$goodsArr.push(curr["goods_id"]);
-					}else{
-						continue;
-					}
-					html +='<tr class="widget-list-item" id="select_'+curr["goods_id"]+'">';
-					html +='<td class="goods-image-td text-center"><div class="goods-image js-goods-image">';
-					if(curr["picture_info"] != null){
-						html +='<img src="'+__IMG(curr["picture_info"]['pic_cover_micro'])+'"></div></td>';
-					}else{
-						html +='<img src="__ROOT__/"></div></td>';
-					}
-					html +='<td class="goods-meta"><p class="goods-title">';
-					html +='<a href="'+__URL('SHOP_MAIN/goods/goodsinfo?goodsid='+curr["goods_id"])+'" target="_blank" class="new-window" title="'+curr["goods_name"]+'">'+curr["goods_name"]+'</a></p>';
-					html +='<p class="goods-price">'+curr["price"]+'</p></td>';
-					html +='<td class="text-center">'+curr["stock"]+'</td>';
-					if($goods_id_selected_array.length > 0){
-						if(jQuery.inArray(curr["goods_id"], $goods_id_selected_array) == "-1"){
-							html +='<td class="text-center goods-opt"><a href="javascript:;" class="btn btn-primary js-add-reward" onclick="join('+curr["goods_id"]+',this)" >设置为赠品</a></td></tr>';	
-						}else{
-							html +='<td class="text-center goods-opt"><a href="javascript:;" class="btn btn-default js-remove-reward" onclick="cancel_join('+curr["goods_id"]+',this)">修改赠品</a></td></tr>';
-						}
-					}else{
-						html +='<td class="text-center goods-opt"><a href="javascript:;" class="btn btn-primary js-add-reward" onclick="join('+curr["goods_id"]+',this)">设置为赠品</a></td></tr>';
-					}
-				}
-			} else {
-				html += '<tr align="center"><td colspan="4">暂无符合条件的数据记录</td></tr>';
-			}
-			$("tbody.goods-list").html(html);
-			initPageData(data["page_count"],data['data'].length,data['total_count']);
-			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
-		}
-	});
-}
-
-//刷新 已选商品
-function refresh_data(){
-	var data = $goods_selected_array;
-	var html = "";
-	for (var i = 0; i < data.length; i++) {
-		html +='<tr class="widget-list-item" id="selected_'+data[i]["goods_id"]+'" goodsid="'+data[i]["goods_id"]+'">';
-		html +='<td class="goods-image-td text-center"><div class="goods-image js-goods-image">';
-		if(data[i]["picture_info"] != null){
-			html +='<img src="'+__IMG(data[i]["picture_info"]['pic_cover_micro'])+'"></div></td>';
-		}else{
-			html +='<img src="__ROOT__/"></div></td>';
-		}
-		html +='<td class="goods-meta"><p class="goods-title">';
-		html +='<a href="'+__URL('SHOP_MAIN/goods/goodsinfo?goodsid='+data[i]['goods_id'])+'" target="_blank" class="new-window" title="'+data[i]["goods_name"]+'">'+data[i]["goods_name"]+'</a></p>';
-		html +='<p class="goods-price">'+data[i]["price"]+'</p></td>';
-		html +='<td class="text-center">'+data[i]["stock"]+'</td>';
-		html +='<td class="text-center goods-opt"><a href="javascript:;" class="btn btn-default js-remove-reward" onclick="cancel_join('+data[i]["goods_id"]+',this)">修改赠品</a></td></tr>';
-	}
-	$(".select-two tbody tr").remove();
-	$(".select-two tbody").append(html);
-}
-
-//设置
-function join(goods_id,e){
-	if($("#selected_"+goods_id).length > 0){
-		return false;
-	}else{
-		for(var i=0; i<$data_array.length; i++){
-			if($data_array[i]['goods_id'] == goods_id){
-				$goods_selected_array[$goods_selected_array.length] = $data_array[i];
-				$goods_id_selected_array[$goods_id_selected_array.length] = goods_id;
-				refresh_data();
-				break;
-			}
-		}
-		var a = '<a href="javascript:;" class="btn btn-default js-remove-reward" onclick="cancel_join('+goods_id+',this)">修改赠品</a>';
-		$(e).parent("td").html(a);
-		$("#selected_"+goods_id+" .goods-opt").html(a);
-	}
-	$(".select-two").show();
-	$(".select-one").hide();
-}
-
-function cancel_join(goods_id,e){
-	if($("#selected_"+goods_id).length > 0){
-		for(var i=0; i<$goods_selected_array.length; i++){
-			if($goods_selected_array[i]['goods_id'] == goods_id){
-				$goods_selected_array.splice(i,1);
-				$goods_id_selected_array.splice(i,1);
-				refresh_data();
-				break;
-			}
-		}
-		var a = '<a href="javascript:;" class="btn btn-primary js-add-reward" onclick="join('+goods_id+',this)">设置为赠品</a>';
-		$(e).parent("td").html(a);
-		$("#select_"+goods_id+" .goods-opt").html(a);
-	}
-	$(".select-two").hide();
-	$(".select-one").show();
-}
-
 
 function addGift(){
 	var gift_name = $("#gift_name").val();
@@ -177,11 +59,8 @@ function addGift(){
 	var max_num = $("#max_num").val();
 	var obj = $(".select-two table tr[id^='selected_']");
 	var goods_id = '';
-	obj.each(function(i){
-		goods_id += ','+obj.eq(i).attr("goodsid");
-	});
-	goods_id = goods_id.substring(1);
-
+	
+	var goods_id = $("#goods_id_array").val();
 	if(vertify(gift_name, start_time, end_time, goods_id)){
 		$.ajax({
 			type : "post",
@@ -218,9 +97,11 @@ function vertify(gift_name, start_time, end_time, goods_id){
 		return false;
 	}
 
-	if(goods_id.length == 0){
-		showTip("请选择一件商品做为赠品","warning");
+	if(BatchSend.length == 0){
+		$(".js-select-goods").find(".error").html('请选择一件商品作为赠品').show();
 		return false;
+	}else{
+		$(".error").hide();
 	}
 
 	return true;

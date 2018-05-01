@@ -45,11 +45,13 @@ class Upgrade extends BaseController
         $user_name = !empty($product_info[0]["devolution_username"]) ? $product_info[0]["devolution_username"] : "";
         $password = !empty($product_info[0]["devolution_password"]) ? $product_info[0]["devolution_password"] : "";
         $devolution_code = !empty($product_info[0]["devolution_code"]) ? $product_info[0]["devolution_code"] : "";
+      
         // 绑定账号
         if (request()->isAjax()) {
             $authorization_code = request()->post("authorization_code", "");
             $result = $upgrade->getUserDevolutionByAuthorizationCode($authorization_code);
             $res = json_decode($result, true);
+            
             if (! empty($res)) {
                 $revel = json_decode(json_encode($res), true);
                 if ($revel['code'] == 0) {
@@ -66,10 +68,14 @@ class Upgrade extends BaseController
         //服务器端版本
         $latestVersionRes = $upgrade->getLatestVersion();
         $latestVersion = json_decode($latestVersionRes,true);
+    
         $this->assign("latestVersion",$latestVersion);
         $this->assign('devolution_user_name', $user_name);
         $this->assign('devolution_password', $password);
         $this->assign('devolution_code', $devolution_code);
+
+        $this->assign('niu_release', NIU_RELEASE);
+        $this->assign('niu_version', NIU_VERSION);
         return view($this->style . "Upgrade/onlineUpdateList");
     }
     
@@ -93,10 +99,13 @@ class Upgrade extends BaseController
             $res = json_decode($result);
             $devolution_info = json_decode(json_encode($res), true);
             $this->assign('devolution_user_name', $user_name);
+            $this->assign('devolution_code', $devolution_message[0]['devolution_code']);
         }
+     
         $this->assign('result', $devolution_info);
         $this->assign('devolution_user_name', $user_name);
         $this->assign('devolution_password', $password);
+        
         //服务器端版本
         $latestVersionRes = $upgrade->getLatestVersion();
         $latestVersion = json_decode($latestVersionRes,true);
@@ -112,21 +121,39 @@ class Upgrade extends BaseController
         // 如果授权，进入更新页面
         $upgrade = new UpgradeService();
         if (request()->isAjax()) {
+            
             $user_name = request()->post('user_name', '');
             $password = request()->post('password', '');
             $devolution_code = request()->post('devolution_code', '');
-            $path_list=$upgrade->getVersionPatchList($user_name, $password, $devolution_code);
-            $path_list=json_decode($path_list, true);
-            return $path_list;
+            $path_list = $upgrade->getVersionPatchList($user_name, $password, $devolution_code);
+        
+            $path_list = json_decode($path_list, true);
+            
+            foreach($path_list['data'] as $key=>$item){
+                if(count($path_list['data'])-1 == $key){
+                    
+                    $upgrade->updateVersionPatch($item, 1);
+                }else{
+                    $upgrade->updateVersionPatch($item);
+                }
+            }
+            
+            $page_index = request()->post('page_index', 1);
+            $page_size = request()->post('page_size', PAGESIZE);
+            $use_path_list = $upgrade->getProductPatchList($page_index, $page_size, '', 'patch_release desc');
+            
+            return $use_path_list;
         }
         return view($this->style . "Upgrade/onlineUpdateList");
     }
+    
     /**
      * 系统在线更新
      * @return \think\response\View
      */
     public function upgradePatch(){
         $upgrade_detail=request()->post("upgradePatch_detail", "");
+      
         $upgrade_detail=json_decode($upgrade_detail, true);
         @include ROOT_PATH . 'version.php';
         if($upgrade_detail["from_version"]!=NIU_VERSION){
@@ -136,6 +163,7 @@ class Upgrade extends BaseController
         if(empty($upgrade_detail)){
             $this->error("更新信息数据异常, 请检查更新包信息！");
         }
+        
         $dbquery=new DbQuery();
         $table_list=$dbquery->getDatabaseList();
         $table_name_list=array();
@@ -187,6 +215,8 @@ class Upgrade extends BaseController
                 if ($revel['code'] == 0) {
                     $upgrade = new UpgradeService();
                     $upgrade->updateVersionPatchState($patch_release);
+                    
+                    
                 }
                 return $revel;
             } else {

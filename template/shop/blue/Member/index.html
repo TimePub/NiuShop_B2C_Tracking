@@ -13,13 +13,17 @@
 			<article class="item focus-on">
 				<h4>{:lang('member_attention')}</h4>
 				<ul>
-					<li onclick="location.href='{:__URL('SHOP_MAIN/member/goodscollectionlist')}'">
-						<i class="icon i-goods"></i>
-						<span>{:lang('member_commodity')}</span>
+					<li>
+						<a href="{:__URL('SHOP_MAIN/member/goodscollectionlist')}">
+							<i class="icon i-goods"></i>
+							<span>{:lang('member_commodity')}</span>
+						</a>
 					</li>
 					<li>
-						<i class="icon i-footprint"></i>
-						<span>{:lang('member_footprint')}</span>
+						<a href="{:__URL('SHOP_MAIN/member/newmypath')}" target="_blank">
+							<i class="icon i-footprint"></i>
+							<span>{:lang('member_footprint')}</span>
+						</a>
 					</li>
 				</ul>
 			</article>
@@ -145,10 +149,10 @@
 				<div class="security-level">
 					<h4>{:lang('member_safety_level')}</h4>
 					
-					{if condition="$member_info['user_info']['user_tel'] neq '' and $member_info['user_info']['user_email'] neq ''"}
+					{if condition="$member_detail['user_info']['user_tel'] neq '' and $member_detail['user_info']['user_email'] neq ''"}
 					<span>{:lang('member_security')}</span>
 					<i class="icon i-security-level"><em class="security" data-level="0"></em></i>
-					{elseif condition="$member_info['user_info']['user_tel'] neq '' OR $member_info['user_info']['user_email'] neq ''"/}
+					{elseif condition="$member_detail['user_info']['user_tel'] neq '' OR $member_detail['user_info']['user_email'] neq ''"/}
 					<span>{:lang('member_good')}</span>
 					<i class="icon i-security-level"><em class="good" data-level="75"></em></i>
 					{else/}
@@ -158,9 +162,9 @@
 					<a href="{:__URL('SHOP_MAIN/member/usersecurity')}" title="{:lang('member_security_level')}">{:lang('member_promote')} &gt;</a>
 				</div>
 				<div class="info">
-					{if condition="$member_info['user_info']['user_tel'] neq ''"}
+					{if condition="$member_detail['user_info']['user_tel'] neq ''"}
 					<label>{:lang('member_phone')}</label>
-					<span>{$member_info['user_info']['user_tel']}</span>
+					<span>{$member_detail['user_info']['user_tel']}</span>
 					<a href="{:__URL('SHOP_MAIN/member/usersecurity?atc=user_mobile')}">{:lang('member_unbound')}</a>
 					{else/}
 					<label style="margin-right:10px;">{:lang('member_phone')}</label>
@@ -168,9 +172,9 @@
 					{/if}
 				</div>
 				<div class="info">
-					{if condition="$member_info['user_info']['user_email'] neq ''"}
+					{if condition="$member_detail['user_info']['user_email'] neq ''"}
 					<label>{:lang('mailbox')}</label>
-					<span title="{$member_info['user_info']['user_email']}">{$member_info['user_info']['user_email']}</span>
+					<span title="{$member_detail['user_info']['user_email']}">{$member_detail['user_info']['user_email']}</span>
 					<a href="{:__URL('SHOP_MAIN/member/usersecurity?atc=user_email')}">{:lang('member_unbound')}</a>
 					{else/}
 					<label style="margin-right:10px;">{:lang('mailbox')}</label>
@@ -243,7 +247,7 @@
 						<li>
 							<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$cart['goods_id'])}" target="_blank" title="{$cart.goods_name}" class="pic">
 								{if condition="$cart['picture_info'] !=''"}
-								<img src="{:__IMG($cart['picture_info']['pic_cover_small'])}" alt="{$cart.goods_name}" />
+								<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($cart['picture_info']['pic_cover_small'])}" alt="{$cart.goods_name}" />
 								{else/}
 								<img src="__TEMP__/{$style}/public/images/goods/default_goods_img.png" alt="{$cart.goods_name}" />
 								{/if}
@@ -280,7 +284,7 @@
 							<li>
 								<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$goods['goods_id'])}" title="{$goods.goods_name}" target="_blank" class="img">
 									{if condition="$goods.pic_cover_mid !=''"}
-									<img src="{:__IMG($goods['pic_cover_mid'])}" alt="{$goods.goods_name}" />
+									<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($goods['pic_cover_mid'])}" alt="{$goods.goods_name}" />
 									{else/}
 									<img src="__TEMP__/{$style}/public/images/goods/default_goods_img.png" alt="{$goods.goods_name}" />
 									{/if}

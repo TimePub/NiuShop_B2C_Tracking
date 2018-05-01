@@ -70,5 +70,8 @@ class WxPayConfig
         $this->key = $this->weixin->getPayMchkey();
         $this->apiclient_cert = $this->weixin->getApiClientCert();
         $this->apiclient_key = $this->weixin->getApiClientKey();
+        $this->applet_appid=$this->weixin->getAppletAppid();
+        $this->applet_mchid=$this->weixin->getAppletMchid();
+        $this->applet_key=$this->weixin->getAppletKey();
     }
 }

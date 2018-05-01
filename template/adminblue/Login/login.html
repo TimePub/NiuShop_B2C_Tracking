@@ -53,17 +53,6 @@
 				{/if}
 				<input type="button" value="登录" class="sub_login" onclick="btnlogin();" />
 			</form>
-			<!-- 第三方登录 -->
-			{if condition="$qq_info['is_use'] neq 0 || $Wchat_info['is_use'] neq 0"}
-			<div class="third_party_login">
-				{if condition="$qq_info['is_use'] eq 1"}
-				<a class="qq login-btn" href="{:__URL('APP_MAIN/login/oauthlogin','type=QQLOGIN')}" title="腾讯QQ账号登录"></a>
-				{/if}
-				{if condition="$Wchat_info['is_use'] eq 1"}
-				<a class="wchat login-btn" href="{:__URL('APP_MAIN/login/oauthlogin','type=WCHAT')}" title="微信登录"></a>
-				{/if}
-			</div>
-			{/if}
 		</div>
 	</div>
 	<div class="txt" id="bottom_copyright">

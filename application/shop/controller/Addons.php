@@ -2,10 +2,6 @@
 
 namespace app\shop\controller;
 use think\Controller;
-use think\Request;
-use think\Config;
-use think\Loader;
-use think\Cache;
 
 
 /**

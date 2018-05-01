@@ -5,6 +5,7 @@
 	<span class="slide-aside"></span>
 	<div class="aside-inner">
 		{if condition="[is_new_recommend] neq '0'"}
+		{if condition="count($goods_new_list)"}
 		<!--新品推荐-->
 		<div class="aside-con">
 			<h2 class="aside-tit">{:lang('goods_new_arrivals')}</h2>
@@ -17,7 +18,7 @@
 					{/if}
 					<div class="p-img">
 						<a target="_blank" title="{$goodsinfo.goods_name}" href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$goodsinfo['goods_id'])}">
-							<img src="{:__IMG($goodsinfo['pic_cover_mid'])}" >
+							<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($goodsinfo['pic_cover_mid'])}" >
 						</a>
 					</div>
 					<div class="p-name">
@@ -32,7 +33,9 @@
 			</ul>
 		</div>
 		{/if}
+		{/if}
 		{if condition="[is_sale_ranking] neq 0" /}
+		{if condition="count($goods_sales_list)"}
 		<!--销量排行榜-->
 		<div class="aside-con">
 			<h2 class="aside-tit">{:lang('goods_sales_charts')}</h2>
@@ -45,7 +48,7 @@
 					{/if}
 					<div class="p-img">
 						<a target="_blank" title="{$goodsinfo.goods_name}" href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$goodsinfo['goods_id'])}">
-							<img src="{:__IMG($goodsinfo['pic_cover_mid'])}" >
+							<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($goodsinfo['pic_cover_mid'])}" >
 						</a>
 					</div>
 					<div class="p-name">
@@ -59,6 +62,7 @@
 			{/foreach}
 			</ul>
 		</div>
+		{/if}
 		{/if}
 	</div>
 </div>

@@ -4,7 +4,7 @@
 <script type="text/javascript" charset="utf-8" src="ADMIN_JS/ueditor/ueditor.config.common.js"></script>
 <script type="text/javascript" charset="utf-8" src="ADMIN_JS/ueditor/ueditor.all.common.js"></script>
 <style>
-.media {max-width: 800px;margin: 0 auto;}
+.media {max-width: 800px;margin-left:140px}
 .media:after {content: "";display: table;clear: both;}
 .img-text {display: block;width: 100%;line-height: 120px;background: #ececec;text-align: center;font-size: 22px;color: #c0c0c0;font-weight: 400;}
 .media-left {width: 30%;margin-right: 2%;}
@@ -24,31 +24,33 @@
 .check-box{width: 10%;float: left;}
 .editting{display:none;}
 .action .editting{display:block;color:red;text-align:right;}
+.set-style dl dt { width: 11%;}
+.type1,.type2,.type3{display:none;}
 </style>
 {/block}
 {block name="main"}
-<div class="set-style">
+<div class="set-style" style="display:none;">
 	<dl>
 		<dt>消息类型:</dt>
 		<dd>
-			<label class="check-box"><input type="radio" name="type" id="type1" value="1">&nbsp;文本</label>
-			<label class="check-box"><input type="radio" name="type" id="type2" value="2">&nbsp;单图文</label>
-			<label class="check-box"><input type="radio" name="type" id="type3" value="3" checked="checked">&nbsp;多图文</label>
+			<label class="radio inline normal"><i class="radio-common"><input type="radio" name="type" id="type1" value="1"></i>&nbsp;文本</label>
+			<label class="radio inline normal"><i class="radio-common"><input type="radio" name="type" id="type2" value="2"></i>&nbsp;单图文</label>
+			<label class="radio inline normal"><i class="radio-common selected"><input type="radio" name="type" id="type3" value="3" checked="checked"></i>&nbsp;多图文</label>
 		</dd>
 	</dl>
 </div>
-<div class="set-style type1" style="display: none;">
+<div class="set-style type1" {if condition="$type eq 1"}style="display:block;"{/if}>
 	<dl>
 		<dt>描述:</dt>
 		<dd>
 			<p>
-				<textarea id="type1_desc" class="input-common"></textarea>
+				<textarea id="type1_desc" class="textarea-common"></textarea>
 			</p>
 			<p class="error">请输入模块描述</p>
 		</dd>
 	</dl>
 </div>
-<div class="type2 media" style="display: none;">
+<div class="type2 media" {if condition="$type eq 2"}style="display:block;"{/if}>
 	<div class="media-left">
 		<div class="media-border">
 			<h5 class="type-title" style="overflow: hidden;text-overflow: ellipsis;">标题</h5>
@@ -61,6 +63,7 @@
 	<div class="media-right">
 		<p> <span style="color:red;"> * </span> 标题 </p>
 		<input style="width: 98%;" type="text" id="title" class="input-common">
+		<p></p>
 		<p>作者（选填）</p>
 		<input style="width: 98%;" type="text" id="author" class="input-common">
 		<p><span style="color:red;"> *</span> 封面</p>
@@ -84,26 +87,26 @@
 		</div>
 		<p></p>
 		<p>
-			<input type="checkbox" id="show_cover_pic" style="margin-top: -2px; margin-right: 5px;">
+			<i class="checkbox-common"><input type="checkbox" id="show_cover_pic" style="margin-top: -2px; margin-right: 5px;"></i>
 			<label for="show_cover_pic" style="font-weight: normal; display: inline-block;">封面图片显示在正文中</label>
 		</p>
 		<p><span style="color:red;"> *</span> 摘要</p>
 		<p>
-			<textarea id="desc" style="width: 98%;" class="input-common"></textarea>
+			<textarea id="desc" style="width: 98%;" class="textarea-common"></textarea>
 		</p>
 		<p class="error">请输入模块描述</p>
 		<p><span style="color:red;"> *</span> 正文</p>
 		<div class="controls" id="discripContainer">
-			<textarea id="tareaProductDiscrip1" name="discripArea" class="input-common" style=" width: 100%; display: none;"></textarea>
+			<textarea id="tareaProductDiscrip1" name="discripArea" class="textarea-common" style=" width: 100%; display: none;"></textarea>
 			<script id="editor" type="text/plain" style="width: 100%; height: 100px;"></script>
 			<span class="help-inline" style="display: none; color: red;">请输入商品描述</span>
 		</div>
 		<p></p>
 		<p>原文链接</p>
-		<input style="width: 98%;" type="text" id="content_source_url" >
+		<input style="width: 98%;" type="text" id="content_source_url" class="input-common">
 	</div>
 </div>
-<div class="type3 media">
+<div class="type3 media" {if condition="$type eq 3"}style="display:block;"{/if}>
 	<div class="media-left">
 		<div class="media-border-title js-action action" onmouseover="show(this)"
 			onmouseout="hide(this)" onclick="edit(this, 0)">
@@ -170,12 +173,12 @@
 		</div>
 		<p></p>
 		<p>
-			<input type="checkbox" id="form_show_cover_pic" onchange="changeElement('show_cover_pic')" style="margin-top: -2px; margin-right: 5px;">
+			<i class="checkbox-common"><input type="checkbox" id="form_show_cover_pic" onchange="changeElement('show_cover_pic')" style="margin-top: -2px; margin-right: 5px;"></i>
 			<label for="show_cover_pic" style="font-weight: normal; display: inline-block;">封面图片显示在正文中</label>
 		</p>
 		<p><span style="color:red;"> * </span>摘要</p>
 		<p>
-			<textarea id="form_summary" class="input-common" style="width: 98%;" onchange="changeElement('summary')"></textarea>
+			<textarea id="form_summary" class="textarea-common" style="width: 98%;" onchange="changeElement('summary')"></textarea>
 		</p>
 		<p class="error">请输入模块描述</p>
 		<p><span style="color:red;"> * </span>正文</p>
@@ -186,12 +189,22 @@
 		</div>
 		<p></p>
 		<p>原文链接</p>
-		<input style="width: 98%;" type="text" id="form_content_source_url" onchange="changeElement('content_source_url')">
+		<input style="width: 98%;" class="input-common" type="text" id="form_content_source_url" onchange="changeElement('content_source_url')">
 	</div>
 </div>
-<div style="width:200px;margin:20px auto;">
-<button class="btn-common btn-big" onclick="save();">提交</button>
+<div class="set-style">
+	<dl>
+		<dt></dt>
+		<dd>
+			<button class="btn-common btn-big" onclick="save();">保存</button>
+			<a href="{:__URL('ADMIN_MAIN/wchat/materialmessage?type='.$type)}">
+			<button class="btn-common-cancle btn-big" >返回</button>
+			</a>
+		</dd>
+	</dl>
 </div>
+<!-- 存放类型id隐藏域 -->
+<input type="hidden" id="type" value="{$type}"/>
 <!-- 用 ，加载数据-->
 <script src="ADMIN_JS/art_dialog.source.js"></script>
 <script src="ADMIN_JS/iframe_tools.source.js"></script>
@@ -247,9 +260,9 @@ function edit(event, num){
 		$("#imgLogo1").attr('src',__IMG(cover));
 	}
 	if(show_cover_pic == 1){
-		$("#form_show_cover_pic").prop("checked","checked");
+		$("#form_show_cover_pic").prop("checked",true).parent().addClass('selected');
 	}else{
-		$("#form_show_cover_pic").prop("checked","");
+		$("#form_show_cover_pic").prop("checked",false).parent().removeClass('selected');
 	}
 	
 	$("#form_summary").val(summary);
@@ -257,13 +270,14 @@ function edit(event, num){
 	$("#form_content_source_url").val(content_source_url);
 }
 function save(){
-	var type = $("input[type='radio'][name='type']:checked").val();
+	//var type = $("input[type='radio'][name='type']:checked").val();
+	var type = $('#type').val();
 	if(type == 1){
 		//文本提交
 		var title = $("#type1_desc").val();
 		var content = '';
 		if(title == ''){
-			showMessage('error', '内容不能为空');
+			showTip('内容不能为空','warning');
 			return false;
 		}
 	}else if(type == 2){
@@ -281,16 +295,16 @@ function save(){
 		var content_source_url = $("#content_source_url").val();
 		var contents = title+'`|`'+author+'`|`'+cover+'`|`'+show_cover_pic+'`|`'+summary+'`|`'+content+'`|`'+content_source_url;
 		if(title == ''){
-			showMessage('error', '标题不能为空');
+			showTip('请输入标题','warning');
 			return false;
 		}else if(cover == ''){
-			showMessage('error', '请上传封面图片');
+			showTip('请上传封面图片','warning');
 			return false;
 		}else if(summary == ''){
-			showMessage('error', '摘要不能为空');
+			showTip('请输入摘要','warning');
 			return false;
 		}else if(content == ''){
-			showMessage('error', '正文不能为空');
+			showTip('请输入正文内容','warning');
 			return false;
 		}
 	}else if(type == 3){
@@ -302,16 +316,16 @@ function save(){
 			var content_new = '';
 			$("input[name='hidden"+i+"']").each(function(){
 				if($("input[name='hidden"+i+"']").eq(0).val() == ""){
-					showMessage('error', '第'+(i+1)+'篇文章的标题不能为空');
+					showTip('请输入'+'第'+(i+1)+'篇文章的标题','warning');
 					return false;
 				}else if($("input[name='hidden"+i+"']").eq(2).val() == ""){
-					showMessage('error', '第'+(i+1)+'篇文章的封面图片不能为空');
+					showTip('请上传'+'第'+(i+1)+'篇文章的封面图片','warning');
 					return false;
 				}else if($("input[name='hidden"+i+"']").eq(4).val() == ""){
-					showMessage('error', '第'+(i+1)+'篇文章的摘要不能为空');
+					showTip('请输入'+'第'+(i+1)+'篇文章的摘要','warning');
 					return false;
 				}else if($("input[name='hidden"+i+"']").eq(5).val() == ""){
-					showMessage('error', '第'+(i+1)+'篇文章的正文不能为空');
+					showTip('请输入'+'第'+(i+1)+'篇文章的正文','warning');
 					return false;
 				}else{
 					content_new = content_new +'`|`'+ $(this).val();
@@ -322,7 +336,7 @@ function save(){
 		}
 		contents = contents.substring(3);
 	}else{
-		showMessage('error', '请选择消息类型');
+		showTip('请选择消息类型','warning');
 		return false;
 	}
 	//类型,标题,content
@@ -333,9 +347,10 @@ function save(){
 		data : { "type" : type, "title" : title, "content" : contents },
 		success : function(data) {
 			if(data['code'] > 0){
-				showMessage('success', data['message'], "{:__URL('ADMIN_MAIN/wchat/materialmessage')}");
+				showTip(data['message'],'success');
+				location.href = "{:__URL('ADMIN_MAIN/wchat/materialmessage?type='.$type)}";
 			}else{
-				showMessage('error', data['message']);
+				showTip(data['message'],'error');
 			}
 		}
 	});
@@ -344,7 +359,7 @@ function save(){
 $(".media-plus").click(function() {
 	var num = $(this).parents(".media-left").find(".media-body").length;
 	if (num > 7) {
-		showMessage('error', '最多只可以加入8条图文消息。');
+		showTip('最多只可以加入8条图文消息。','warning');
 		return false;
 	}
 	var html = '';

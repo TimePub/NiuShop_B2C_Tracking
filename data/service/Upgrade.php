@@ -261,7 +261,8 @@ class Upgrade extends BaseService implements IUpgrade
     public function updateVersionPatchState($patch_release){
         $product_patch = new VersionPatchModel();
         $data=array(
-            "is_up"=>1
+            "is_up"=>1,
+            'modify_date' => time()
         );
         $product_patch->save($data,['patch_release'=>$patch_release]);
     }
@@ -310,6 +311,36 @@ class Upgrade extends BaseService implements IUpgrade
        return $revel;
     }
     
+    /**
+     * 添加更新记录
+     * @param unknown $patch_list
+     */
+    public function updateVersionPatch($patch_result, $is_new_update = 0){
+        
+        $version_model=new VersionPatchModel();
+        $data=array(
+            "patch_type"=>$patch_result["patch_type"],
+            "patch_type_name"=>$patch_result["patch_type_name"],
+            "patch_release"=>$patch_result["patch_release"],
+            "patch_name"=> $patch_result["patch_name"],
+            "patch_no"=>  $patch_result["patch_no"],
+            "patch_file_name"=> $patch_result["patch_file_name"],
+            "patch_log"=>  $patch_result["patch_log"],
+            "patch_file_size"=>  $patch_result["patch_file_size"],
+            "is_up"=>  0,
+            'patch_download_url' => $patch_result['patch_download_url'],
+            'is_new_update' => $is_new_update,
+            'from_version' => $patch_result['from_version'],
+            'release_date' => getTimeTurnTimeStamp($patch_result['modify_date'])
+        );
+        if(!$this->getVersionPatchIsUse($patch_result["patch_release"])){
+            
+            $version_model->save($data);
+        }else{
+            $version_model->save($data, ['patch_release'=>$patch_result['patch_release']]);
+        }
+  
+    }
     
 }
 

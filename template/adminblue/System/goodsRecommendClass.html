@@ -221,7 +221,7 @@ border-radius: 4px;
 			<div class="modal-body" style="height:700px;overflow:auto;">
 				<div class="set-style">
 					<dl>
-						<dt><span class="color-red">*</span>模块名称</dt>
+						<dt><span class="color-red">*</span>模块名称：</dt>
 						<dd>
 							<input type="hidden" class="form-control" id="class_id">
 							<input type="text" class="form-control input-common" id="class_name" placeholder="请输入模块名称">
@@ -229,13 +229,13 @@ border-radius: 4px;
 						</dd>
 					</dl>
 					<dl>
-						<dt>排序</dt>
+						<dt>排序：</dt>
 						<dd>
 							<input type="text" class="form-control input-common" id="sort" onkeyup="this.value=this.value.replace(/\D/g,'')" placeholder="排序">
 						</dd>
 					</dl>
 					<dl>
-						<dt>已选商品</dt>
+						<dt>已选商品：</dt>
 						<dd>
 							<div class="info">
 								<button type="button" class="close" data-dismiss="alert" style="margin-top:4px;">×</button>
@@ -248,9 +248,9 @@ border-radius: 4px;
 						</dd>
 					</dl>
 					<dl>
-						<dt>选择要促销的商品:</dt>
+						<dt>选择要促销的商品</dt>
 						<dd></dd>
-						<dt>选择分类</dt>
+						<dt>选择分类：</dt>
 						<dd>
 							<select name="account" class="form-control m-b category_first select-common" id="category_first_id" onchange="changeCategory(this, 1)" style="width:145px;height:34px;">
 								<option value="0">商品分类一级</option>
@@ -265,10 +265,10 @@ border-radius: 4px;
 								<option value="0">商品分类三级</option>
 							</select>
 						</dd>
-						<dt>商品名称</dt>
+						<dt>商品名称：</dt>
 						<dd>
 							<input type="text" class="form-control input-common" id="search_info" placeholder="请输入商品名称">
-							<button class="btn btn-primary" onclick="search_goods()">搜索</button>
+							<button class="btn-common" onclick="search_goods()">搜索</button>
 						</dd>
 					</dl>
 					<dl>
@@ -278,7 +278,7 @@ border-radius: 4px;
 				</div>
 			</div>
 			<div class="modal-footer">
-				<button class="btn btn-primary" onclick="save()">保存</button>
+				<button class="btn-common" onclick="save()">保存</button>
 				<button class="btn" data-dismiss="modal">关闭</button>
 			</div>
 		</div>
@@ -526,7 +526,7 @@ function delGoodsRecommendClass(class_id,e){
 						}
 					});
 				},
-				"取消,#e57373": function() {
+				"取消,#f5f5f5,#666": function() {
 					$(this).dialog('close');
 				}
 			},

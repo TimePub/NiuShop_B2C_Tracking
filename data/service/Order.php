@@ -56,6 +56,14 @@ use data\service\promotion\GoodsPreference;
 use data\service\promotion\PromoteRewardRule;
 use data\service\shopaccount\ShopAccount;
 use think\Log;
+use data\model\NsOrderPromotionDetailsModel;
+use data\extend\Snoopy;
+use data\service\Pay\UnionPay;
+use data\model\NsO2oOrderDeliveryModel;
+use data\model\NsOrderPresellModel;
+use data\model\NsCustomerServiceModel;
+use data\model\NsOrderCustomerAccountRecordsModel;
+use data\model\BaseModel;
 
 class Order extends BaseService implements IOrder
 {
@@ -64,7 +72,7 @@ class Order extends BaseService implements IOrder
     {
         parent::__construct();
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::getOrderDetail()
@@ -77,8 +85,15 @@ class Order extends BaseService implements IOrder
         if (empty($detail)) {
             return array();
         }
+     
         $detail['pay_status_name'] = $this->getPayStatusInfo($detail['pay_status'])['status_name'];
         $detail['shipping_status_name'] = $this->getShippingInfo($detail['shipping_status'])['status_name'];
+        $detail['shipping_type_name'] = OrderStatus::getShippingTypeName($detail['shipping_type'])['type_name'];
+        
+        if($detail['shipping_type'] == 3 && $detail['shipping_status'] == 1){
+            $orderDelivery = new NsO2oOrderDeliveryModel();
+            $detail['distribution_info'] = $orderDelivery ->getInfo(["order_id"=>$order_id],"express_no,order_delivery_user_name,order_delivery_user_mobile,remark");
+        }
         
         $express_list = $this->getOrderGoodsExpressList($order_id);
         // 未发货的订单项
@@ -143,6 +158,7 @@ class Order extends BaseService implements IOrder
                     "express_name" => $express_obj["express_name"],
                     "express_code" => $express_obj["express_no"],
                     "express_id" => $express_obj["id"],
+                    "express_company_id" => $express_obj["express_company_id"],
                     "is_express" => 1,
                     "order_goods_list" => $packet_goods_list
                 );
@@ -151,9 +167,22 @@ class Order extends BaseService implements IOrder
             }
         }
         $detail["goods_packet_list"] = $goods_packet_list;
-        $virtual_goods = new VirtualGoods();
-        $virtual_goods_list = $virtual_goods->getVirtualGoodsListByOrderNo($detail['order_no']);
-        $detail['virtual_goods_list'] = $virtual_goods_list;
+        
+        if($detail['order_type'] == 2){
+         
+            //虚拟商品列表
+            $virtual_goods = new VirtualGoods();
+            $virtual_goods_list = $virtual_goods->getVirtualGoodsListByOrderNo($detail['order_no']);
+            $detail['virtual_goods_list'] = $virtual_goods_list;
+            
+        }
+        
+        // 订单优惠类型
+        $ns_order_promotion = new NsOrderPromotionDetailsModel();
+        $promotion_detail = $ns_order_promotion->getInfo([
+            "order_id" => $order_id
+        ], "promotion_type");
+        $detail['promotion_type'] = $promotion_detail['promotion_type'];
         return $detail;
         // TODO Auto-generated method stub
     }
@@ -169,7 +198,7 @@ class Order extends BaseService implements IOrder
         $order_info = $order_model->get($order_id);
         return $order_info;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::getOrderList()
@@ -186,46 +215,15 @@ class Order extends BaseService implements IOrder
                 $order_item_list = $order_item->where([
                     'order_id' => $v['order_id']
                 ])->select();
-                // 通过sku_id查询ns_goods_sku中code
-                foreach ($order_item_list as $key => $val) {
-                    // 查询商品sku表开始
+              
+                foreach ($order_item_list as $key_item => $v_item) {
+                    // 通过sku_id查询ns_goods_sku中code
                     $goods_sku = new NsGoodsSkuModel();
                     $goods_sku_info = $goods_sku->getInfo([
-                        'sku_id' => $val['sku_id']
+                        'sku_id' => $v_item['sku_id']
                     ], 'code');
-                    $order_item_list[$key]['code'] = $goods_sku_info['code'];
+                    $order_item_list[$key_item]['code'] = $goods_sku_info['code'];
                     // 查询商品sku结束
-                }
-                
-                $province_name = "";
-                $city_name = "";
-                $district_name = "";
-                
-                $province = new ProvinceModel();
-                $province_info = $province->getInfo(array(
-                    "province_id" => $v["receiver_province"]
-                ), "*");
-                if (count($province_info) > 0) {
-                    $province_name = $province_info["province_name"];
-                }
-                $order_list['data'][$k]['receiver_province_name'] = $province_name;
-                $city = new CityModel();
-                $city_info = $city->getInfo(array(
-                    "city_id" => $v["receiver_city"]
-                ), "*");
-                if (count($city_info) > 0) {
-                    $city_name = $city_info["city_name"];
-                }
-                $order_list['data'][$k]['receiver_city_name'] = $city_name;
-                $district = new DistrictModel();
-                $district_info = $district->getInfo(array(
-                    "district_id" => $v["receiver_district"]
-                ), "*");
-                if (count($district_info) > 0) {
-                    $district_name = $district_info["district_name"];
-                }
-                $order_list['data'][$k]['receiver_district_name'] = $district_name;
-                foreach ($order_item_list as $key_item => $v_item) {
                     
                     $picture = new AlbumPictureModel();
                     // $order_item_list[$key_item]['picture'] = $picture->get($v_item['goods_picture']);
@@ -255,6 +253,9 @@ class Order extends BaseService implements IOrder
                         $order_item_list[$key_item]['refund_operation'] = '';
                         $order_item_list[$key_item]['status_name'] = '';
                     }
+                    
+                    //查询是否有售后信息
+                    $v_item['customer_info'] = $this->getCustomerServiceInfo(0, $v_item['order_goods_id']);
                 }
                 $order_list['data'][$k]['order_item_list'] = $order_item_list;
                 $order_list['data'][$k]['operation'] = '';
@@ -264,16 +265,26 @@ class Order extends BaseService implements IOrder
                 $order_list['data'][$k]['order_from_tag'] = $order_from['tag'];
                 $order_list['data'][$k]['pay_type_name'] = OrderStatus::getPayType($v['payment_type']);
                 // 根据订单类型判断订单相关操作
-                if ($order_list['data'][$k]['order_type'] == 1) {
+                if ($order_list['data'][$k]['order_type'] == 1 || $order_list['data'][$k]['order_type'] == 3 || $order_list['data'][$k]['order_type'] == 5) {
                     if ($order_list['data'][$k]['payment_type'] == 6 || $order_list['data'][$k]['shipping_type'] == 2) {
                         $order_status = OrderStatus::getSinceOrderStatus();
-                    } else {
+                    } elseif($order_list['data'][$k]['shipping_type'] == 3) {
+                        $order_status = OrderStatus::getOrderO2oStatus();
+                    }else{
                         $order_status = OrderStatus::getOrderCommonStatus();
                     }
-                } else {
+                }elseif ($order_list['data'][$k]['order_type'] == 2) {
                     // 虚拟订单
                     $order_status = OrderStatus::getVirtualOrderCommonStatus();
+                }elseif ($order_list['data'][$k]['order_type'] == 4) {
+                    // 拼团订单
+                    $order_status = OrderStatus::getOrderPintuanStatus();
+                }elseif ($order_list['data'][$k]['order_type'] == 6){
+                    //预售订单
+                    $order_status = OrderStatus::getOrderPresellStatus();
                 }
+                $order_list['data'][$k]['shipping_type_name'] = array();
+                $order_list['data'][$k]['shipping_type_name'] = OrderStatus::getShippingTypeName( $order_list['data'][$k]['shipping_type']);
                 
                 // 查询订单操作
                 foreach ($order_status as $k_status => $v_status) {
@@ -285,11 +296,12 @@ class Order extends BaseService implements IOrder
                         $order_list['data'][$k]['is_refund'] = $v_status['is_refund'];
                     }
                 }
+                
             }
         }
         return $order_list;
     }
-
+    
     /*
      * 订单创建（实物商品）
      * (non-PHPdoc)
@@ -341,16 +353,22 @@ class Order extends BaseService implements IOrder
         return $retval;
         // TODO Auto-generated method stub
     }
-
+    
+   
+   
     /*
-     * 订单创建（虚拟商品）
+     * 兑换订单
      * (non-PHPdoc)
      * @see \data\api\IOrder::orderCreate()
      */
-    public function orderCreateVirtual($order_type, $out_trade_no, $pay_type, $shipping_type, $order_from, $buyer_ip, $buyer_message, $buyer_invoice, $shipping_time, $point, $coupon_id, $user_money, $goods_sku_list, $platform_money, $pick_up_id, $shipping_company_id, $user_telephone, $coin = 0)
+    public function orderCreatePointExhange($order_type, $out_trade_no, $pay_type, $shipping_type, $order_from, $buyer_ip, $buyer_message, $buyer_invoice, $shipping_time, $receiver_mobile, $receiver_province, $receiver_city, $receiver_district, $receiver_address, $receiver_zip, $receiver_name, $point, $coupon_id, $user_money, $goods_sku_list, $platform_money, $pick_up_id, $shipping_company_id, $coin = 0, $fixed_telephone = "", $point_exchange_type, $order_goods_type, $user_telephone)
     {
         $order = new OrderBusiness();
-        $retval = $order->orderCreateVirtual($order_type, $out_trade_no, $pay_type, $shipping_type, $order_from, $buyer_ip, $buyer_message, $buyer_invoice, $shipping_time, $point, $coupon_id, $user_money, $goods_sku_list, $platform_money, $pick_up_id, $shipping_company_id, $user_telephone, $coin);
+        if($order_goods_type == 1){
+            $retval = $order->orderCreatePointExhange($order_type, $out_trade_no, $pay_type, $shipping_type, $order_from, $buyer_ip, $buyer_message, $buyer_invoice, $shipping_time, $receiver_mobile, $receiver_province, $receiver_city, $receiver_district, $receiver_address, $receiver_zip, $receiver_name, $point, $coupon_id, $user_money, $goods_sku_list, $platform_money, $pick_up_id, $shipping_company_id, $coin, $fixed_telephone, $point_exchange_type);
+        }elseif($order_goods_type == 0){
+            $retval = $order->orderCreateVirtualPointExhange($order_type, $out_trade_no, $pay_type, $shipping_type, $order_from, $buyer_ip, $buyer_message, $buyer_invoice, $shipping_time, $point, $coupon_id, $user_money, $goods_sku_list, $platform_money, $pick_up_id, $shipping_company_id, $user_telephone, $coin, $point_exchange_type);
+        }
         runhook("Notify", "orderCreate", array(
             "order_id" => $retval
         ));
@@ -359,19 +377,27 @@ class Order extends BaseService implements IOrder
             hook('orderCreateSuccess', [
                 'order_id' => $retval
             ]);
-            $order_model = new NsOrderModel();
-            $order_info = $order_model->getInfo([
-                'order_id' => $retval
-            ], '*');
-            if (! empty($order_info)) {
-                if ($order_info['user_platform_money'] != 0) {
-                    if ($order_info['pay_money'] == 0) {
-                        $this->orderOnLinePay($out_trade_no, 5);
-                    }
-                } else {
-                    
-                    if ($order_info['pay_money'] == 0) {
-                        $this->orderOnLinePay($out_trade_no, 1); // 默认微信支付
+            // 货到付款
+            if ($pay_type == 4) {
+                $this->orderOnLinePay($out_trade_no, 4);
+            } else {
+                $order_model = new NsOrderModel();
+                $order_info = $order_model->getInfo([
+                    'order_id' => $retval
+                ], '*');
+                if (! empty($order_info)) {
+                    if ($order_info['user_platform_money'] != 0) {
+                        if ($order_info['pay_money'] == 0) {
+                            $this->orderOnLinePay($out_trade_no, 5);//余额支付
+                        }
+                    } else if($order_info['point'] != 0){
+                        if ($order_info['pay_money'] == 0) {
+                            $this->orderOnLinePay($out_trade_no, 11);//积分兑换
+                        }
+                    }else {
+                        if ($order_info['pay_money'] == 0) {
+                            $this->orderOnLinePay($out_trade_no, 1); // 默认微信支付
+                        }
                     }
                 }
             }
@@ -379,7 +405,6 @@ class Order extends BaseService implements IOrder
         
         return $retval;
     }
-
     /**
      * 查询订单中的商品是否有限购，如果有限购，则查询是否有购买记录等
      */
@@ -437,6 +462,7 @@ class Order extends BaseService implements IOrder
         return $messages;
     }
 
+  
     /**
      * (non-PHPdoc)
      *
@@ -448,7 +474,7 @@ class Order extends BaseService implements IOrder
         $no = $order->createOutTradeNo();
         return $no;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::orderDelivery()
@@ -470,7 +496,7 @@ class Order extends BaseService implements IOrder
         }
         return $retval;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::orderGoodsDelivery()
@@ -489,7 +515,7 @@ class Order extends BaseService implements IOrder
         return $retval;
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::orderClose()
@@ -506,7 +532,7 @@ class Order extends BaseService implements IOrder
         return $retval;
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * 订单完成的函数
      * (non-PHPdoc)
@@ -529,7 +555,6 @@ class Order extends BaseService implements IOrder
             $order_detail = $order_model->getInfo([
                 "order_id" => $orderid
             ], "shop_id, buyer_id");
-            $user_service->updateUserLevel($order_detail["shop_id"], $order_detail["buyer_id"]);
             
             runhook("Notify", "orderComplete", array(
                 "order_id" => $orderid
@@ -543,12 +568,12 @@ class Order extends BaseService implements IOrder
             ]);
         }
         return $retval;
-        // TODO Auto-generated method stub
     }
 
-    /*
+    /**
      * 订单在线支付
      * (non-PHPdoc)
+     *
      * @see \data\api\IOrder::orderOnLinePay()
      */
     public function orderOnLinePay($order_pay_no, $pay_type)
@@ -592,10 +617,12 @@ class Order extends BaseService implements IOrder
         }
         return $retval;
     }
-
-    /*
+    
+ 
+    /**
      * 订单线下支付
      * (non-PHPdoc)
+     *
      * @see \data\api\IOrder::orderOffLinePay()
      */
     public function orderOffLinePay($order_id, $pay_type, $status)
@@ -650,7 +677,8 @@ class Order extends BaseService implements IOrder
         $pay->modifyNo($out_trade_no['out_trade_no'], $new_no);
         return $new_no;
     }
-
+    
+ 
     /**
      * 订单调整金额(non-PHPdoc)
      *
@@ -801,7 +829,7 @@ class Order extends BaseService implements IOrder
         $order_goods_info['goods_picture'] = $picture->get($order_goods_info['goods_picture'])['pic_cover'];
         return $order_goods_info;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::addOrder()
@@ -810,7 +838,7 @@ class Order extends BaseService implements IOrder
     {
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::orderGoodsRefundAskfor()
@@ -836,7 +864,7 @@ class Order extends BaseService implements IOrder
         return $retval;
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::orderGoodsCancel()
@@ -854,7 +882,7 @@ class Order extends BaseService implements IOrder
         return $retval;
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::orderGoodsReturnGoods()
@@ -875,7 +903,7 @@ class Order extends BaseService implements IOrder
         return $retval;
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::orderGoodsRefundAgree()
@@ -893,7 +921,7 @@ class Order extends BaseService implements IOrder
         return $retval;
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::orderGoodsRefuseForever()
@@ -911,7 +939,7 @@ class Order extends BaseService implements IOrder
         return $retval;
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::orderGoodsRefuseOnce()
@@ -929,7 +957,7 @@ class Order extends BaseService implements IOrder
         return $retval;
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::orderGoodsConfirmRecieve()
@@ -947,7 +975,7 @@ class Order extends BaseService implements IOrder
         return $retval;
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::orderGoodsConfirmRefund()
@@ -957,9 +985,19 @@ class Order extends BaseService implements IOrder
         $order_model = new NsOrderModel();
         $order_info = $order_model->getInfo([
             "order_id" => $order_id
-        ], "pay_money,refund_money");
+        ], "pay_money,refund_money,order_type");
         
-        $order_refund_chai = ($order_info['pay_money'] - $order_info['refund_money']) * 100;
+
+        //如果是预售商品获取预售商品的预定金
+        $presell_money = 0;
+        if($order_info['order_type'] == 6){
+            
+            $presell_order_model = new NsOrderPresellModel();
+            $presell_order_info = $presell_order_model->getInfo(['relate_id' => $order_id], 'presell_pay');
+            $presell_money = $presell_order_info['presell_pay'];
+        }
+
+        $order_refund_chai = ($order_info['pay_money'] + $presell_money - $order_info['refund_money']) * 100;
         $order_refund_chai = $order_refund_chai + 1000;
         $refund_real_money_ext = $refund_real_money * 100;
         $refund_real_money_ext = $refund_real_money_ext + 1000;
@@ -1038,7 +1076,13 @@ class Order extends BaseService implements IOrder
             // 支付宝退款
             $ali_pay = new AliPay();
             $retval = $ali_pay->aliPayRefund($refund_trade_no, $trade_no['trade_no'], $refund_fee);
-        } else {
+        } elseif ($refund_way == 3){
+            
+            //银联退款
+            $union_pay = new UnionPay();
+            $txnTime = date('YmdHis', time());
+            $retval = $union_pay->refund($refund_trade_no, $trade_no['trade_no'], $txnTime, $refund_fee);
+        }else {
             
             // 线下操作，直接通过
             $retval = array(
@@ -1059,6 +1103,19 @@ class Order extends BaseService implements IOrder
     {
         $goods_preference = new GoodsPreference();
         $money = $goods_preference->getGoodsSkuListPrice($goods_sku_list);
+        return $money;
+    }
+
+    /**
+     * 获取组合商品sku列表价格
+     *
+     * @param unknown $goods_sku_list            
+     * @return unknown
+     */
+    public function getComboPackageGoodsSkuListPrice($goods_sku_list)
+    {
+        $goods_preference = new GoodsPreference();
+        $money = $goods_preference->getComboPackageGoodsSkuListPrice($goods_sku_list);
         return $money;
     }
 
@@ -1286,6 +1343,10 @@ class Order extends BaseService implements IOrder
         $orderStatusNum['success'] = $order->where($condition)->count();
         $condition['order_status'] = 5; // 已关闭
         $orderStatusNum['closed'] = $order->where($condition)->count();
+        $condition['order_status'] = 6; // 定金待付款
+        $orderStatusNum['deposit_wait_pay'] = $order->where($condition)->count();
+        $condition['order_status'] = 7; // 备货中
+        $orderStatusNum['instock'] = $order->where($condition)->count();
         $condition['order_status'] = - 1; // 退款中
         $orderStatusNum['refunding'] = $order->where($condition)->count();
         $condition['order_status'] = - 2; // 已退款
@@ -1331,7 +1392,7 @@ class Order extends BaseService implements IOrder
             $evaluates = $good_info['evaluates'] + 1;
             $star = $good_info['star'] + $item['scores'];
             $match_point = $star / $evaluates;
-            $match_ratio = $match_point / 5 * 100 + '%';
+            $match_ratio = $match_point / 5 * 100;
             $data = array(
                 'evaluates' => $evaluates,
                 'star' => $star,
@@ -1594,7 +1655,7 @@ class Order extends BaseService implements IOrder
         );
         return $array;
     }
-
+    
     /*
      * (non-PHPdoc)
      *
@@ -1661,7 +1722,7 @@ class Order extends BaseService implements IOrder
         );
         return $array;
     }
-
+    
     /*
      * (non-PHPdoc)
      *
@@ -1705,7 +1766,7 @@ class Order extends BaseService implements IOrder
         }
         return $goods_list;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IOrder::getShopGoodsSalesAll()
@@ -2221,15 +2282,29 @@ class Order extends BaseService implements IOrder
                 $express_company_obj = $express_company_model->get($express_company_id);
                 // 快递公司编号
                 $express_no = $express_company_obj["express_no"];
-                // 物流编号
+                // 快递单号
                 $send_no = $express_obj["express_no"];
-                $kdniao = new Kdniao($shop_id);
-                $data = array(
-                    "OrderCode" => $order_no,
-                    "ShipperCode" => $express_no,
-                    "LogisticCode" => $send_no
-                );
-                $result = $kdniao->getOrderTracesByJson(json_encode($data));
+                
+                // 快递接口配置
+                $config = new Config();
+                $express_config = $config->getOrderExpressMessageConfig($shop_id);
+                if ($express_config["value"]["type"] == 1) {
+                    // 快递鸟
+                    $kdniao = new Kdniao($shop_id);
+                    $data = array(
+                        "OrderCode" => $order_no,
+                        "ShipperCode" => $express_no,
+                        "LogisticCode" => $send_no
+                    );
+                    $result = $kdniao->getOrderTracesByJson(json_encode($data));
+                } else 
+                    if ($express_config["value"]["type"] == 2) {
+                        // 快递100
+                        $snoopy = new Snoopy();
+                        $result = $snoopy->getOrderTracesJson($express_no, $send_no, $shop_id);
+                    }
+                
+                // 订单操作
                 $order_time_arr = $order_model->getInfo([
                     'order_id' => $express_obj["order_id"]
                 ], "create_time,pay_time,consign_time");
@@ -2253,13 +2328,43 @@ class Order extends BaseService implements IOrder
                     }
                 }
                 $express_info = json_decode($result, true);
+                
                 if (! empty($express_info)) {
-                    foreach ($express_info['Traces'] as $v) {
-                        array_push($retval, $v);
-                    }
+                    if ($express_config["value"]["type"] == 1) {
+                        // 快递鸟
+                        if ($express_info["Success"]) {
+                            foreach ($express_info['Traces'] as $v) {
+                                array_push($retval, $v);
+                            }
+                        } else {
+                            return array(
+                                "Success" => false,
+                                "Reason" => $express_info['Reason']
+                            );
+                        }
+                    } else 
+                        if ($express_config["value"]["type"] == 2) {
+                            // 快递100
+                            if (! empty($express_info["status"]) && $express_info["status"] == 1) {
+                                foreach ($express_info['data'] as $v) {
+                                    $v_arr = array();
+                                    $v_arr["AcceptTime"] = $v["time"];
+                                    $v_arr["AcceptStation"] = $v["context"];
+                                    array_push($retval, $v_arr);
+                                }
+                            } else {
+                                return array(
+                                    "Success" => false,
+                                    "Reason" => $express_info['message']
+                                );
+                            }
+                        }
                 }
-                $express_info['Traces'] = array_reverse($retval);
-                return $express_info;
+                return array(
+                    "Success" => true,
+                    "Reason" => "",
+                    "Traces" => array_reverse($retval)
+                );
             } else {
                 return array(
                     "Success" => false,
@@ -2338,7 +2443,7 @@ class Order extends BaseService implements IOrder
      * @param unknown $receiver_zip            
      * @param unknown $receiver_name            
      */
-    public function updateOrderReceiveDetail($order_id, $receiver_mobile, $receiver_province, $receiver_city, $receiver_district, $receiver_address, $receiver_zip, $receiver_name, $fixed_telephone ="")
+    public function updateOrderReceiveDetail($order_id, $receiver_mobile, $receiver_province, $receiver_city, $receiver_district, $receiver_address, $receiver_zip, $receiver_name, $fixed_telephone = "")
     {
         $order = new NsOrderModel();
         $data = array(
@@ -2567,7 +2672,7 @@ class Order extends BaseService implements IOrder
      * 根据订单项id查询订单退款账户记录
      * 创建时间：2017年10月18日 17:32:30 王永杰
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IOrder::getOrderRefundAccountRecordsByOrderGoodsId()
      */
@@ -2708,5 +2813,316 @@ class Order extends BaseService implements IOrder
             $order_goods_list[] = $order_goods_item;
         }
         return $order_goods_list;
+    }
+    
+    
+    /**
+     * (non-PHPdoc)
+     * 申请售后
+     */
+    public function orderGoodsCustomerServiceAskfor($order_goods_id, $refund_type, $refund_money, $refund_reason)
+    {
+        $order_goods = new OrderGoods();
+        $retval = $order_goods->orderGoodsCustomerServiceAskfor($order_goods_id, $refund_type, $refund_money, $refund_reason);
+    
+        return $retval;
+     
+    }
+    
+    /**
+     * 查询订单项售后信息
+     * (non-PHPdoc)
+     */
+    public function getCustomerServiceInfo($id, $order_goods_id)
+    {
+        $order_goods = new OrderGoods();
+        $order_goods_info = $order_goods->getCustomerServiceDetail($id, $order_goods_id);
+        return $order_goods_info;
+    }
+    
+    /**
+     * 获取售后列表
+     * (non-PHPdoc)
+     */
+    public function getCustomerServiceList($page_index = 1, $page_size = 0, $condition = '', $order = '')
+    {
+        $customer_service = new NsCustomerServiceModel();
+        // 查询主表
+        $customer_service_list = $customer_service->pageQuery($page_index, $page_size, $condition, $order, '*');
+        if (! empty($customer_service_list['data'])) {
+            foreach ($customer_service_list['data'] as $k => $v) {
+        
+                    // 通过sku_id查询ns_goods_sku中code
+                    // 查询商品sku表开始
+                    $goods_sku = new NsGoodsSkuModel();
+                    $goods_sku_info = $goods_sku->getInfo([
+                        'sku_id' => $v['sku_id']
+                    ], 'code');
+                    $customer_service_list[$k]['code'] = $goods_sku_info['code'];
+                    // 查询商品sku结束
+                
+                $picture = new AlbumPictureModel();
+                $goods_picture = $picture->get($v['goods_picture']);
+                if (empty($goods_picture)) {
+                    $goods_picture = array(
+                        'pic_cover' => '',
+                        'pic_cover_big' => '',
+                        'pic_cover_mid' => '',
+                        'pic_cover_small' => '',
+                        'pic_cover_micro' => '',
+                        "upload_type" => 1,
+                        "domain" => ""
+                    );
+                }
+                $customer_service_list['data'][$k]['picture'] = $goods_picture;
+                if ($v['audit_status'] != 0) {
+                    $order_refund_status = OrderStatus::getRefundStatus();
+                    foreach ($order_refund_status as $k_status => $v_status) {
+
+                        if ($v_status['status_id'] == $v['audit_status']) {
+                            $customer_service_list['data'][$k]['refund_operation'] = $v_status['refund_operation'];
+                            $customer_service_list['data'][$k]['status_name'] = $v_status['status_name'];
+                        }
+                    }
+                } else {
+                    $customer_service_list['data'][$k]['refund_operation'] = '';
+                    $customer_service_list['data'][$k]['status_name'] = '';
+                }
+              
+                $order_list['data'][$k]['operation'] = '';
+                // 订单来源名称
+                $order_from = OrderStatus::getOrderFrom($v['order_from']);
+                $customer_service_list['data'][$k]['order_from_name'] = $order_from['type_name'];
+                $customer_service_list['data'][$k]['order_from_tag'] = $order_from['tag'];
+                $customer_service_list['data'][$k]['pay_type_name'] = OrderStatus::getPayType($v['payment_type']);
+                // 根据订单类型判断订单相关操作
+                if ($customer_service_list['data'][$k]['order_type'] == 1 || $customer_service_list['data'][$k]['order_type'] == 3) {
+                    if ($customer_service_list['data'][$k]['payment_type'] == 6 || $customer_service_list['data'][$k]['shipping_type'] == 2) {
+                        $order_status = OrderStatus::getSinceOrderStatus();
+                    } elseif($customer_service_list['data'][$k]['shipping_type'] == 3) {
+                        $order_status = OrderStatus::getOrderO2oStatus();
+                    }else{
+                        $order_status = OrderStatus::getOrderCommonStatus();
+                    }
+                }elseif ($customer_service_list['data'][$k]['order_type'] == 2) {
+                    // 虚拟订单
+                    $order_status = OrderStatus::getVirtualOrderCommonStatus();
+                }elseif ($customer_service_list['data'][$k]['order_type'] == 4) {
+                    // 拼团订单
+                    $order_status = OrderStatus::getOrderPintuanStatus();
+                }
+                $customer_service_list['data'][$k]['shipping_type_name'] = array();
+                $order_list['data'][$k]['shipping_type_name'] = OrderStatus::getShippingTypeName( $order_list['data'][$k]['shipping_type']);
+
+            }
+        }
+        return $customer_service_list;
+    }
+    
+    /**
+     * (non-PHPdoc)
+     * 售后 同意
+     */
+    public function orderGoodsCustomerAgree($id, $order_id, $order_goods_id)
+    {
+        $order_goods = new OrderGoods();
+        $retval = $order_goods->orderGoodsCustomerAgree($id, $order_id, $order_goods_id);
+        if ($retval) {
+            hook("orderGoodsRefundAgreeSuccess", [
+            'order_id' => $order_id,
+            'order_goods_id' => $order_goods_id
+            ]);
+        }
+        return $retval;
+        // TODO Auto-generated method stub
+    }
+    /**
+     * 售后 拒绝永久
+     * (non-PHPdoc)
+     */
+    public function orderCustomerRefuseForever($id, $order_id, $order_goods_id)
+    {
+        $order_goods = new OrderGoods();
+        $retval = $order_goods->orderCustomerRefuseForever($id, $order_id, $order_goods_id);
+        if ($retval) {
+            hook("orderGoodsRefuseForeverSuccess", [
+            'order_id' => $order_id,
+            'order_goods_id' => $order_goods_id
+            ]);
+        }
+        return $retval;
+        // TODO Auto-generated method stub
+    }
+    
+    /**
+     * 售后 拒绝一次
+     * (non-PHPdoc)
+     */
+    public function orderCustomerRefuseOnce($id, $order_id, $order_goods_id)
+    {
+        $order_goods = new OrderGoods();
+        $retval = $order_goods->orderCustomerRefuseOnce($id, $order_id, $order_goods_id);
+        if ($retval) {
+            hook("orderGoodsRefuseOnceSuccess", [
+            'order_id' => $order_id,
+            'order_goods_id' => $order_goods_id
+            ]);
+        }
+        return $retval;
+        // TODO Auto-generated method stub
+    }
+    
+    /**
+     * 买家退货  售后
+     * (non-PHPdoc)
+     */
+    public function orderGoodsCustomerExpress($id, $order_goods_id, $refund_shipping_company, $refund_shipping_code)
+    {
+        $order_goods = new OrderGoods();
+        $retval = $order_goods->orderGoodsCustomerExpress($id, $order_goods_id, $refund_shipping_company, $refund_shipping_code);
+        if ($retval) {
+            $params = [
+                'order_goods_id' => $order_goods_id,
+                'refund_shipping_company' => $refund_shipping_company,
+                'refund_shipping_code' => $refund_shipping_code
+            ];
+            hook("orderGoodsReturnGoodsSuccess", $params);
+        }
+        return $retval;
+        // TODO Auto-generated method stub
+    }
+    
+    /**
+     * 售后  卖家确认收货
+     * (non-PHPdoc)
+     */
+    public function orderCustomerConfirmRecieve($id, $order_id, $order_goods_id, $storage_num, $isStorage, $goods_id, $sku_id)
+    {
+        $order_goods = new OrderGoods();
+        $retval = $order_goods->orderCustomerConfirmRecieve($id, $order_id, $order_goods_id, $storage_num, $isStorage, $goods_id, $sku_id);
+        if ($retval) {
+            hook("orderGoodsConfirmRecieveSuccess", [
+            'order_id' => $order_id,
+            'order_goods_id' => $order_goods_id
+            ]);
+        }
+        return $retval;
+        // TODO Auto-generated method stub
+    }
+    
+    /**
+     * 售后  确认退款
+     * (non-PHPdoc)
+     */
+    public function orderCustomerConfirmRefund($id, $order_id, $order_goods_id, $refund_real_money, $refund_balance_money, $refund_way, $refund_remark)
+    {
+        $order_model = new NsOrderModel();
+        $order_info = $order_model->getInfo([
+            "order_id" => $order_id
+        ], "pay_money,refund_money");
+    
+        $order_refund_chai = ($order_info['pay_money'] - $order_info['refund_money']) * 100;
+        $order_refund_chai = $order_refund_chai + 1000;
+        $refund_real_money_ext = $refund_real_money * 100;
+        $refund_real_money_ext = $refund_real_money_ext + 1000;
+        if ($order_refund_chai < $refund_real_money_ext) {
+            return "实际退款超过订单支付金额，退款失败";
+        } else {
+    
+            $refund_trade_no = date("YmdHis", time()) . rand(100000, 999999);
+            // 在线原路退款（微信/支付宝）
+            $refund = $this->onlineOriginalRoadRefund($order_id, $refund_real_money, $refund_way, $refund_trade_no, $order_info['pay_money']);
+            if ($refund['is_success'] == 1) {
+    
+                $order_goods = new OrderGoods();
+                $retval = $order_goods->orderGoodsCustomerConfirmRefund($id, $order_id, $order_goods_id, $refund_real_money, $refund_balance_money, $refund_trade_no, $refund_way, $refund_remark);
+    
+                // 重新计算订单的佣金情况
+               // $this->updateCommissionMoney($order_id, $order_goods_id);
+    
+                // 计算店铺的账户
+              //  $this->updateShopAccount_OrderRefund($order_goods_id);
+               // $this->updateShopAccount_OrderComplete($order_id);
+    
+                // 计算平台的账户
+               // $this->updateAccountOrderRefund($order_goods_id);
+              //  $this->updateAccountOrderComplete($order_id);
+    
+                if ($retval) {
+                    hook("orderGoodsConfirmRefundSuccess", [
+                    'order_id' => $order_id,
+                    'order_goods_id' => $order_goods_id,
+                    'refund_real_money' => $refund_real_money
+                    ]);
+                }
+                return $retval;
+            } else {
+                return $refund['msg'];
+            }
+        }
+    }
+    
+    /**
+     * 根据订单项id查询订单退款账户记录
+     * 创建时间：2017年10月18日 17:32:30 王永杰
+     * @ERROR!!!   
+     * 售后
+     */
+    public function getOrderCustomerAccountRecordsByOrderGoodsId($order_goods_id)
+    {
+        $model = new NsOrderCustomerAccountRecordsModel();
+        $info = $model->getInfo([
+            "order_goods_id" => $order_goods_id
+        ], "*");
+        return $info;
+    }
+    
+    /**
+     * 预售订单详情
+     * @param unknown $order_id
+     */
+    public function getOrderPresellInfo($presell_order_id = 0, $condition = ''){
+    
+        if(!empty($presell_order_id)) $condition['presell_order_id'] = $presell_order_id;
+        
+        $order_presell_model = new NsOrderPresellModel();
+        $order_presell_info = $order_presell_model->getInfo($condition, '*');
+        return $order_presell_info;
+    }
+    
+    /**
+     * 设置该订单为备货完成
+     * @param unknown $order_id
+     */
+    public function setOrderStockingComplete($order_id){
+        
+        $order_presell_model = new NsOrderPresellModel();
+        $order_presell_model->startTrans();
+        
+        try {
+            $order_presell_info = $order_presell_model->getInfo(['relate_id' => $order_id], '*');
+            
+            $order_model = new NsOrderModel();
+            $order_condition = array(
+                'order_id' => $order_id,
+                'order_status' => 7
+            );
+            $order_model->save(['order_status'=>0], $order_condition);
+            
+            if($order_presell_info['is_full_payment'] == 1){
+                $order_service = new Order();
+                $order_service->orderOffLinePay($order_id, $order_presell_info['payment_type'], 0); // 默认微信支付
+            }
+            
+            $result = $order_presell_model->save(['order_status'=> 2], ['relate_id' => $order_id]);
+            
+            $order_presell_model->commit();
+            return $result;
+        } catch (\Exception $e) {
+            
+            $order_presell_model->rollback();
+            return $e->getMessage();
+        }
+      
     }
 }

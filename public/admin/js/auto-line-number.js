@@ -3,10 +3,11 @@
 	    this.$element = $(element);
 	    this.$group = $('<div/>', { 'class': "textarea-group" });
 	    this.$ol = $('<div/>', { 'class': 'textarea-rows' });
-	    this.$wrap = $('<div/>', { 'class': 'textarea-wrap' });
+	    this.$wrap = $('<div/>', { 'class': 'textarea-wrap' })
 	    this.$group.css({
 	    	"width" : this.$element.outerWidth(true) + 'px',
-	    	"display" : config.display
+	    	"display" : config.display,
+	    	"position" : "relative",
 	    });
 	    this.$ol.css({
 	    	"color" : config.color,
@@ -26,7 +27,10 @@
 	    	"background-color" : config.bgColor,
 	    	"position" : "absolute",
 	    	"width" : config.width,
-	    	"height" : this.$element.height() + 'px'
+	    	"height" : this.$element.height() + 'px',
+	    	"border-left" : "1px solid #e5e5e5",
+	    	"border-right" : "0",
+	    	"background-color" : "#f3f7fd",
 	    });
 	    this.$element.css({
 	    	"white-space" : "pre",
@@ -34,7 +38,6 @@
 	    	"margin-left" : (parseInt(config.width) -  parseInt(this.$element.css("border-left-width"))) + 'px',
 	    	"width": (this.$element.width() - parseInt(config.width)) + 'px'
 	    });
-
 	}
 
 	AutoRowsNumbers.prototype = {

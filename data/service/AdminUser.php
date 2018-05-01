@@ -155,6 +155,7 @@ class AdminUser extends User implements IAdmin
         );
         $retval = $member->save($data_member);
         $res = $this->admin_user->save($data_admin);
+        $this->addUserLog($this->uid, 1, '用户', '添加用户', '添加用户：'.$user_name);
         $res = $member->uid;
         return $res;
     }
@@ -169,6 +170,7 @@ class AdminUser extends User implements IAdmin
         $admin_user_info = $this->admin_user->getInfo([
             'uid' => $uid
         ]);
+        $this->addUserLog($this->uid, 1, '用户', '删除用户', '删除用户：'.$admin_user_info['user_name']);
         if ($admin_user_info['is_admin'] == 0) {
             $retval = $this->admin_user->destroy($uid);
             if ($retval) {
@@ -207,6 +209,7 @@ class AdminUser extends User implements IAdmin
             $res = $this->admin_user->save($data, [
                 "uid" => $uid
             ]);
+            $this->addUserLog($this->uid, 1, '用户', '编辑用户', '编辑用户：'.$user_name);
         }
         
         return $res;
@@ -233,5 +236,22 @@ class AdminUser extends User implements IAdmin
         $admin_user = new AdminUserViewModel();
         $num = $admin_user->getAdminUserViewCount($condition);
         return $num;
+    }
+
+    /**
+     * 根据主键id删除操作日志记录
+     * 
+     * @param unknown $ids           
+     */
+    public function deleteAuthLog($ids)
+    {
+        $user_log = new UserLogModel();
+        
+        $data['id'] = [
+            'in',
+            $ids
+        ];
+        $res = $user_log->destroy($data);
+        return $res;
     }
 }

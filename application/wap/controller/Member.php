@@ -25,12 +25,14 @@ use data\service\Platform;
 use data\service\promotion\PromoteRewardRule;
 use data\service\Promotion;
 use data\service\Shop;
+use data\service\Verification;
 use data\service\UnifyPay;
 use data\service\WebSite;
 use data\service\Weixin;
 use think\Request;
 use think;
 use think\Session;
+use data\service\Goods as GoodsService;
 
 /**
  * 会员
@@ -97,7 +99,7 @@ class Member extends BaseController
         }
         return $retval;
     }
-
+    
     /*
      * 单店B2C版
      */
@@ -111,6 +113,10 @@ class Member extends BaseController
                 lang('member_personal_data'),
                 'member/personaldata'
             ),
+            'my_pintuan_orders' => array(
+                '我的拼单',
+                'PintuanOrder/mySpellingOrderList'
+            ),
             'address' => array(
                 lang('member_delivery_address'),
                 'Member/memberAddress?flag=1'
@@ -119,19 +125,58 @@ class Member extends BaseController
                 lang('extend_qrcode'),
                 'member/getWchatQrcode'
             ),
-            "shop_code" => array(
-                lang('shop_qrcode'),
-                'member/getShopQrcode'
-            ),
+            'virtual_orders' => array(),
+            
+            // "shop_code" => array(
+            // lang('shop_qrcode'),
+            // 'member/getShopQrcode'
+            // ),
             "memberCoupon" => array(
                 lang('member_coupons'),
                 'member/memberCoupon'
             ),
+            "myVirtualCode" => array(
+                lang('member_my_virtual_code'),
+                'Verification/myVirtualCode'
+            ),
             "myCollection" => array(
                 lang('my_collection'),
                 'member/myCollection'
+            ),
+            "newMyPath" => array(
+                lang('new_my_path'),
+                'member/newMyPath'
+            ),
+            "myWinningRecord" => array(
+                lang('my_winning_record'),
+                'member/myWinningRecord'
             )
         );
+        $is_support_pintuan = IS_SUPPORT_PINTUAN;
+        if ($is_support_pintuan == 0) {
+            unset($member_menu_arr['my_pintuan_orders']);
+        }
+        
+        // 查询用户是否是本店核销员
+        $verification_service = new Verification();
+        $is_verification = $verification_service->getShopVerificationInfo($this->uid, $this->instance_id);
+        if ($is_verification > 0) {
+            $member_menu_arr['virtualGoods'] = array(
+                lang('cancel_after_verification_platform'),
+                'Verification/verificationPlatform'
+            );
+        }
+        
+        // 商城是否开启虚拟商品
+        $is_open_virtual_goods = $this->getIsOpenVirtualGoodsConfig($this->instance_id);
+        $this->assign("is_open_virtual_goods", $is_open_virtual_goods);
+        if ($is_open_virtual_goods > 0) {
+            $member_menu_arr["virtual_orders"] = array(
+                lang('virtual_orders'),
+                'order/myvirtualorderlist'
+            );
+        }
+        
         $member_info = $member->getMemberDetail($this->instance_id);
         // 头像
         if (! empty($member_info['user_info']['user_headimg'])) {
@@ -162,7 +207,7 @@ class Member extends BaseController
         $config = new Config();
         $integralconfig = $config->getIntegralConfig($this->instance_id);
         $this->assign('integralconfig', $integralconfig);
-        // dump($integralconfig);
+        
         // 判断用户是否签到
         $dataMember = new MemberService();
         $isSign = $dataMember->getIsMemberSign($this->uid, $this->instance_id);
@@ -172,7 +217,10 @@ class Member extends BaseController
         $unpaidOrder = $order->getOrderNumByOrderStatu([
             'order_status' => 0,
             "buyer_id" => $this->uid,
-            'order_type' => 1
+            'order_type' => array(
+                "in",
+                "1,3"
+            )
         ]);
         $this->assign("unpaidOrder", $unpaidOrder);
         
@@ -180,7 +228,10 @@ class Member extends BaseController
         $shipmentPendingOrder = $order->getOrderNumByOrderStatu([
             'order_status' => 1,
             "buyer_id" => $this->uid,
-            'order_type' => 1
+            'order_type' => array(
+                "in",
+                "1,3"
+            )
         ]);
         $this->assign("shipmentPendingOrder", $shipmentPendingOrder);
         
@@ -188,7 +239,10 @@ class Member extends BaseController
         $goodsNotReceivedOrder = $order->getOrderNumByOrderStatu([
             'order_status' => 2,
             "buyer_id" => $this->uid,
-            'order_type' => 1
+            'order_type' => array(
+                "in",
+                "1,3"
+            )
         ]);
         $this->assign("goodsNotReceivedOrder", $goodsNotReceivedOrder);
         
@@ -201,7 +255,10 @@ class Member extends BaseController
             ]
         );
         $condition['buyer_id'] = $this->uid;
-        $condition['order_type'] = 1;
+        $condition['order_type'] = array(
+            "in",
+            "1,3"
+        );
         $refundOrder = $order->getOrderNumByOrderStatu($condition);
         $this->assign("refundOrder", $refundOrder);
         
@@ -221,8 +278,6 @@ class Member extends BaseController
         $this->assign('member_img', $member_img);
         $this->assign('menu_arr', $menu_arr);
         $this->assign("title_before", "会员中心");
-        $is_open_virtual_goods = $this->getIsOpenVirtualGoodsConfig($this->instance_id);
-        $this->assign("is_open_virtual_goods", $is_open_virtual_goods);
         
         return view($this->style . 'Member/memberIndexB2C');
     }
@@ -239,32 +294,72 @@ class Member extends BaseController
         $nfx_shop_config = new NfxShopConfig();
         $platform = new Platform();
         // 基本信息行级显示菜单项
+        
         $member_menu_arr = array(
             'personal' => array(
-                '个人资料',
+                lang('member_personal_data'),
                 'member/personaldata'
             ),
+            'virtual_orders' => array(),
+            
             'address' => array(
-                '收货地址',
+                lang('member_delivery_address'),
                 'Member/memberAddress?flag=1'
+            ),
+            'qr_code' => array(
+                lang('extend_qrcode'),
+                'member/getWchatQrcode'
             ),
             'withdrawals' => array(
                 '提现账号',
                 'member/accountList?flag=1'
             ),
-            'qr_code' => array(
-                '推广二维码',
-                'member/getWchatQrcode'
-            ),
-            "shop_code" => array(
-                '店铺二维码',
-                'member/getShopQrcode'
-            ),
+            
+            // "shop_code" => array(
+            // lang('shop_qrcode'),
+            // 'member/getShopQrcode'
+            // ),
             "memberCoupon" => array(
-                '优惠券',
+                lang('member_coupons'),
                 'member/memberCoupon'
+            ),
+            "myVirtualCode" => array(
+                lang('member_my_virtual_code'),
+                'Verification/myVirtualCode'
+            ),
+            "myCollection" => array(
+                lang('my_collection'),
+                'member/myCollection'
+            ),
+            "newMyPath" => array(
+                lang('new_my_path'),
+                'member/newMyPath'
+            ),
+            "myWinningRecord" => array(
+                lang('my_winning_record'),
+                'member/myWinningRecord'
             )
         );
+        
+        // 查询用户是否是本店核销员
+        $verification_service = new Verification();
+        $is_verification = $verification_service->getShopVerificationInfo($this->uid, $this->instance_id);
+        if ($is_verification > 0) {
+            $member_menu_arr['virtualGoods'] = array(
+                lang('cancel_after_verification_platform'),
+                'Verification/verificationPlatform'
+            );
+        }
+        
+        // 商城是否开启虚拟商品
+        $is_open_virtual_goods = $this->getIsOpenVirtualGoodsConfig($this->instance_id);
+        $this->assign("is_open_virtual_goods", $is_open_virtual_goods);
+        if ($is_open_virtual_goods > 0) {
+            $member_menu_arr["virtual_orders"] = array(
+                lang('virtual_orders'),
+                'order/myvirtualorderlist'
+            );
+        }
         
         // 推广信息
         $apply_promoter_menu = null;
@@ -385,8 +480,6 @@ class Member extends BaseController
         $condition['buyer_id'] = $this->uid;
         $refundOrder = $order->getOrderNumByOrderStatu($condition);
         $this->assign("refundOrder", $refundOrder);
-        $is_open_virtual_goods = $this->getIsOpenVirtualGoodsConfig($this->instance_id);
-        $this->assign("is_open_virtual_goods", $is_open_virtual_goods);
         return view($this->style . 'Member/memberIndexB2CFX');
     }
 
@@ -403,7 +496,6 @@ class Member extends BaseController
         $flag = request()->get('flag', '');
         $url = request()->get('url', '');
         $pre_url = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-        // dump($pre_url);
         $_SESSION['address_pre_url'] = $pre_url;
         $this->assign("pre_url", $pre_url);
         $this->assign("flag", $flag);
@@ -625,12 +717,9 @@ class Member extends BaseController
      */
     public function balanceWater()
     {
-        // $start_time = isset($_POST['start_time']) ? $_POST['start_time'] : '2016-01-01';
-        // $end_time = isset($_POST['end_time']) ? $_POST['end_time'] : '2099-01-01';
-        // $page_index = isset($_GET['page']) ? $_GET['page'] : '1';
-        // $page_count = '';
         // 该店铺下的余额流水
         $member = new MemberService();
+        $config = new Config();
         $uid = $this->uid;
         $shopid = $this->instance_id;
         $condition['nmar.uid'] = $uid;
@@ -638,9 +727,7 @@ class Member extends BaseController
         $condition['nmar.account_type'] = 2;
         $list = $member->getAccountList(1, 0, $condition);
         // 用户在该店铺的账户余额总数
-        $member = new MemberService();
         $member_info = $member->getMemberDetail($this->instance_id);
-        $config = new Config();
         $balanceConfig = $config->getBalanceWithdrawConfig($shopid);
         $this->assign("is_use", $balanceConfig['is_use']);
         $this->assign("sum", $member_info['balance']);
@@ -673,7 +760,6 @@ class Member extends BaseController
                 }
         }
         // 用户在该店铺的账户余额总数
-        $member = new MemberService();
         $member_info = $member->getMemberDetail($this->instance_id);
         $config = new Config();
         $balanceConfig = $config->getBalanceWithdrawConfig($shopid);
@@ -691,7 +777,7 @@ class Member extends BaseController
     {
         if (request()->isAjax()) {
             $member = new MemberService();
-            $type = request()->post('type', '');
+            $type = request()->post('type', 1);
             $shop_id = $this->instance_id;
             $counpon_list = $member->getMemberCounponList($type, $shop_id);
             foreach ($counpon_list as $key => $item) {
@@ -710,7 +796,7 @@ class Member extends BaseController
     public function personalData()
     {
         $shop_id = request()->get('shop_id', 0);
-        $_SESSION['bund_pre_url'] = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        $_SESSION['bund_pre_url'] = Request::instance()->domain() . $_SERVER['REQUEST_URI'];
         $uid = $this->user->getSessionUid();
         $member = new MemberService();
         $member_info = $member->getMemberDetail();
@@ -826,12 +912,11 @@ class Member extends BaseController
     public function integralExchangeBalance()
     {
         // 获取兑换比例
-        $account = new MemberAccount();
-        $accounts = $account->getConvertRate($this->shop_id);
+        $member_account = new MemberAccount();
+        $accounts = $member_account->getConvertRate($this->shop_id);
         
         // 查看积分总数
-        $conponAccount = new MemberAccount();
-        $conponSum = $conponAccount->getMemberAccount($this->shop_id, $this->uid, 1);
+        $conponSum = $member_account->getMemberAccount($this->shop_id, $this->uid, 1);
         
         $this->assign('conponSum', $conponSum);
         $this->assign('accounts', $accounts['convert_rate']);
@@ -887,12 +972,16 @@ class Member extends BaseController
             $uid = $this->uid;
             $realname = request()->post('realname', '');
             $mobile = request()->post('mobile', '');
-            $bank_type = request()->post('bank_type', '1');
+            $account_type = request()->post('account_type', '1');
+            $account_type_name = request()->post('account_type_name', '银行卡');
             $account_number = request()->post('account_number', '');
             $branch_bank_name = request()->post('branch_bank_name', '');
-            $retval = $member->addMemberBankAccount($uid, $bank_type, $branch_bank_name, $realname, $account_number, $mobile);
+            $retval = $member->addMemberBankAccount($uid, $account_type, $account_type_name, $branch_bank_name, $realname, $account_number, $mobile);
             return AjaxReturn($retval);
         } else {
+            $config = new Config();
+            $balanceConfig = $config->getBalanceWithdrawConfig($this->instance_id);
+            $this->assign("withdraw_account", $balanceConfig['value']['withdraw_account']);
             return view($this->style . "Member/addAccount");
         }
     }
@@ -908,10 +997,11 @@ class Member extends BaseController
             $account_id = request()->post('id', '');
             $realname = request()->post('realname', '');
             $mobile = request()->post('mobile', '');
-            $bank_type = request()->post('bank_type', '1');
+            $account_type = request()->post('account_type', '1');
+            $account_type_name = request()->post('account_type_name', '银行卡');
             $account_number = request()->post('account_number', '');
             $branch_bank_name = request()->post('branch_bank_name', '');
-            $retval = $member->updateMemberBankAccount($account_id, $branch_bank_name, $realname, $account_number, $mobile);
+            $retval = $member->updateMemberBankAccount($account_id, $account_type, $account_type_name, $branch_bank_name, $realname, $account_number, $mobile);
             return AjaxReturn($retval);
         } else {
             $id = request()->get('id', '');
@@ -922,6 +1012,9 @@ class Member extends BaseController
             if (empty($result)) {
                 $this->error("没有获取到该账户信息");
             }
+            $config = new Config();
+            $balanceConfig = $config->getBalanceWithdrawConfig($this->instance_id);
+            $this->assign("withdraw_account", $balanceConfig['value']['withdraw_account']);
             $this->assign('result', $result);
             return view($this->style . "Member/updateAccount");
         }
@@ -1117,6 +1210,7 @@ class Member extends BaseController
         $name_top_size = $data['name_top'] * 2 + $data['nick_font_size'];
         @imagefttext($dests, $data['nick_font_size'], 0, $data['name_left'] * 2, $name_top_size, $bg, "public/static/font/Microsoft.ttf", $member_info["nick_name"]);
         header("Content-type: image/jpeg");
+        ob_clean();
         imagejpeg($dests);
     }
 
@@ -1203,21 +1297,45 @@ class Member extends BaseController
         header("Content-type: image/jpeg");
         imagejpeg($dests);
     }
+    
     // 用户签到
     public function signIn()
     {
         if (request()->isAjax()) {
             $rewardRule = new PromoteRewardRule();
             $res = $rewardRule->memberSign($this->uid, $this->instance_id);
+            if ($res) {
+                $Config = new Config();
+                $integralConfig = $Config->getIntegralConfig($this->instance_id);
+                if ($integralConfig['sign_coupon'] == 1) {
+                    $result = $rewardRule->getRewardRuleDetail($this->instance_id);
+                    if ($result['sign_coupon'] != 0) {
+                        $member = new MemberService();
+                        $retval = $member->memberGetCoupon($this->uid, $result['sign_coupon'], 2);
+                    }
+                }
+            }
             return AjaxReturn($res);
         }
     }
+    
     // 分享送积分
     public function shareGivePoint()
     {
         if (request()->isAjax()) {
             $rewardRule = new PromoteRewardRule();
             $res = $rewardRule->memberShareSendPoint($this->instance_id, $this->uid);
+            if ($res) {
+                $Config = new Config();
+                $integralConfig = $Config->getIntegralConfig($this->instance_id);
+                if ($integralConfig['share_coupon'] == 1) {
+                    $result = $rewardRule->getRewardRuleDetail($this->instance_id);
+                    if ($result['share_coupon'] != 0) {
+                        $member = new MemberService();
+                        $retval = $member->memberGetCoupon($this->uid, $result['share_coupon'], 2);
+                    }
+                }
+            }
             return AjaxReturn($res);
         }
     }
@@ -1262,6 +1380,7 @@ class Member extends BaseController
      */
     public function toWithdraw()
     {
+        $member = new MemberService();
         if (request()->isAjax()) {
             // 提现
             $uid = $this->uid;
@@ -1269,11 +1388,9 @@ class Member extends BaseController
             $bank_account_id = request()->post('bank_account_id', '');
             $cash = request()->post('cash', '');
             $shop_id = $this->instance_id;
-            $member = new MemberService();
             $retval = $member->addMemberBalanceWithdraw($shop_id, $withdraw_no, $uid, $bank_account_id, $cash);
             return AjaxReturn($retval);
         } else {
-            $member = new MemberService();
             $account_list = $member->getMemberBankAccount(1);
             // 获取会员余额
             $uid = $this->uid;
@@ -1288,7 +1405,6 @@ class Member extends BaseController
             if ($balanceConfig["is_use"] == 0 || $balanceConfig["value"]["withdraw_multiple"] <= 0) {
                 $this->error("当前店铺未开启提现，请联系管理员！");
             }
-            // dump($balanceConfig);
             $cash = $balanceConfig['value']["withdraw_cash_min"];
             $this->assign('cash', $cash);
             $poundage = $balanceConfig['value']["withdraw_multiple"];
@@ -1466,6 +1582,15 @@ class Member extends BaseController
             
             $goods_collection_list = $member->getMemberGoodsFavoritesList($page, PAGESIZE, $condition, "fav_time desc");
             foreach ($goods_collection_list['data'] as $k => $v) {
+                if($v['point_exchange_type'] == 0 || $v['point_exchange_type'] == 2){
+                    $goods_collection_list['data'][$k]['display_price'] = '￥'.$v["promotion_price"];
+                }else{
+                    if($v['point_exchange_type'] == 1 && $v["promotion_price"] > 0){
+                        $goods_collection_list['data'][$k]['display_price'] = '￥'.$v["promotion_price"].'+'.$v["point_exchange"].'积分';
+                    }else{
+                        $goods_collection_list['data'][$k]['display_price'] = $v["point_exchange"].'积分';
+                    }
+                }
                 $v['fav_time'] = date("Y-m-d H:i:s", $v['fav_time']);
             }
             return $goods_collection_list;
@@ -1499,6 +1624,112 @@ class Member extends BaseController
             $member = new MemberService();
             $result = $member->deleteMemberFavorites($fav_id, $fav_type);
             return AjaxReturn($result);
+        }
+    }
+
+    /**
+     * 我的足迹
+     */
+    public function newMyPath()
+    {
+        if (request()->post()) {
+            
+            $good = new GoodsService();
+            $data = request()->post();
+            $condition = [];
+            $condition["uid"] = $this->uid;
+            if (! empty($data['category_id']))
+                $condition['category_id'] = $data['category_id'];
+            
+            $order = 'create_time desc';
+            $list = $good->getGoodsBrowseList($data['page_index'], $data['page_size'], $condition, $order, $field = "*");
+            
+            foreach ($list['data'] as $key => $val) {
+                $month = ltrim(date('m', $val['create_time']), '0');
+                $day = ltrim(date('d', $val['create_time']), '0');
+                $val['month'] = $month;
+                $val['day'] = $day;
+            }
+            
+            return $list;
+        }
+        
+        return view($this->style . "Member/newMyPath");
+    }
+
+    /**
+     * 删除我的足迹
+     */
+    public function delMyPath()
+    {
+        $type = request()->post('type');
+        $value = request()->post('value');
+        
+        if ($type == 'browse_id')
+            $condition['browse_id'] = $value;
+        
+        $good = new GoodsService();
+        $res = $good->deleteGoodsBrowse($condition);
+        
+        return AjaxReturn($res);
+    }
+
+    /**
+     * 我的中奖记录
+     *
+     * @return \think\response\View
+     */
+    public function myWinningRecord()
+    {
+        $promotion = new Promotion();
+        $condition = [
+            "np_pgwr.uid" => $this->uid,
+            "np_pgwr.shop_id" => $this->instance_id,
+            "np_pgwr.is_winning" => 1
+        ];
+        $gamesWinningRecordsList = $promotion->getUserPromotionGamesWinningRecords(1, 0, $condition);
+        $this->assign("gamesWinningRecordsList", $gamesWinningRecordsList);
+        return view($this->style . "Member/myWinningRecord");
+    }
+
+    /**
+     * 领取奖品
+     */
+    public function toReceiveThePrize()
+    {
+        $promotion = new Promotion();
+        $member = new MemberService();
+        
+        if (request()->isAjax()) {
+            $address = $member->getDefaultExpressAddress();
+            $gift_records_id = request()->post("record_id", "");
+            $buyer_message = request()->post("buyer_message", "");
+            $res = $promotion->userAchieveGift($this->uid, $gift_records_id, $address['mobile'], $address['province'], $address['city'], $address['district'], $address['address'], $address['zip_code'], $address['consigner'], $buyer_message, $address["phone"]);
+            return $res;
+        } else {
+            $winning['gift_id'] = request()->get("gift_id", ""); // 赠品id
+            $winning['record_id'] = request()->get("record_id", ""); // 中奖记录id
+            
+            if (! empty($winning['gift_id'])) {
+                $_SESSION["winning"]["gift_id"] = $winning['gift_id'];
+                $_SESSION["winning"]["record_id"] = $winning['record_id'];
+            }
+            
+            if (empty($winning['gift_id']) && isset($_SESSION["winning"])) {
+                $winning['gift_id'] = $_SESSION["winning"]["gift_id"];
+                $winning['record_id'] = $_SESSION["winning"]["record_id"];
+            }
+            
+            $this->assign("winning", $winning);
+            // 奖品详情
+            $giftDetail = $promotion->getPromotionGiftDetail($winning['gift_id']);
+            $this->assign("giftDetail", $giftDetail);
+            
+            // 默认地址
+            $address = $member->getDefaultExpressAddress(); // 获取默认收货地址
+            $this->assign("address_default", $address);
+            
+            return view($this->style . "/Member/toReceiveThePrize");
         }
     }
 }

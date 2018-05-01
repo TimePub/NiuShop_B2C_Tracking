@@ -4,10 +4,7 @@
 <link href="__TEMP__/{$style}/public/css/plugin/tooltips.css" rel="stylesheet">
 <script src="__TEMP__/{$style}/public/js/plugin/jquery.pure.tooltips.js"></script>
 <style>
-.goods-items td{
-	padding:2px 5px;
-}
-
+.goods-items td{padding:2px 5px;}
 </style>
 {/block}
 {block name="main"}
@@ -23,7 +20,7 @@
 			<div style="float:left;width:50%;display: inline-block;">
 				<table width="100%" border="0" cellpadding="10" cellspacing="1" bgcolor="#eeeeee" class="order_detail">
 					<tr>
-						<td width="20%" align="right" bgcolor="#ffffff">{:lang('member_order_number')}：</td>	
+						<td width="20%" align="right" bgcolor="#ffffff">{:lang('member_order_number')}：</td>
 						<td align="left" bgcolor="#ffffff">{$order.order_no}</td>
 					</tr>
 					<tr>
@@ -42,8 +39,30 @@
 						<td align="right" bgcolor="#ffffff">{:lang('member_delivery_mode')}：</td>
 						<td align="left" bgcolor="#ffffff">{$order.shipping_type_name}&nbsp;&nbsp;{$order['shipping_company_name']}</td>
 					</tr>
+
+					{if $order['shipping_type'] eq 1}
+					<tr>
+						<td align="right">{:lang('delivery_time')}：</td>
+						{if condition="$order['shipping_time']>0"}
+						<td>{$order['shipping_time']|getTimeStampTurnTimeByYmd}</td>
+						{else/}
+						<td>{:lang('days_and_holidays_can_be_delivered')}</td>
+						{/if}
+					</tr>
+					{elseif $order['shipping_type'] eq 3 && $order['shipping_status'] eq 1}
+					<tr>
+						<td align="right">配送信息：</td>
+						<td>
+							<p>配送单号：{$order['distribution_info']['express_no']}</p>
+							<p>配送人：{$order['distribution_info']['order_delivery_user_name']}</p>  
+							<p>配送人手机号：{$order['distribution_info']['order_delivery_user_mobile']}</p>
+							<p>备注：{$order['distribution_info']['remark']} </p>
+						</td>
+					</tr>
+					{/if}
+
 					{switch name="$order.shipping_type"}
-						{case value="1"}
+						{case value="1|3"}
 						<tr>
 							<td align="right" bgcolor="#ffffff">{:lang('member_receiving_information')}：</td>
 							<td align="left" bgcolor="#ffffff">{$order['receiver_name']}，{$order['receiver_mobile']}，{notempty name="$order['fixed_telephone']"}{$order['fixed_telephone']}，{/notempty} {$order['address']}{if condition="$order['receiver_zip']!=''"}，{$order['receiver_zip']}{/if}</td>
@@ -223,6 +242,10 @@
 							<img src="{:__IMG($goodsData['picture_info']['pic_cover_micro'])}" style="max-width: 48px;max-height: 48px;">
 						</div>
 						<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$goodsData['goods_id'])}" target="_blank">{$goodsData.goods_name}</a>
+						{if condition="$goodsData.gift_flag > 0"}
+						<br/>
+						<i style="font-size:12px;margin: 5px 5px 0 0;padding:1px 4px;border-radius:3px;display: inline-block;color:#FFF;background-color:#de533c;height:16px;line-height: 16px;overflow:hidden;font-style:normal;">赠品</i>
+						{/if}
 					</td>
 					<td align="center" bgcolor="#ffffff">
 					{if condition = "$goodsData['sku_name'] neq ''"}
@@ -308,7 +331,10 @@
 					{/if}
 					
 					{if condition="$order['promotion_money']>0"}
-					<span>{:lang('member_full_discount')}：￥{$order['promotion_money']}，</span>
+						{switch name="$order['promotion_type']"}
+							{case value="MANJIAN"}<span>{:lang('member_full_discount')}：￥{$order['promotion_money']}，</span>{/case}
+							{case value="ZUHETAOCAN"}<span>{:lang('member_taocan_discount')}：￥{$order['promotion_money']}，</span>{/case}
+						{/switch}
 					{/if}
 					
 					{if condition="$order['point']>0"}

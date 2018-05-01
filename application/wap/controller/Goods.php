@@ -27,6 +27,9 @@ use data\service\promotion\GoodsExpress;
 use data\service\Address;
 use data\service\WebSite;
 use data\service\Promotion;
+use data\service\promotion\PromoteRewardRule;
+use data\service\Pintuan;
+use data\service\GroupBuy;
 
 /**
  * 商品相关
@@ -57,24 +60,31 @@ class Goods extends BaseController
         $uid = $this->uid;
         
         $web_info = $this->web_site->getWebSiteInfo();
+        $group_id = request()->get("group_id", 0);
         
         // 切换到PC端
-        if (! request()->isMobile() && $web_info['web_status'] != 2 && $web_info['web_status'] != 3) {
+        if (! request()->isMobile() && $web_info['web_status'] == 1) {
             $redirect = __URL(__URL__ . "/goods/goodsinfo?goodsid=" . $goods_id);
             $this->redirect($redirect);
             exit();
         }
         
-        $goods_detail = $goods->getGoodsDetail($goods_id);
+        // 清空待付款订单返回订单详情的标识
+        $_SESSION['unpaid_goback'] = "";
+        $_SESSION['order_create_flag'] = "";
+        
+        $goods_detail = $goods->getBasisGoodsDetail($goods_id);
         if (empty($goods_detail)) {
             $this->error("没有获取到商品信息");
         }
         if ($this->getIsOpenVirtualGoodsConfig() == 0 && $goods_detail['goods_type'] == 0) {
             $this->error("未开启虚拟商品功能");
         }
-
-         //商品点击量
-        $goods -> updateGoodsClicks($goods_id);
+        // 商品点击量
+        $goods->updateGoodsClicks($goods_id);
+        
+        // 是否是微信浏览器
+        $this->assign("isWeixin", isWeixin());
         
         // 把属性值相同的合并
         $goods_attribute_list = $goods_detail['goods_attribute_list'];
@@ -117,14 +127,29 @@ class Goods extends BaseController
         $evaluates_count = $goods->getGoodsEvaluateCount($goods_id);
         $this->assign('evaluates_count', $evaluates_count);
         
-        // 美洽客服
-        $list = $config_service->getcustomserviceConfig($shop_id);
-        if (empty($list)) {
+        // 评价
+        $goodsEvaluation = "";
+        $order = new OrderService();
+        $goodsEvaluation = $order->getOrderEvaluateDataList(1, 1, [
+            "goods_id" => $goods_id
+        ], 'addtime desc');
+        if (! empty($goodsEvaluation)) {
+            $memberService = new Member();
+            $goodsEvaluation["data"][0]["user_img"] = $memberService->getMemberImage($goodsEvaluation["data"][0]["uid"]);
+            $this->assign("goodsEvaluation", $goodsEvaluation["data"][0]);
+        } else {
+            $this->assign("goodsEvaluation", $goodsEvaluation);
+        }
+        
+        // 客服
+        $customservice_config = $config_service->getcustomserviceConfig($shop_id);
+        if (empty($customservice_config)) {
             $list['id'] = '';
             $list['value']['service_addr'] = '';
         }
-        $this->assign("list", $list);
         
+        $this->assign("customservice_config", $customservice_config);
+        // $this->assign('service_addr',$list['value']['service_addr']);
         // 查询点赞记录表，获取详情再判断当天该店铺下该商品该会员是否已点赞
         $click_detail = $goods->getGoodsSpotFabulous($shop_id, $uid, $goods_id);
         $this->assign('click_detail', $click_detail);
@@ -139,7 +164,78 @@ class Goods extends BaseController
         $goods_coupon_list = $goods->getGoodsCoupon($goods_id, $this->uid);
         $this->assign("goods_coupon_list", $goods_coupon_list);
         
-        return view($this->style . 'Goods/goodsDetail');
+        // 组合商品
+        $promotion = new Promotion();
+        $comboPackageGoodsArray ='';
+        $this->assign("comboPackageGoodsArray", $comboPackageGoodsArray[0]);
+        
+        // 商品阶梯优惠
+        $this->assign("goodsLadderPreferentialList", '');
+        
+        // 添加足迹
+        if ($this->uid > 0) {
+            $goods->addGoodsBrowse($goods_id, $this->uid);
+        }
+        // 商品标签
+        $goods_group = new GoodsGroup();
+        $goods_group_list = $goods_group->getGoodsGroupList(1, 0, [
+            "group_id" => array(
+                "in",
+                $goods_detail["group_id_array"]
+            )
+        ], "", "group_name");
+        $this->assign("goods_group_list", $goods_group_list["data"]);
+        
+        // 店铺服务
+        $existingMerchant = $config_service->getExistingMerchantService($this->instance_id);
+        $this->assign("existingMerchant", $existingMerchant);
+        
+        // 积分抵现比率
+        $integral_balance = 0; //积分可抵金额
+        $point_config = $promotion->getPointConfig();
+        if($point_config["is_open"] == 1){
+            if($goods_detail['max_use_point'] > 0 && $point_config['convert_rate'] > 0){
+                $integral_balance = $goods_detail['max_use_point'] * $point_config['convert_rate'];
+            }
+        }
+        $this->assign("integral_balance", $integral_balance);
+        
+        // 判断当前商品是否有拼团
+        if(empty($goods_detail["wap_custom_template"])){
+            $is_support_pintuan = IS_SUPPORT_PINTUAN;
+            if ($is_support_pintuan == 1) {
+                $pintuan = new Pintuan();
+                $goods_pintuan = $pintuan->getGoodsPintuanDetail($goods_id);
+                if ($goods_pintuan['is_open']) {
+                    // 商品拼团详情
+                    $goods_pintuan['tuangou_content_json'] = json_decode($goods_pintuan['tuangou_content_json'], true);
+                    $this->assign("goods_pintuan", $goods_pintuan);
+                    // 检查当前拼团是否存在
+                    $tuangou_group_count = 0;
+                    if ($group_id > 0) {
+                        $tuangou_group_count = $pintuan->getTuangouGroupCount($group_id, $goods_id);
+                    }
+                    $this->assign("group_id", $group_id);
+                    $this->assign("tuangou_group_count", $tuangou_group_count);
+                    return view($this->style . 'Goods/goodsPinTuanDetail');
+                } else {
+                    // 默认商品详情模板
+                    if($goods_detail["point_exchange_type"] == 0 || $goods_detail["point_exchange_type"] == 2 || $goods_detail["is_open_presell"] == 1){
+                        return view($this->style . 'Goods/goodsDetail');
+                    }else{
+                        return view($this->style . 'Goods/goodsDetailPointExchange');
+                    }
+                }
+            } else {
+                if($goods_detail["point_exchange_type"] == 0 || $goods_detail["point_exchange_type"] == 2|| $goods_detail["is_open_presell"] == 1){
+                    return view($this->style . 'Goods/goodsDetail');
+                }else{
+                    return view($this->style . 'Goods/goodsDetailPointExchange');
+                }
+            }
+        }else{
+            return view($this->style . 'Goods/'.$goods_detail["wap_custom_template"]);
+        }
     }
 
     /**
@@ -251,13 +347,22 @@ class Goods extends BaseController
         // 店铺，店铺中的商品
         $list = Array();
         for ($i = 0; $i < count($cartlist); $i ++) {
-            // $cartlist[$i]["goods_name"] = mb_substr($cartlist[$i]["goods_name"], 0,20,"utf-8");
-            // $cartlist[$i]["sku_name"] = mb_substr($cartlist[$i]["goods_name"], 0,20,"utf-8");
             $list[$cartlist[$i]["shop_id"] . ',' . $cartlist[$i]["shop_name"]][] = $cartlist[$i];
         }
         $this->assign("list", $list);
         $this->assign("countlist", count($cartlist));
         $this->assign("title_before", "购物车");
+        
+        // 商品阶梯优惠信息
+        $goods_ladder_preferential = array();
+        if (count($cartlist) > 0) {
+            foreach ($cartlist as $v) {
+                $goods_ladder_preferential[] = $goods->getGoodsLadderPreferential([
+                    "goods_id" => $v["goods_id"]
+                ], "quantity desc");
+            }
+        }
+        $this->assign("goods_ladder_preferential", json_encode($goods_ladder_preferential));
         return view($this->style . 'Goods/cart');
     }
 
@@ -332,7 +437,7 @@ class Goods extends BaseController
     {
         $uid = $this->uid;
         $goods_category = new GoodsCategory();
-        $goods_category_list = $goods_category->getFormatGoodsCategoryList();
+        $goods_category_list = $goods_category->getCategoryTreeUseInShopIndex();
         $this->assign("goods_category_list", $goods_category_list);
         // 计算补足数量
         foreach ($goods_category_list as $k => $v) {
@@ -348,17 +453,15 @@ class Goods extends BaseController
             $goods_category_list[$k]['num'] = $num;
         }
         $this->assign("title_before", "商品分类");
-
+        
         $webConfig = new WebConfig();
-        $show_type = $webConfig -> getWapClassifiedDisplayMode($this->instance_id);
-
-        if($show_type == 1){
+        $show_type = $webConfig->getWapClassifiedDisplayMode($this->instance_id);
+        
+        if ($show_type == 1) {
             return view($this->style . 'Goods/goodsClassificationFloor');
-        }else{
+        } else {
             return view($this->style . 'Goods/goodsClassificationList');
         }
-        
-        return view($this->style . 'Goods/goodsClassificationList');
     }
 
     /**
@@ -437,25 +540,19 @@ class Goods extends BaseController
     public function goodsSearchList()
     {
         if (request()->isAjax()) {
-            $sear_name = request()->post('sear_name', '');
+            $search_name = request()->post('search_name', '');
             $sear_type = request()->post('sear_type', '');
-            $order = request()->post('order', '');
-            $sort = request()->post('sort', 'desc');
+            $order = request()->post('obyzd', '');
+            $sort = request()->post('st', 'desc');
             $controlType = request()->post('controlType', '');
             $shop_id = request()->post('shop_id', '');
             $page = request()->post("page", 1);
             $goods = new GoodsService();
-            $condition['goods_name'] = [
+            $condition['goods_name|keywords'] = [
                 'like',
-                '%' . $sear_name . '%'
+                '%' . $search_name . '%'
             ];
-            // 排序类型
-            $orderby = ""; // 排序方式 默认按排序号升序，创建时间倒序排列
-            if ($order != "") {
-                $orderby = $order . " " . $sort;
-            } else {
-                $orderby = "ng.sort asc,ng.create_time desc";
-            }
+            
             switch ($controlType) {
                 case 1:
                     $condition = [
@@ -475,29 +572,50 @@ class Goods extends BaseController
                 default:
                     break;
             }
+            
+            // 参数过滤
+            
+            // 如果排序方式不为空，则进行过滤
+            if ($sort != "") {
+                if ($sort != "desc" && $sort != "asc") {
+                    // 非法参数进行过滤
+                    $sort = "";
+                }
+            }
+            $orderby = ""; // 排序方式
+            if ($order != "") {
+                if ($order != "ng.sales" && $order != "ng.is_new" && $order != "ng.promotion_price") {
+                    // 非法参数进行过滤
+                    $orderby = "ng.sort asc,ng.create_time desc";
+                } else {
+                    $orderby = $order . " " . $sort;
+                }
+            } else {
+                $orderby = "ng.sort asc,ng.create_time desc";
+            }
+            
             if (! empty($shop_id)) {
                 $condition['ng.shop_id'] = $shop_id;
             }
             $condition['state'] = 1;
-            $search_good_list = $goods->getGoodsList($page, PAGESIZE, $condition, $orderby);
+            $search_good_list = $goods->getGoodsListNew($page, PAGESIZE, $condition, $orderby);
             return $search_good_list;
         } else {
-            $sear_name = request()->get('sear_name', '');
+            $search_name = request()->get('search_name', '');
             $controlType = request()->get('controlType', ''); // 什么类型 1最新 2精品 3推荐
             $controlTypeName = request()->get('controlTypeName', ''); // 什么类型 1最新 2精品 3推荐
             
-            if (! empty($sear_name)) {
-                $search_title = $sear_name;
+            if (! empty($search_name)) {
+                $search_title = $search_name;
             } else {
                 $search_title = $controlTypeName;
             }
-            if (mb_strlen($sear_name) > 10) {
-                $sear_name = mb_substr($sear_name, 0, 7, 'utf-8') . '...';
+            if (mb_strlen($search_name) > 10) {
+                $search_name = mb_substr($search_name, 0, 7, 'utf-8') . '...';
             }
             $shop_id = $this->shop_id;
             $this->assign('controlType', $controlType);
-            $this->assign('wherename', 'sear_name');
-            $this->assign('sear_name', $sear_name);
+            $this->assign('search_name', $search_name);
             $this->assign('shop_id', $shop_id);
             $this->assign('search_title', $search_title);
             return view($this->style . 'Goods/goodsSearchList');
@@ -522,7 +640,7 @@ class Goods extends BaseController
                 $condition['ng.brand_id'] = $brand_id;
             }
             $condition['ng.state'] = 1;
-            $list = $goods->getGoodsList($page_index, PAGESIZE, $condition, "ng.sort asc,ng.create_time desc");
+            $list = $goods->getGoodsListNew($page_index, PAGESIZE, $condition, "ng.sort asc,ng.create_time desc");
             return $list;
         } else {
             $goods_category = new GoodsCategory();
@@ -550,6 +668,7 @@ class Goods extends BaseController
         // 查询购物车中商品的数量
         $uid = $this->uid;
         $goods = new GoodsService();
+        $goods_category_service = new GoodsCategory();
         $cartlist = $goods->getCart($uid);
         $this->assign('uid', $uid);
         $this->assign("carcount", count($cartlist));
@@ -557,14 +676,15 @@ class Goods extends BaseController
         if (request()->isAjax()) {
             $category_id = request()->post('category_id', ''); // 商品分类
             $brand_id = request()->post('brand_id', ''); // 品牌
-            $order = request()->post('order', ''); // 商品排序分类
-            $sort = request()->post('sort', 'desc'); // 商品排序分类
+            $order = request()->post('obyzd', ''); // 商品排序分类,order by ziduan
+            $sort = request()->post('st', 'desc'); // 商品排序分类 sort
             $page = request()->post('page', 1);
-            $min_price = request()->post('min_price', ''); // 价格区间,最小
-            $max_price = request()->post('max_price', ''); // 最大
+            $min_price = request()->post('mipe', ''); // 价格区间,最小min_price
+            $max_price = request()->post('mape', ''); // 最大 max_price
             $attr = request()->post('attr', ''); // 属性值
             $spec = request()->post('spec', ''); // 规格值
-                                                 // 将属性条件字符串转化为数组
+                                                 
+            // 将属性条件字符串转化为数组
             $attr_array = $this->stringChangeArray($attr);
             // 规格转化为数组
             if ($spec != "") {
@@ -572,14 +692,28 @@ class Goods extends BaseController
             } else {
                 $spec_array = array();
             }
+            
+            // 参数过滤
+            
+            // 如果排序方式不为空，则进行过滤
+            if ($sort != "") {
+                if ($sort != "desc" && $sort != "asc") {
+                    // 非法参数进行过滤
+                    $sort = "";
+                }
+            }
             $orderby = ""; // 排序方式
             if ($order != "") {
-                $orderby = $order . " " . $sort;
+                if ($order != "ng.sales" && $order != "ng.is_new" && $order != "ng.promotion_price") {
+                    // 非法参数进行过滤
+                    $orderby = "ng.sort asc,ng.create_time desc";
+                } else {
+                    $orderby = $order . " " . $sort;
+                }
             } else {
                 $orderby = "ng.sort asc,ng.create_time desc";
             }
             
-            $goods = new GoodsService();
             $goods_list = $this->getGoodsListByConditions($category_id, $brand_id, $min_price, $max_price, $page, PAGESIZE, $orderby, $attr_array, $spec_array);
             return $goods_list;
         } else {
@@ -590,12 +724,11 @@ class Goods extends BaseController
             // 筛选条件
             if ($category_id != "") {
                 // 获取商品分类下的品牌列表、价格区间
-                $category_brands = null;
+                $category_brands = [];
                 $category_price_grades = [];
                 
                 // 查询品牌列表，用于筛选
-                $goods_category_service = new GoodsCategory();
-                $category_brands = $goods_category_service->getGoodsCategoryBrands($category_id);
+                $category_brands = $goods_category_service->getGoodsBrandsByGoodsAttr($category_id);
                 
                 // 查询价格区间，用于筛选
                 $category_price_grades = $goods_category_service->getGoodsCategoryPriceGrades($category_id);
@@ -606,15 +739,14 @@ class Goods extends BaseController
                 if ($category_brands != "") {
                     $category_count = 1; // 有数据
                 }
-                $goodsService = new GoodsService();
                 $goods_category_info = $goods_category_service->getGoodsCategoryDetail($category_id);
                 
                 $attr_id = $goods_category_info["attr_id"];
                 // 查询商品分类下的属性和规格集合
-                $goods_attribute = $goodsService->getAttributeInfo([
+                $goods_attribute = $goods->getAttributeInfo([
                     "attr_id" => $attr_id
                 ]);
-                $attribute_detail = $goodsService->getAttributeServiceDetail($attr_id, [
+                $attribute_detail = $goods->getAttributeServiceDetail($attr_id, [
                     'is_search' => 1
                 ]);
                 $attribute_list = array();
@@ -635,7 +767,7 @@ class Goods extends BaseController
                 // 查询本商品类型下的关联规格
                 $goods_spec_array = array();
                 if ($goods_attribute["spec_id_array"] != "") {
-                    $goods_spec_array = $goodsService->getGoodsSpecQuery([
+                    $goods_spec_array = $goods->getGoodsSpecQuery([
                         "spec_id" => [
                             "in",
                             $goods_attribute["spec_id_array"]
@@ -657,10 +789,15 @@ class Goods extends BaseController
                 $this->assign("title_before", $goods_category_info['category_name']);
             }
             // 获取分类列表
-            $goodsCategory = new GoodsCategory();
-            $goodsCategoryList = $goodsCategory->getFormatGoodsCategoryList();
+            $goodsCategoryList = $goods_category_service->getCategoryTreeUseInShopIndex();
             $this->assign("goodsCategoryList", $goodsCategoryList);
-            return view($this->style . 'Goods/goodsList');
+            
+            $template = 'Goods/goodsList';
+            if(!empty($goods_category_info["wap_custom_template"])){
+                $template = 'Goods/'.$goods_category_info["wap_custom_template"];
+            }
+            
+            return view($this->style .$template);
         }
     }
 
@@ -766,38 +903,55 @@ class Goods extends BaseController
         
         // 规格条件拼装
         $spec_count = count($spec_array);
-        $spec_where = "";
+    $spec_where = array();
+        
         if ($spec_count > 0) {
             foreach ($spec_array as $k => $v) {
-                if ($spec_where == "") {
-                    $spec_where = " attr_value_items_format like '%{$v}%' ";
-                } else {
-                    $spec_where = $spec_where . " or " . " attr_value_items_format like '%{$v}%' ";
+                $tmp_array = explode(':', $v);
+                //得到规格名称
+                $spec_info = $goods->getGoodsAttributeList(["spec_id" => $tmp_array[0]], 'spec_name', '');
+                $spec_name = $spec_info[0]["spec_name"];
+                //得到规格值名称
+                $spec_value_info = $goods->getGoodsAttributeValueList(["spec_value_id" => $tmp_array[1]], 'spec_value_name');
+                $spec_value_name = $spec_value_info[0]["spec_value_name"];
+                if(!empty($spec_name)){
+                    $spec_where[] = array('like','%' . $spec_name . '%');
                 }
+                if(!empty($spec_value_name)){
+                    $spec_where[] = array('like','%' . $spec_value_name . '%');
+                }
+//                 if ($spec_where == "") {
+//                     $spec_where = " attr_value_items_format like '%{$v}%' ";
+//                 } else {
+//                     $spec_where = $spec_where . " or " . " attr_value_items_format like '%{$v}%' ";
+//                 }
             }
             
-            if ($spec_where != "") {
+//             if ($spec_where != "") {
                 
-                $goods_query = $goods->getGoodsSkuQuery($spec_where);
-                $temp_array = array();
-                foreach ($goods_query as $k => $v) {
-                    $temp_array[] = $v["goods_id"];
-                }
-                $goods_query = array_unique($temp_array);
-                if (! empty($goods_query)) {
-                    if ($goodsid_str != "") {
-                        $attr_con_array = explode(",", $goodsid_str);
-                        $goods_query = array_intersect($attr_con_array, $goods_query);
-                        $goods_query = array_unique($goods_query);
-                        $goodsid_str = "0," . implode(",", $goods_query);
-                    } else {
-                        $goodsid_str = "0,";
-                        $goodsid_str .= implode(",", $goods_query);
-                    }
-                } else {
-                    $goodsid_str = "0";
-                }
-            }
+//                 $goods_query = $this->goods->getGoodsSkuQuery($spec_where);
+//                 $temp_array = array();
+//                 foreach ($goods_query as $k => $v) {
+//                     $temp_array[] = $v["goods_id"];
+//                 }
+//                 $goods_query = array_unique($temp_array);
+//                 if (! empty($goods_query)) {
+//                     if ($goodsid_str != "") {
+//                         $attr_con_array = explode(",", $goodsid_str);
+//                         $goods_query = array_intersect($attr_con_array, $goods_query);
+//                         $goods_query = array_unique($goods_query);
+//                         $goodsid_str = "0," . implode(",", $goods_query);
+//                     } else {
+//                         $goodsid_str = "0,";
+//                         $goodsid_str .= implode(",", $goods_query);
+//                     }
+//                 } else {
+//                     $goodsid_str = "0";
+//                 }
+//             }
+               if(!empty($spec_where)){
+                   $condition["ng.goods_spec_format"] = [$spec_where];
+               }
         }
         if ($goodsid_str != "") {
             $condition["goods_id"] = [
@@ -808,7 +962,7 @@ class Goods extends BaseController
         
         $condition['ng.state'] = 1;
         
-        $list = $goods->getGoodsList($page, $page_size, $condition, $order);
+        $list = $goods->getGoodsListNew($page, $page_size, $condition, $order);
         
         return $list;
     }
@@ -943,6 +1097,18 @@ class Goods extends BaseController
             $click_detail = $goods->getGoodsSpotFabulous($shop_id, $uid, $goods_id);
             if (empty($click_detail)) {
                 $retval = $goods->setGoodsSpotFabulous($shop_id, $uid, $goods_id);
+                if ($retval) {
+                    $Config = new WebConfig();
+                    $integralConfig = $Config->getIntegralConfig($this->instance_id);
+                    if ($integralConfig['click_coupon'] == 1) {
+                        $rewardRule = new PromoteRewardRule();
+                        $result = $rewardRule->getRewardRuleDetail($this->instance_id);
+                        if ($result['click_coupon'] != 0) {
+                            $member = new Member();
+                            $retval1 = $member->memberGetCoupon($this->uid, $result['click_coupon'], 2);
+                        }
+                    }
+                }
                 return AjaxReturn($retval);
             } else {
                 return $retval = array(
@@ -997,6 +1163,67 @@ class Goods extends BaseController
         }
     }
 
+    /**
+     * 商品组合套餐列表
+     */
+    public function comboPackageList()
+    {
+        $promotion = new Promotion();
+        $goodsid = request()->get("goodsid", 0);
+        $comboPackageGoodsArray = $promotion->getComboPackageGoodsArray($goodsid);
+        $this->assign("comboPackageGoodsArray", $comboPackageGoodsArray);
+        if (empty($comboPackageGoodsArray)) {
+            $this->error("未获取到套餐信息");
+        }
+        return view($this->style . "Goods/comboPackageList");
+    }
+
+    /**
+     * 弹出组合商品sku选择框
+     *
+     * @return \think\response\View
+     */
+    public function comboPackageSelectSku()
+    {
+        $goods = new GoodsService();
+        $goods_id = request()->post('goods_id', '');
+        $goods_detail = $goods->getGoodsDetail($goods_id);
+        $this->assign("goods_detail", $goods_detail);
+        $this->assign("shopname", $this->shop_name);
+        return view($this->style . 'comboPackageSelectSku');
+    }
+
+    /**
+     * 优惠券列表
+     */
+    public function couponList()
+    {
+        $promotion = new Promotion();
+        if (request()->isAjax()) {
+            $page_index = request()->post('page', 0);
+            $order = request()->post('order', 0);
+            $sort = request()->post('sort', 0);
+            $condition = array();
+            $condition["count"] = [
+                "gt",
+                0
+            ];
+            $condition["start_time"] = [
+                "lt",
+                time()
+            ];
+            $condition["end_time"] = [
+                "gt",
+                time()
+            ];
+            $condition["is_show"] = 1;
+            $promotion_list = $promotion->getCouponTypeInfoList($page_index, $page_size = 8, $condition, $order = 'create_time asc');
+            // var_dump($promotion_list);die;
+            $this->assign('promotion_list', $promotion_list);
+            return $promotion_list;
+        }
+        return view($this->style . 'Goods/CouponList');
+    }
 
     /**
      * 领取优惠券
@@ -1020,7 +1247,6 @@ class Goods extends BaseController
         return view($this->style . 'Goods/getCoupon');
     }
 
-    
     /**
      * 制作用户分享优惠券二维码
      */
@@ -1041,5 +1267,451 @@ class Goods extends BaseController
             getQRcode($url, $upload_path, "coupon_" . $coupon_type_id . '_' . $uid);
         }
         return $path;
+    }
+
+    /**
+     * 拼团专区
+     * 创建时间：2017年12月27日15:35:28
+     *
+     * @return Ambigous <\think\response\View, \think\response\$this, \think\response\View>
+     */
+    public function spellingGroupZone()
+    {
+        if (request()->isAjax()) {
+            $pintuan = new Pintuan();
+            $page_index = request()->post("page", 1);
+            $condition = 'npg.is_open=1';
+            $list = $pintuan->getTuangouGoodsList($page_index, PAGESIZE, $condition, 'npg.create_time desc');
+            return $list;
+        }
+        return view($this->style . "Goods/spellingGroupZone");
+    }
+
+    /**
+     * 标签专区
+     */
+    public function promotionZone()
+    {
+        $platform = new Platform();
+        $goods = new GoodsService();
+        // 品牌专区广告位
+        $brand_adv = $platform->getPlatformAdvPositionDetailByApKeyword("goodsLabel");
+        $this->assign('brand_adv', $brand_adv);
+        
+        if (request()->isAjax()) {
+            $page_index = request()->get('page', '1');
+            $group_id = request()->get("group_id", "");
+            
+            $this->goods = new GoodsService();
+            $condition = "";
+            
+            if (! empty($group_id)) {
+                $condition = "FIND_IN_SET(" . $group_id . ",ng.group_id_array)";
+            } else {
+                $condition['ng.group_id_array'] = array(
+                    'neq',
+                    ''
+                );
+            }
+            
+            $goods_list = $this->goods->getGoodsList($page_index, PAGESIZE, $condition, "", $group_id);
+            return $goods_list;
+        } else {
+            // 标签列表
+            $goods_group = new GoodsGroup();
+            $groupList = $goods_group->getGoodsGroupList(1, 0, [
+                'shop_id' => $this->instance_id,
+                'pid' => 0
+            ]);
+            $this->assign("groupList", $groupList["data"]);
+            return view($this->style . 'Goods/promotionZone');
+        }
+    }
+
+    /**
+     * 商品团购详情
+     *
+     * @return Ambigous <\think\response\View, \think\response\$this, \think\response\View>
+     */
+    public function groupPurchase()
+    {
+        $goods_id = request()->get('id', 0);
+        if ($goods_id == 0) {
+            $this->error("没有获取到商品信息");
+        }
+        
+        $this->web_site = new WebSite();
+        $goods = new GoodsService();
+        $config_service = new WebConfig();
+        $member = new Member();
+        $shop_id = $this->instance_id;
+        $uid = $this->uid;
+        
+        $web_info = $this->web_site->getWebSiteInfo();
+        $group_id = request()->get("group_id", 0);
+        
+        // 切换到PC端
+        if (! request()->isMobile() && $web_info['web_status'] == 1) {
+            $redirect = __URL(__URL__ . "/goods/goodsinfo?goodsid=" . $goods_id);
+            $this->redirect($redirect);
+            exit();
+        }
+        
+        // 清空待付款订单返回订单详情的标识
+        $_SESSION['unpaid_goback'] = "";
+        $_SESSION['order_create_flag'] = "";
+        
+        $goods_detail = $goods->getBasisGoodsDetail($goods_id);
+        if (empty($goods_detail)) {
+            $this->error("没有获取到商品信息");
+        }
+        if ($this->getIsOpenVirtualGoodsConfig() == 0 && $goods_detail['goods_type'] == 0) {
+            $this->error("未开启虚拟商品功能");
+        }
+        // 商品点击量
+        $goods->updateGoodsClicks($goods_id);
+        
+        // 是否是微信浏览器
+        $this->assign("isWeixin", isWeixin());
+        
+        // 把属性值相同的合并
+        $goods_attribute_list = $goods_detail['goods_attribute_list'];
+        $goods_attribute_list_new = array();
+        foreach ($goods_attribute_list as $item) {
+            $attr_value_name = '';
+            foreach ($goods_attribute_list as $key => $item_v) {
+                if ($item_v['attr_value_id'] == $item['attr_value_id']) {
+                    $attr_value_name .= $item_v['attr_value_name'] . ',';
+                    unset($goods_attribute_list[$key]);
+                }
+            }
+            if (! empty($attr_value_name)) {
+                array_push($goods_attribute_list_new, array(
+                    'attr_value_id' => $item['attr_value_id'],
+                    'attr_value' => $item['attr_value'],
+                    'attr_value_name' => rtrim($attr_value_name, ',')
+                ));
+            }
+        }
+        $goods_detail['goods_attribute_list'] = $goods_attribute_list_new;
+        
+        // 获取当前时间
+        $current_time = $this->getCurrentTime();
+        $this->assign('ms_time', $current_time);
+        $this->assign("goods_detail", $goods_detail);
+        $this->assign("shopname", $this->shop_name);
+        $this->assign("price", intval($goods_detail["promotion_price"]));
+        $this->assign("goods_id", $goods_id);
+        $this->assign("title_before", $goods_detail['goods_name']);
+        
+        // 返回商品数量和当前商品的限购
+        $this->getCartInfo($goods_id);
+        
+        // 分享
+        $ticket = $this->getShareTicket();
+        $this->assign("signPackage", $ticket);
+        
+        // 评价数量
+        $evaluates_count = $goods->getGoodsEvaluateCount($goods_id);
+        $this->assign('evaluates_count', $evaluates_count);
+        
+        // 评价
+        $goodsEvaluation = "";
+        $order = new OrderService();
+        $goodsEvaluation = $order->getOrderEvaluateDataList(1, 1, [
+            "goods_id" => $goods_id
+        ], 'addtime desc');
+        if (! empty($goodsEvaluation)) {
+            $memberService = new Member();
+            $goodsEvaluation["data"][0]["user_img"] = $memberService->getMemberImage($goodsEvaluation["data"][0]["uid"]);
+            $this->assign("goodsEvaluation", $goodsEvaluation["data"][0]);
+        } else {
+            $this->assign("goodsEvaluation", $goodsEvaluation);
+        }
+        
+        // 客服
+        $customservice_config = $config_service->getcustomserviceConfig($shop_id);
+        if (empty($customservice_config)) {
+            $list['id'] = '';
+            $list['value']['service_addr'] = '';
+        }
+        
+        $this->assign("customservice_config", $customservice_config);
+        // $this->assign('service_addr',$list['value']['service_addr']);
+        // 查询点赞记录表，获取详情再判断当天该店铺下该商品该会员是否已点赞
+        $click_detail = $goods->getGoodsSpotFabulous($shop_id, $uid, $goods_id);
+        $this->assign('click_detail', $click_detail);
+        
+        // 当前用户是否收藏了该商品
+        if (isset($uid)) {
+            $is_member_fav_goods = $member->getIsMemberFavorites($uid, $goods_id, 'goods');
+        }
+        $this->assign("is_member_fav_goods", $is_member_fav_goods);
+        
+        // 获取商品的优惠劵
+        $goods_coupon_list = $goods->getGoodsCoupon($goods_id, $this->uid);
+        $this->assign("goods_coupon_list", $goods_coupon_list);
+        
+        // 组合商品
+        $promotion = new Promotion();
+        $comboPackageGoodsArray = $promotion->getComboPackageGoodsArray($goods_id);
+        $this->assign("comboPackageGoodsArray", $comboPackageGoodsArray[0]);
+        
+        // 商品阶梯优惠
+        $goodsLadderPreferentialList = $goods->getGoodsLadderPreferential([
+            "goods_id" => $goods_id
+        ], "quantity desc", "quantity,price");
+        $this->assign("goodsLadderPreferentialList", array_reverse($goodsLadderPreferentialList));
+        
+        // 添加足迹
+        if ($this->uid > 0) {
+            $goods->addGoodsBrowse($goods_id, $this->uid);
+        }
+        // 商品标签
+        $goods_group = new GoodsGroup();
+        $goods_group_list = $goods_group->getGoodsGroupList(1, 0, [
+            "group_id" => array(
+                "in",
+                $goods_detail["group_id_array"]
+            )
+        ], "", "group_name");
+        $this->assign("goods_group_list", $goods_group_list["data"]);
+        
+        // 店铺服务
+        $existingMerchant = $config_service->getExistingMerchantService($this->instance_id);
+        $this->assign("existingMerchant", $existingMerchant);
+        
+        return view($this->style . 'Goods/groupPurchase');
+    }
+    
+    /**
+     * 团购专区
+     */
+    public function groupBuyingArea(){
+        
+        if(request()->post()){
+            $group_buy_service = new GroupBuy();
+            $page = request()->post('page', 1);
+            $condition = array(
+                "state" => 1,
+                "npgb.start_time" => array(
+                    "<",
+                    time()
+                ),
+                "npgb.end_time" => array(
+                    ">",
+                    time()
+                )
+            );
+            $field = 'ng.goods_id,ng.promotion_price,ng.goods_name,ng.picture,npgb.group_id,npgb.group_name,npgb.shop_id,npgb.goods_id,npgb.start_time,npgb.end_time,npgb.max_num,npgb.min_num,npgb.status';
+            $group_goods_list = $group_buy_service -> getPromotionGroupBuyGoodsList($page, PAGESIZE, $condition, 'npgb.group_id desc', $field);
+            return $group_goods_list;
+        }else{
+            
+            $this->assign("title_before", "团购专区");
+            return view($this->style.'Goods/groupBuyingArea');
+        }
+    }
+    
+    /**
+     * 积分兑换
+     *
+     * @return \think\response\View
+     */
+    public function goodsDetailPointExchange()
+    {
+        $goods_id = request()->get('id', 0);
+        if ($goods_id == 0) {
+            $this->error("没有获取到商品信息");
+        }
+    
+        $this->web_site = new WebSite();
+        $goods = new GoodsService();
+        $config_service = new WebConfig();
+        $member = new Member();
+        $shop_id = $this->instance_id;
+        $uid = $this->uid;
+    
+        $web_info = $this->web_site->getWebSiteInfo();
+        $group_id = request()->get("group_id", 0);
+    
+        // 切换到PC端
+        if (! request()->isMobile() && $web_info['web_status'] == 1) {
+            $redirect = __URL(__URL__ . "/goods/goodsinfo?goodsid=" . $goods_id);
+            $this->redirect($redirect);
+            exit();
+        }
+    
+        // 清空待付款订单返回订单详情的标识
+        $_SESSION['unpaid_goback'] = "";
+        $_SESSION['order_create_flag'] = "";
+    
+        $goods_detail = $goods->getBasisGoodsDetail($goods_id);
+        if (empty($goods_detail)) {
+            $this->error("没有获取到商品信息");
+        }
+        if ($this->getIsOpenVirtualGoodsConfig() == 0 && $goods_detail['goods_type'] == 0) {
+            $this->error("未开启虚拟商品功能");
+        }
+        // 商品点击量
+        $goods->updateGoodsClicks($goods_id);
+    
+        // 是否是微信浏览器
+        $this->assign("isWeixin", isWeixin());
+    
+        // 把属性值相同的合并
+        $goods_attribute_list = $goods_detail['goods_attribute_list'];
+        $goods_attribute_list_new = array();
+        foreach ($goods_attribute_list as $item) {
+            $attr_value_name = '';
+            foreach ($goods_attribute_list as $key => $item_v) {
+                if ($item_v['attr_value_id'] == $item['attr_value_id']) {
+                    $attr_value_name .= $item_v['attr_value_name'] . ',';
+                    unset($goods_attribute_list[$key]);
+                }
+            }
+            if (! empty($attr_value_name)) {
+                array_push($goods_attribute_list_new, array(
+                    'attr_value_id' => $item['attr_value_id'],
+                    'attr_value' => $item['attr_value'],
+                    'attr_value_name' => rtrim($attr_value_name, ',')
+                ));
+            }
+        }
+        $goods_detail['goods_attribute_list'] = $goods_attribute_list_new;
+    
+        // 获取当前时间
+        $current_time = $this->getCurrentTime();
+        $this->assign('ms_time', $current_time);
+        $this->assign("goods_detail", $goods_detail);
+        $this->assign("shopname", $this->shop_name);
+        $this->assign("price", intval($goods_detail["promotion_price"]));
+        $this->assign("goods_id", $goods_id);
+        $this->assign("title_before", $goods_detail['goods_name']);
+    
+        // 返回商品数量和当前商品的限购
+        $this->getCartInfo($goods_id);
+    
+        // 分享
+        $ticket = $this->getShareTicket();
+        $this->assign("signPackage", $ticket);
+    
+        // 评价数量
+        $evaluates_count = $goods->getGoodsEvaluateCount($goods_id);
+        $this->assign('evaluates_count', $evaluates_count);
+    
+        // 评价
+        $goodsEvaluation = "";
+        $order = new OrderService();
+        $goodsEvaluation = $order->getOrderEvaluateDataList(1, 1, [
+            "goods_id" => $goods_id
+        ], 'addtime desc');
+        if (! empty($goodsEvaluation)) {
+            $memberService = new Member();
+            $goodsEvaluation["data"][0]["user_img"] = $memberService->getMemberImage($goodsEvaluation["data"][0]["uid"]);
+            $this->assign("goodsEvaluation", $goodsEvaluation["data"][0]);
+        } else {
+            $this->assign("goodsEvaluation", $goodsEvaluation);
+        }
+    
+        // 客服
+        $customservice_config = $config_service->getcustomserviceConfig($shop_id);
+        if (empty($customservice_config)) {
+            $list['id'] = '';
+            $list['value']['service_addr'] = '';
+        }
+    
+        $this->assign("customservice_config", $customservice_config);
+        // $this->assign('service_addr',$list['value']['service_addr']);
+        // 查询点赞记录表，获取详情再判断当天该店铺下该商品该会员是否已点赞
+        $click_detail = $goods->getGoodsSpotFabulous($shop_id, $uid, $goods_id);
+        $this->assign('click_detail', $click_detail);
+    
+        // 当前用户是否收藏了该商品
+        if (isset($uid)) {
+            $is_member_fav_goods = $member->getIsMemberFavorites($uid, $goods_id, 'goods');
+        }
+        $this->assign("is_member_fav_goods", $is_member_fav_goods);
+    
+        // 获取商品的优惠劵
+        $goods_coupon_list = $goods->getGoodsCoupon($goods_id, $this->uid);
+        $this->assign("goods_coupon_list", $goods_coupon_list);
+    
+        // 组合商品
+        $promotion = new Promotion();
+        $comboPackageGoodsArray = $promotion->getComboPackageGoodsArray($goods_id);
+        $this->assign("comboPackageGoodsArray", $comboPackageGoodsArray[0]);
+    
+        // 商品阶梯优惠
+        $goodsLadderPreferentialList = $goods->getGoodsLadderPreferential([
+            "goods_id" => $goods_id
+        ], "quantity desc", "quantity,price");
+        $this->assign("goodsLadderPreferentialList", array_reverse($goodsLadderPreferentialList));
+    
+        // 添加足迹
+        if ($this->uid > 0) {
+            $goods->addGoodsBrowse($goods_id, $this->uid);
+        }
+        // 商品标签
+        $goods_group = new GoodsGroup();
+        $goods_group_list = $goods_group->getGoodsGroupList(1, 0, [
+            "group_id" => array(
+                "in",
+                $goods_detail["group_id_array"]
+            )
+        ], "", "group_name");
+        $this->assign("goods_group_list", $goods_group_list["data"]);
+    
+        // 店铺服务
+        $existingMerchant = $config_service->getExistingMerchantService($this->instance_id);
+        $this->assign("existingMerchant", $existingMerchant);
+    
+        // 积分抵现比率
+        $integral_balance = 0; //积分可抵金额
+        $point_config = $promotion->getPointConfig();
+        if($point_config["is_open"] == 1){
+            if($goods_detail['max_use_point'] > 0 && $point_config['convert_rate'] > 0){
+                $integral_balance = $goods_detail['max_use_point'] * $point_config['convert_rate'];
+            }
+        }
+        $this->assign("integral_balance", $integral_balance);
+    
+        return view($this->style . 'Goods/goodsDetailPointExchange');
+    }
+    /**
+     * 专题活动列表页面
+     */
+    public function promotionTopic()
+    {
+    	$platform = new Platform();
+    	// 专题活动广告位
+    	$topic_adv = $platform->getPlatformAdvPositionDetailByApKeyword("wapPromotionTopic");
+    	$this->assign('topic_adv', $topic_adv);
+    	
+    	//     	dump($brand_adv);
+    	$promotion = new Promotion();
+    	$list = $promotion->getPromotionTopicList(1,0,[
+    			'status'=>1,
+    			"start_time" => array("<", time()),
+    			"end_time" => array(">", time())]);
+    	$this->assign('info',$list);
+    	$this->assign('total_count',count($list['data']));
+    	//     	dump($list);
+    	return view($this->style.'Goods/promotionTopic');
+    }
+    
+    public function promotionTopicGoods()
+    {
+    	 
+    	$topic_id = request()->get('topic_id',0);
+    	    	
+    	if(!is_numeric($topic_id)){
+    		$this->error("没有获取到专题信息");
+    	}
+    	$promotion = new Promotion();
+    	$topic_goods = $promotion->getPromotionTopicDetail($topic_id);
+    	//     	dump($topic_goods);
+    	$this->assign('info',$topic_goods);
+    	return view($this->style.'Goods/'.$topic_goods['wap_topic_template']);
     }
 }

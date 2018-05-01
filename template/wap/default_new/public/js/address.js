@@ -22,6 +22,7 @@
 		ajax_url = __URL(APPMAIN+"/member/updatememberaddress");
 	}
 	var flag = $("#hidden_flag").val();
+
 	var ref_url = $("#ref_url").val();
 	$.ajax({
 		type: "post",
@@ -31,13 +32,17 @@
 			if (txt["code"] >0) {
 				if(flag == 1){
 					location.href=__URL(APPMAIN+"/member/memberaddress?flag=1");
+				}else if(flag == 4){
+					location.href=__URL(APPMAIN+"/PintuanOrder/paymentorder");
+				}else if(flag == 2){
+					location.href=__URL(APPMAIN+"/member/toReceiveThePrize");
 				}else{
 					if(ref_url != ''){
 						location.href=__URL(APPMAIN+"/order/paymentorder");
 					}
 				}
 			} else {
-				showBox(txt);
+				showBox(txt,"error");
 			}
 		}
 	});
@@ -46,17 +51,17 @@
 function Check_Consignee() {
 	var reg = /^1[34578]\d{9}$/;
 	if ($("#Name").val() == "") {
-		showBox("姓名不能为空");
+		showBox("姓名不能为空","warning");
 		$("#Name").focus();
 		return false;
 	} 
 	if ($("#Moblie").val() == "") {
-		showBox("手机号码不能为空");
+		showBox("手机号码不能为空","warning");
 		$("#Moblie").focus();
 		return false;
 	} 
 	if (!reg.test($("#Moblie").val())) {
-		showBox("请输入正确的手机号码");
+		showBox("请输入正确的手机号码","warning");
 		$("#Moblie").focus();
 		return false;
 	} 
@@ -65,7 +70,7 @@ function Check_Consignee() {
 	if(phone.length > 0){
 		var pattern=/(^[0-9]{3,4}\-[0-9]{3,8}$)|(^[0-9]{3,8}$)|(^\([0-9]{3,4}\)[0-9]{3,8}$)|(^0{0,1}13[0-9]{9}$)/; 
 		if(!pattern.test(phone)) { 
-			showBox("请输入正确的固定电话");
+			showBox("请输入正确的固定电话","warning");
 			$("#phone").focus();
 			return false; 
 		} 
@@ -73,18 +78,18 @@ function Check_Consignee() {
 	
 	if ($("#seleAreaFouth").val() < 0 || $("#seleAreaFouth").val() == "") {
 		if ($("#seleAreaNext").val() == "" || $("#seleAreaNext").val() < 0) {
-			showBox("请选择省份");
+			showBox("请选择省份","warning");
 			$("#seleAreaNext").focus();
 			return false;
 		}
 		if ($("#seleAreaThird").val() == "" || $("#seleAreaThird").val() < 0) {
-			showBox("请选择市");
+			showBox("请选择市","warning");
 			$("#seleAreaThird").focus();
 			return false;
 		}
 		if($("#seleAreaFouth option").length > 1){
 			if ($("#seleAreaFouth").val() == "" || $("#seleAreaFouth").val() < 0) {
-				showBox("请选择区/县");
+				showBox("请选择区/县","warning");
 				$("#seleAreaFouth").focus();
 				return false;
 			}
@@ -92,7 +97,7 @@ function Check_Consignee() {
 	}
 	
 	if ($("#AddressInfo").val() == "") {
-		showBox("详细地址不能为空");
+		showBox("详细地址不能为空","warning");
 		$("#AddressInfo").focus();
 		return false;
 	} 

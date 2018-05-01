@@ -27,6 +27,7 @@ use data\service\WebSite as WebSite;
 use think\Controller;
 use think\Cookie;
 use think\Session;
+use think\Request;
 \think\Loader::addNamespace('data', 'data/');
 
 class BaseController extends Controller
@@ -94,27 +95,30 @@ class BaseController extends Controller
             Cookie::set("default_client", "shop");
             $controller = request()->controller();
             $action = request()->action();
-            if($controller == "Goods" && $action == "goodsDetail"){
+            if ($controller == "Goods" && $action == "goodsDetail") {
                 $goods_id = request()->get("id", 0);
                 $this->redirect(__URL(\think\Config::get('view_replace_str.SHOP_MAIN') . "/shop/goods/goodsinfo?goodsid=" . $goods_id));
-            }else{
+            } else {
                 $this->redirect(__URL(\think\Config::get('view_replace_str.SHOP_MAIN') . "/shop"));
             }
-        } else 
-            if ($web_info['wap_status'] == 2) {
-                webClose($web_info['close_reason']);
-            } else 
-                if (($web_info['wap_status'] == 3 && $web_info['web_status'] == 3) || ($web_info['wap_status'] == 3 && $web_info['web_status'] == 2)) {
-                    webClose($web_info['close_reason']);
-                }
-        
+        } elseif ($web_info['wap_status'] == 2) {
+            webClose($web_info['close_reason']);
+        } elseif (($web_info['wap_status'] == 3 && $web_info['web_status'] == 3) || ($web_info['wap_status'] == 3 && $web_info['web_status'] == 2)) {
+            webClose($web_info['close_reason']);
+        }
+        $this->assign("is_support_pintuan", IS_SUPPORT_PINTUAN);
         $this->uid = $this->user->getSessionUid();
         $this->instance_id = $this->user->getSessionInstanceId();
         $this->shop_id = 0;
         $this->shop_name = $this->user->getInstanceName();
         $this->logo = $web_info['logo'];
-        $this->custom_template_is_enable = $config->getIsEnableCustomTemplate($this->instance_id);
+        
+        // 手机端自定义模板是否开启标识
+        $this->custom_template_is_enable = 0;
         $this->assign("custom_template_is_enable", $this->custom_template_is_enable);
+        
+        // 手机端自定义模板底部菜单
+        $this->getWapCustomTemplateFooter();
         
         $this->share_icon = $web_info['web_wechat_share_logo'];
         // 使用那个手机模板
@@ -128,6 +132,11 @@ class BaseController extends Controller
             $this->error("模板配置有误，请联系商城管理员");
         }
         
+        $defaultImages = $config->getDefaultImages($this->instance_id);
+        $this->assign("default_goods_img", $defaultImages["value"]["default_goods_img"]); // 默认商品图片
+        $this->assign("default_headimg", $defaultImages["value"]["default_headimg"]); // 默认用户头像
+        $this->assign("default_cms_thumbnail", $defaultImages["value"]["default_cms_thumbnail"]); // 默认文章缩略图
+        
         $this->style = "wap/" . $use_wap_template['value'] . "/";
         $this->assign("style", "wap/" . $use_wap_template['value']);
         
@@ -138,6 +147,7 @@ class BaseController extends Controller
             $this->assign("uid", $this->uid);
             $this->assign("shop_id", $this->instance_id);
             $this->assign("title", $web_info['title']);
+            $this->assign("web_info", $web_info);
             $this->assign("platform_shopname", $this->shop_name); // 平台店铺名称
             $seoconfig = $config->getSeoConfig($this->instance_id);
             $this->assign("seoconfig", $seoconfig);
@@ -263,7 +273,7 @@ class BaseController extends Controller
         if (strstr($this->share_icon, "http")) {
             $share_logo = $this->share_icon;
         } else {
-            $share_logo = 'http://' . $_SERVER['HTTP_HOST'] . config('view_replace_str.__UPLOAD__') . '/' . $this->share_icon; // 分享时，用到的logo，默认是平台分享图标
+            $share_logo = Request::instance()->domain() . config('view_replace_str.__UPLOAD__') . '/' . $this->share_icon; // 分享时，用到的logo，默认是平台分享图标
         }
         $shop = new Shop();
         $config = $shop->getShopShareConfig($shop_id);
@@ -320,6 +330,7 @@ class BaseController extends Controller
                 $share_content['share_nick_name'] = $current_user;
                 break;
             case "goods":
+                
                 // 商品分享
                 $goods = new GoodsService();
                 $goods_detail = $goods->getGoodsDetail($goods_id);
@@ -330,11 +341,12 @@ class BaseController extends Controller
                     if (strstr($goods_detail["img_list"][0]["pic_cover_mid"], "http")) {
                         $share_logo = $goods_detail["img_list"][0]["pic_cover_mid"];
                     } else {
-                        $share_logo = 'http://' . $_SERVER['HTTP_HOST'] . config('view_replace_str.__UPLOAD__') . '/' . $goods_detail["img_list"][0]["pic_cover_mid"]; // 用商品的第一个图片
+                        $share_logo = Request::instance()->domain() . config('view_replace_str.__UPLOAD__') . '/' . $goods_detail["img_list"][0]["pic_cover_mid"]; // 用商品的第一个图片
                     }
                 }
                 break;
             case "qrcode_shop":
+                
                 // 二维码分享
                 if (! empty($user_info)) {
                     $share_content["share_title"] = $config["shop_param_1"] . '分享'; // $shop_name . "二维码分享";
@@ -344,14 +356,15 @@ class BaseController extends Controller
                         if (strstr($user_info['user_headimg'], "http")) {
                             $share_logo = $user_info['user_headimg'];
                         } else {
-                            $share_logo = 'http://' . $_SERVER['HTTP_HOST'] . config('view_replace_str.__UPLOAD__') . '/' . $user_info['user_headimg'];
+                            $share_logo = Request::instance()->domain() . config('view_replace_str.__UPLOAD__') . '/' . $user_info['user_headimg'];
                         }
                     } else {
-                        $share_logo = 'http://' . $_SERVER['HTTP_HOST'] . config('view_replace_str.__TEMP__') . '/wap/' . NS_TEMPLATE . '/public/images/member_default.png';
+                        $share_logo = Request::instance()->domain() . config('view_replace_str.__TEMP__') . '/wap/' . NS_TEMPLATE . '/public/images/member_default.png';
                     }
                 }
                 break;
             case "qrcode_my":
+                
                 // 二维码分享
                 if (! empty($user_info)) {
                     $share_content["share_title"] = $shop_name . "二维码分享";
@@ -361,10 +374,10 @@ class BaseController extends Controller
                         if (strstr($user_info['user_headimg'], "http")) {
                             $share_logo = $user_info['user_headimg'];
                         } else {
-                            $share_logo = 'http://' . $_SERVER['HTTP_HOST'] . config('view_replace_str.__UPLOAD__') . '/' . $user_info['user_headimg'];
+                            $share_logo = Request::instance()->domain() . config('view_replace_str.__UPLOAD__') . '/' . $user_info['user_headimg'];
                         }
                     } else {
-                        $share_logo = 'http://' . $_SERVER['HTTP_HOST'] . config('view_replace_str.__TEMP__') . '/wap/' . NS_TEMPLATE . '/public/images/member_default.png';
+                        $share_logo = Request::instance()->domain() . config('view_replace_str.__TEMP__') . '/wap/' . NS_TEMPLATE . '/public/images/member_default.png';
                     }
                 }
                 break;
@@ -448,5 +461,50 @@ class BaseController extends Controller
         $config = new WebConfig();
         $res = $config->getIsOpenVirtualGoodsConfig($this->instance_id);
         return $res;
+    }
+
+    /**
+     * 手机端base.html公用底部菜单
+     * 创建时间：2017年8月26日 09:46:02 王永杰
+     */
+    public function getWapCustomTemplateFooter()
+    {
+        $config = new WebConfig();
+        $teplate_info = '';
+        $custom_footer = array();
+        if (! empty($teplate_info)) {
+            $custom_template_info = $teplate_info['template_data'];
+            foreach ($custom_template_info as $k => $v) {
+                $custom_template_info[$k]["style_data"] = json_decode($v["control_data"], true);
+            }
+            for ($i = 0; $i < count($custom_template_info); $i ++) {
+                $v = $custom_template_info[$i];
+                if ($v["control_name"] == "Footer") {
+                    // 首页
+                    if (trim($v["style_data"]["footer"]) != "") {
+                        // 底部菜单
+                        $custom_footer = json_decode($v["style_data"]["footer"], true);
+                        break;
+                    }
+                }
+            }
+        }
+        // 当前打开页面时，底部菜单的的对应的选中
+        $select_footer_index = 0; // 底部菜单下标标识
+        if (! empty($custom_footer)) {
+            foreach ($custom_footer as $k => $v) {
+                
+                // 如果只有wap，没有index/index
+                if (strpos(strtolower(request()->module() . "/" . request()->action()), strtolower(request()->pathinfo())) !== false) {
+                    $select_footer_index = 0;
+                    break;
+                }
+                if (strpos(strtolower($v['href']), strtolower(request()->pathinfo())) !== false) {
+                    $select_footer_index = $k;
+                }
+            }
+        }
+        $this->assign("select_footer_index", $select_footer_index);
+        $this->assign("custom_footer", $custom_footer);
     }
 }

@@ -11,23 +11,10 @@
 namespace data\taglib;
 
 use think\template\TagLib;
-use data\service\Goods;
 use data\service\GoodsCategory;
-use data\service\GoodsBrand;
-use data\service\Platform;
-use data\service\User as UserService;
-use data\service\Article;
-use data\service\Order;
 use data\service\WebSite;
 use data\service\Config;
-use data\service\Shop;
-use think\Log;
-use data\service\Member\MemberAccount;
-use app\admin\controller\Member;
 use data\service\Member as MemberService;
-use Qiniu\Tests\Base64Test;
-use app\wap\controller\BaseController;
-use app\api\controller\User;
 
 class Niu extends TagLib
 {
@@ -67,6 +54,7 @@ class Niu extends TagLib
         'webicp'              => ['attr' => '', 'close' => 0],//网站备案号
         'webclosereason'      => ['attr' => '', 'close' => 0],//网站关闭原因
         'webcount'            => ['attr' => '', 'close' => 0],//网站第三方统计代码
+        'webwechatsharelogo'            => ['attr' => '', 'close' =>0],//
         'goodslist'           => ['attr' => 'page,num,where,order,field,cache,name', 'close' => 1],//
         'goodsviewlist'       => ['attr' => 'page,num,where,order,field,cache,name', 'close' => 1],//直接查询商品列表
         'memberhistory'       => ['attr' => 'cache,name', 'close' => 1],//会员浏览历史
@@ -114,7 +102,7 @@ class Niu extends TagLib
         'addresslist'         => ['attr' => 'page,num,where,order,name,cache','close'=>1],//收货地址
         'accountlist'         => ['attr' => 'page,num,where,order,file,cache','close'=>1],//余额积分流水
         'memberaccount'       => ['attr' => 'id,account_type,start_time,end_time,name,cache','close'=>1],//一段时间内会员账户（积分或余额）account_type：1.积分2.余额3.购物币
-		'memberbankaccountlist'=>['attr' => 'is_default,name,cache'],//会员提现账户列表
+		'memberbankaccountlist'=>['attr' => 'is_default,name,cache','close'=>1],//会员提现账户列表
 		
 		
 		'memberimg'          => ['attr' => '','close'=>0],//会员头像
@@ -158,9 +146,327 @@ class Niu extends TagLib
 		'spotfabulous'        => ['attr' => 'uid,goods_id,name,cache','close'=>1],//点赞
 		'customserviceconfig' => ['attr' => 'id,name,cache','close'=>1],//美洽客服
 		'ticket'              => ['attr' => 'name,cache','colse'=>1],//获取分享相关票据
+		'instancewchatconfig' => ['attr' => 'name,cache,id','close'=>1],//获取微信配置
+		'checkuserissubscribeinstance' => ['attr' => 'name,cache,uid,shop_id','close'=>1],//检测用户是否关注了实例公众号
+		'issubscribe'         => ['attr' => 'name,uid,shop_id','close'=>1],//标识：是否显示顶部关注  0：[隐藏]，1：[显示]
+		'userinfobyuid'       => ['attr' => 'name,cache,id','close' =>1],//根据uid查询用户信息
+		'integralconfig'      => ['attr' => 'id,name,cache','close' =>1],//送积分配置  签到 注册 分享
+		'ismembersign'        => ['attr' => 'uid,shop_id,name,cache','close' =>1],//是否签到
+		'ordernumbyorderstatu'=> ['attr' => 'where,name,cache','close'=>1],//订单状态下的订单数目
+		'memberexpressaddressdetail'=>['attr'=>'id,name,cache','close' =>1],//会员收货地址详情
+		'shopaccountlistbyuser'=>['attr'=>'id,num,page,name,cache','close'=>1],//分页获取用户积分和余额
+		'websiteinfo'         => ['attr'=>'name,cache','close'=>1],//网站信息
+		'shopinfo'            => ['attr'=>'name,cache,id,file','close'=>1],//店铺详情
+		'ordergoodsrefundinfo'=> ['attr'=>'id,name,cache','close'=>1],//查询订单项退款信息
+		'ordergoodsrefundmoney'=> ['attr'=>'id,name,cache','close'=>1],//查询订单实际退金额
+		'ordergoodsrefundbalance'=> ['attr'=>'id,name,cache','close'=>1],//获取订单项实际可退款余额
+		'defaultshopexpressaddress'=> ['attr'=>'id,name,cache','close'=>1],//获取公司默认收货地址
+		'shopreturnset'       => ['attr'=>'id,name,cache','close'=>1],//查询店铺的退货设置
+		
+        
+        //拼团
+        'goodspellinglist' =>['attr'=>'name,page,num,where,field, order, cache','close'=>1],//商品拼单列表
+        'gettuangougoodslist' =>['attr'=>'page,num,where,field,order,cache,name','close'=>1],//拼团商品列表
+        'gettuangoudetail' =>['attr'=>'name,cache,where','close'=>1]//拼团商品列表
     ];
     
+    /**
+     * 根据拼团id查询详情
+     * 创建时间：2017年12月28日14:30:25
+     * @param unknown $tag
+     * @param unknown $content
+     */
+    public function tagGetTuangouDetail($tag,$content){
+
+        $group_id  = isset($tag['group_id'])  ? $tag['group_id']  : '';
+        $goods_id  = isset($tag['goods_id'])  ? $tag['goods_id']  : '';
+        $cache = isset($tag['cache']) ? $tag['cache'] : '';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
+        $service_name = "Pintuan";
+        $function_array = ['getTuangouDetail', $group_id,$goods_id];
+        $function = 'getTuangouDetail("'.$group_id.'","'. $goods_id.'")';
+        
+        return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
     
+    /**
+     * 查询拼团商品列表
+     * @param unknown $tag
+     * @param unknown $content
+     */
+    public function tagGetTuangouGoodsList($tag,$content){
+
+        $page  = isset($tag['page'])  ? $tag['page']  : '1';
+        $num   = isset($tag['num'])   ? $tag['num']   : PAGESIZE;
+        $where = isset($tag['where']) ? $tag['where'] : '';
+        $order = isset($tag['order']) ? $tag['order'] : '';
+        $field = isset($tag['field']) ? $tag['field'] : '*';
+        $cache = isset($tag['cache']) ? $tag['cache'] : '';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
+        $service_name = "Pintuan";
+        $function_array = ['getTuangouGoodsList', $page, $num, $where, $order,$field];
+        $function = 'getTuangouGoodsList("'.$page.'","'. $num.'", "'.$where.'","'.$order.'","'.$field.'")';
+        
+        return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    
+    /**
+     * 商品拼单列表
+     */
+    public function tagGoodSpellingList($tag, $content){
+
+        $page  = isset($tag['page'])  ? $tag['page']  : '1';
+        $num   = isset($tag['num'])   ? $tag['num']   : PAGESIZE;
+        $where = isset($tag['where']) ? $tag['where'] : '';
+        $order = isset($tag['order']) ? $tag['order'] : '';
+        $field = isset($tag['field']) ? $tag['field'] : '*';
+        $cache = isset($tag['cache']) ? $tag['cache'] : '';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
+        
+        $service_name = "Pintuan";
+        $function_array = ['getGoodsPintuanStatusList', $page, $num, $where, $order,$field];
+        $function = 'getGoodsPintuanStatusList("'.$page.'","'. $num.'", "'.$where.'","'.$order.'","'.$field.'")';
+        
+        return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    
+    
+    /**
+     * 查询店铺的退货设置
+     */
+    public function tagShopReturnSet($tag, $content)
+    {
+    	$id = isset($tag['id']) ? $tag['id'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Order";
+    	$function_array = ['getShopReturnSet',$id];
+    	$function = 'getShopReturnSet("'.$id.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 获取公司默认收货地址
+     */
+    public function tagDefaultshopexpressaddress($tag, $content)
+    {
+    	$id = isset($tag['id']) ? $tag['id'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Express";
+    	$function_array = ['getDefaultShopExpressAddress',$id];
+    	$function = 'getDefaultShopExpressAddress("'.$id.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 获取订单项实际可退款余额
+     */
+    public function tagOrderGoodsRefundBalance($tag, $content)
+    {
+    	$id = isset($tag['id']) ? $tag['id'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "OrderGoods";
+    	$service_folder = "Order";
+    	$function_array = ['orderGoodsRefundBalance',$id];
+    	$function = 'orderGoodsRefundBalance("'.$id.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array,$service_folder);
+    }
+    /**
+     * 查询订单项退款信息
+     */
+    public function tagOrdergoodsrefundmoney($tag, $content)
+    {
+    	$id = isset($tag['id']) ? $tag['id'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Order";
+    	$function_array = ['orderGoodsRefundMoney',$id];
+    	$function = 'orderGoodsRefundMoney("'.$id.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 查询订单项退款信息
+     */
+    public function tagOrdergoodsrefundinfo($tag, $content)
+    {
+    	$id = isset($tag['id']) ? $tag['id'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Order";
+    	$function_array = ['getOrderGoodsRefundInfo',$id];
+    	$function = 'getOrderGoodsRefundInfo("'.$id.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * shopinfo
+     */
+    public function tagShopinfo($tag, $content)
+    {
+    	$id = isset($tag['id']) ? $tag['id'] : '';
+    	$file = isset($tag['file']) ? $tag['file'] : '*';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Shop";
+    	$function_array = ['getShopInfo',$id, $file];
+    	$function = 'getShopInfo("'.$id.'","'.$file.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 分页获取用户积分和余额
+     */
+    public function tagWebsiteinfo($tag, $content)
+    {
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "WebSite";
+    	$function_array = ['getWebSiteInfo'];
+    	$function = 'getWebSiteInfo()';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 分页获取用户积分和余额
+     */
+    public function tagShopaccountListbyuser($tag, $content)
+    {
+    	$id = isset($tag['id']) ? $tag['id'] : '';
+    	$num = isset($tag['num']) ? $tag['num'] : '0';
+    	$page = isset($tag['page']) ? $tag['page'] : '1';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Member";
+    	$function_array = ['getShopAccountListByUser', $id, $num, $page];
+    	$function = 'getShopAccountListByUser("'.$id.'","'.$page.'","'.$num.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 订单状态下的订单数目
+     */
+    public function tagMemberexpressaddressdetail($tag, $content)
+    {
+    	$id = isset($tag['id']) ? $tag['id'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Member";
+    	$function_array = ['getMemberExpressAddressDetail', $id];
+    	$function = 'getMemberExpressAddressDetail("'.$id.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 订单状态下的订单数目
+     */
+    public function tagOrderNumbyorderstatu($tag, $content)
+    {
+    	$where = isset($tag['where']) ? $tag['where'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Order";
+    	$function_array = ['getOrderNumByOrderStatu', $where];
+    	$function = 'getOrderNumByOrderStatu("'.$where.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 是否签到
+     */
+    public function tagIsmembersign($tag, $content)
+    {
+    	$shop_id = isset($tag['shop_id']) ? $tag['shop_id'] : '0';
+    	$uid = isset($tag['uid']) ? $tag['uid'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Member";
+    	$function_array = ['getIsMemberSign', $uid, $shop_id];
+    	$function = 'getIsMemberSign("'.$uid.'","'.$shop_id.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 送积分配置  签到 注册 分享
+     */
+    public function tagIntegralconfig($tag, $content)
+    {
+    	$id = isset($tag['id']) ? $tag['id'] : '0';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Config";
+    	$function_array = ['getIntegralConfig', $id,];
+    	$function = 'getIntegralConfig("'.$id.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 根据uid查询用户信息
+     */
+    public function tagUserinfobyuid($tag, $content)
+    {
+    	$id = isset($tag['id']) ? $tag['id'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "User";
+    	$function_array = ['getUserInfoByUid', $id,];
+    	$function = 'getUserInfoByUid("'.$id.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 标识：是否显示顶部关注  0：[隐藏]，1：[显示]
+     */
+//     public function tagIssubscribe($tag,$content)
+//     {
+//     	$shop_id = isset($tag['shop_id']) ? $tag['shop_id'] : '0';
+//     	$uid = isset($tag['uid']) ? $tag['uid'] : '';
+//     	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+//     	// 公众号配置查询
+//     	$config = new Config();
+//     	$wchat_config = $config->getInstanceWchatConfig($shop_id);
+    	
+//     	$is_subscribe = 5; // 标识：是否显示顶部关注 0：[隐藏]，1：[显示]
+//     	// 检查是否配置过微信公众号
+//     	if (! empty($wchat_config['value'])) {
+//     		$is_subscribe = 4;
+//     		if (! empty($wchat_config['value']['appid']) && ! empty($wchat_config['value']['appsecret'])) {
+//     			$is_subscribe = 3;
+//     			// 如何判断是否关注
+//     			if (isWeixin()) {
+//     				$is_subscribe = 2;
+//     				if (! empty($uid)) {
+//     					$is_subscribe = 6;
+//     					// 检查当前用户是否关注
+//     					$user = new UserService();
+//     					$user_sub = $user->checkUserIsSubscribeInstance($uid, $shop_id);
+//     					if ($user_sub == 0) {
+//     						// 未关注
+//     						$is_subscribe = 1;
+//     					}
+//     				}
+//     			}
+//     		}
+//     	}
+//     	return $this->loadContent($uid, $name, $content);
+//     }
+    /**
+     * 检测用户是否关注了实例公众号
+     */
+    public function tagCheckuserissubscribeinstance($tag, $content)
+    {
+    	$shop_id = isset($tag['shop_id']) ? $tag['shop_id'] : '0';
+    	$uid = isset($tag['uid']) ? $tag['uid'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "User";
+    	$function_array = ['checkUserIsSubscribeInstance', $uid, $shop_id];
+    	$function = 'checkUserIsSubscribeInstance("'.$uid.'","'.$shop_id.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 获取微信配置
+     */
+    public function tagInstancewchatconfig($tag, $content)
+    {
+    	$id = isset($tag['id']) ? $tag['id'] : '0';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Config";
+    	$function_array = ['getInstanceWchatConfig', $id];
+    	$function = 'getInstanceWchatConfig("'.$id.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
     /**
      * 购买咨询
      */
@@ -297,7 +603,6 @@ class Niu extends TagLib
     public function tagCurrenttime($tag,$content)
     {
     	$time = time();
-    	$time = $time * 1000;
     	return $time;
     }
     /**
@@ -1093,6 +1398,14 @@ class Niu extends TagLib
         $web_site = new WebSite();
         $data = $web_site->getWebSiteInfo();
         return $data['third_count'];
+    }
+    /**
+     * 
+     */
+    public function tagWebwechatsharelogo($tag, $content){
+        $web_site = new WebSite();
+        $data = $web_site->getWebSiteInfo();
+        return $data['web_wechat_share_logo'];
     }
     /**
      * 默认搜索

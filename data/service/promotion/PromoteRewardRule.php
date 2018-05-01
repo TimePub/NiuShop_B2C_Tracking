@@ -84,7 +84,7 @@ class PromoteRewardRule extends BaseService{
      * @param unknown $reg_partner_three_point
      * @return unknown
      */
-    public function setPointRewardRule($shop_id, $sign_point, $share_point, $reg_member_self_point, $reg_member_one_point, $reg_member_two_point, $reg_member_three_point, $reg_promoter_self_point, $reg_promoter_one_point, $reg_promoter_two_point, $reg_promoter_three_point, $reg_partner_self_point, $reg_partner_one_point, $reg_partner_two_point, $reg_partner_three_point,$click_point,$comment_point){
+    public function setPointRewardRule($shop_id, $sign_point, $share_point, $reg_member_self_point, $reg_member_one_point, $reg_member_two_point, $reg_member_three_point, $reg_promoter_self_point, $reg_promoter_one_point, $reg_promoter_two_point, $reg_promoter_three_point, $reg_partner_self_point, $reg_partner_one_point, $reg_partner_two_point, $reg_partner_three_point,$click_point,$comment_point,$reg_coupon ,$click_coupon ,$comment_coupon , $sign_coupon , $share_coupon){
         $reward_rule = new NsRewardRuleModel();
         $data = array(
             'sign_point'                => $sign_point,
@@ -102,7 +102,12 @@ class PromoteRewardRule extends BaseService{
             'reg_partner_two_point'     => $reg_partner_two_point,
             'reg_partner_three_point'   => $reg_partner_three_point,
             'click_point'               => $click_point ,
-            'comment_point'             => $comment_point
+            'comment_point'             => $comment_point,
+            'reg_coupon'             => $reg_coupon,
+            'click_coupon'             => $click_coupon,
+            'comment_coupon'             => $comment_coupon,
+            'sign_coupon'             => $sign_coupon,
+            'share_coupon'             => $share_coupon
         );
         $res = $reward_rule->save($data, ['shop_id' => $shop_id]);
         return $res;
@@ -162,10 +167,10 @@ class PromoteRewardRule extends BaseService{
                 $res = $this->addMemberPointData($shop_id, $uid, $number, 5, '签到赠送积分');
                 return $res;
             }else{
-                return false;
+                return 0;
             }
         }else{
-            return false;
+            return 0;
         }
     }
     
@@ -186,10 +191,10 @@ class PromoteRewardRule extends BaseService{
                 $res = $this->addMemberPointData($shop_id, $uid, $info['share_point'], 6, '分享赠送积分');
                 return $res;
             }else{
-                return false;
+                return 0;
             }
         }else{
-            return false;
+            return 0;
         }
     }
     
@@ -210,7 +215,7 @@ class PromoteRewardRule extends BaseService{
                     break;
             }
         }else{
-            return false;
+            return 0;
         }
     }
     

@@ -180,9 +180,13 @@ return [
         // 标签库标签结束标记
         'taglib_end' => '}',
         'taglib_load' => true, // 是否使用内置标签库之外的其它标签库，默认自动检测
-        'taglib_build_in' => 'cx'
+        'taglib_build_in' => 'cx',
+          // 引入模板标签
+        'taglib_pre_load' => 'data\taglib\Niu',
+        
+        // 是否开启模板编译缓存,设为false则每次都会重新编译
+        'tpl_cache' => false
     ], // 内置标签库名称(标签使用不必指定标签库名称),以逗号分隔 注意解析顺序
-       // 'taglib_pre_load' => 'data\extend\Niu',
        
     // 视图输出字符串内容替换
     'view_replace_str' => [],

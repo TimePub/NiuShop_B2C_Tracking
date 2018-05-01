@@ -60,8 +60,7 @@ function orderClose(order_id){
 		},
 		success : function(data) {
 			if(data["code"] > 0 ){
-				showBox("关闭成功");
-				window.location.reload();
+				showBox("关闭成功","success",location.href);
 			}
 		}
 	})
@@ -78,8 +77,7 @@ function getdelivery(order_id){
 		data : { "order_id" : order_id },
 		success : function(data) {
 			if(data["code"] > 0 ){
-				showBox("收货成功");
-				window.location = __URL(APPMAIN+ "/order/myorderlist?shop=0");
+				showBox("收货成功","success",__URL(APPMAIN+ "/order/myorderlist?shop=0"));
 			}
 		}
 	})
@@ -98,8 +96,7 @@ function delete_order(order_id){
 		},
 		success : function(data) {
 			if(data["code"] > 0 ){
-				showBox("订单删除成功");
-				window.location.reload();
+				showBox("订单删除成功","success",location.href);
 			}
 		}
 	})

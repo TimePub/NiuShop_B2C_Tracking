@@ -34,19 +34,22 @@ class Cms extends BaseController
     public function articleList()
     {
         $article = new CmsService();
+         $page_index = request()->get('page', '1');
         $class_id = request()->get('id', '');
         $pid = request()->get('class_id', '');
         $condition = [
             'nca.class_id' => $class_id
         ];
-        $result = $article->getArticleList(1, 0, $condition, 'nca.create_time desc');
+        $result = $article->getArticleList($page_index, PAGESIZE, $condition, 'nca.create_time desc');
         $cmsList = $article->getArticleClass(1, 0, '', 'sort');
         $articleClass = $article->getArticleClassDetail($class_id);
         $name = $articleClass['name'];
         $this->assign("name", $name);
-        
-        $this->assign('cmsList', $cmsList['data']);
+        $this->assign('page_count', $result['page_count']);
+        $this->assign('total_count', $result['total_count']);
+        $this->assign('page', $page_index);
         $this->assign('result', $result['data']);
+        $this->assign('cmsList', $cmsList['data']);
         $this->assign("pid", $pid);
         $this->assign('class_id', $class_id);
         return view($this->style . 'Cms/articleList');
@@ -78,7 +81,7 @@ class Cms extends BaseController
         } else {
             echo '<script>window.history.back(-1);</script>';
         }
-        $content = htmlspecialchars_decode(html_entity_decode($info["content"]));
+        $content = htmlspecialchars_decode(html_entity_decode($info["content"], ENT_COMPAT, "UTF-8"), ENT_COMPAT);
         $info["content"] = $content;
         $cmsList = $cms->getArticleClass(1, 0, '', 'sort');
         $this->assign('cmsList', $cmsList['data']);

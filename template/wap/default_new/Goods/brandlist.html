@@ -6,7 +6,7 @@
 <style>
 .sliding{overflow-y: auto;background: #ffffff;}
 .sliding::-webkit-scrollbar {display: none;}
-.sliding ul {white-space: nowrap;height:51px;line-height: 50px;text-align: center;}
+.sliding ul {white-space: nowrap;height:51px;line-height: 50px;text-align: left;}
 .sliding ul li {white-space: pre-line;padding:0 10px 0 10px;display: inline-block;background:#ffffff;border-right:2px solid #f8f8f8;}
 .sliding ul li:LAST-CHILD{border:0;}
 .selected{color:red;}
@@ -78,15 +78,11 @@ function showCategorySecond(brand_id,obj,page){
 	$.ajax({
 		url:'{:__URL('APP_MAIN/Goods/brandlist')}',
 		data:{ 'brand_id' : brand_id, "page":page},
-		beforeSend:function(){
-			showLoadMaskLayer();
-		},
 		success:function(data){
-			hiddenLoadMaskLayer();
 			$("#page_count").val(data['page_count']);//总页数
 			is_load = false;
 			if(data['data'].length==0){
-				$('.tablelist-append').html('<div class="nothing-data" align="center"><img src="__TEMP__/{$style}/public/images/wap_nodata.png"/><div>{:lang("not_find_the_goods_you_wanted")}…</div></div>');
+				$('.tablelist-append').html('<p style="color:#939393;text-align:center;margin-top:100px;"><img src="__TEMP__/{$style}/public/images/wap_nodata.png" height="60" style="margin-bottom:20px;"><br>Sorry！{:lang("goods_no_goods_you_want")}…</p>');
 			}else{
 				if(page == 1){
 					var html = '';
@@ -104,31 +100,32 @@ function showCategorySecond(brand_id,obj,page){
 
 								+'<div class="item-pic">'
 									+'<a href="'+__URL('APP_MAIN/goods/goodsdetail?id='+item.goods_id)+'">'
-										+'<img class="" src="'+__IMG(item.pic_cover_small)+'" alt="'+item.goods_name+'" style="display: block;max-width:100%;max-height:100%;">'
+										+'<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="'+__IMG(item.pic_cover_small)+'" alt="'+item.goods_name+'" style="display: block;max-width:100%;max-height:100%;">'
 									+'</a>'
 								+'</div>'
 
 								+'<dl>'
 									+'<dt>'
-										+'<a href="'+__URL('APP_MAIN/goods/goodsdetail?id='+item.goods_id)+'">'+item.goods_name+'</a>'
+										+'<a href="'+__URL('APP_MAIN/goods/goodsdetail?id='+item.goods_id)+'">';
+										if(item.group_name != null){
+											html += '<i class="goods_tab">'+item.group_name+'</i>';
+										}
+										html += item.goods_name
+										+'</a>'
 									+'</dt>'
 									+'<dd>'
-										+'<i>￥'+item.promotion_price+'</i>'
-									+'</dd>'
+										+'<i>'+item.display_price+'</i>';
+										if(item.shipping_fee == 0){
+											html += '<i class="shipping_fee" style="margin-top:7px;">包邮</i>';
+										}
+									html += '</dd>'
 								+'</dl>'
-							+'</div>'
-
-							+'<div class="item-con-info">'
-								+'<span class="goods-sales"> {:lang("goods_sales_volume")}：'+item.sales+'</span>'
-								+'<div class="cart-box">'
-									+'<a class="add-cart increase" data-goods_id="575" href="javascript:CartGoodsInfo('+item.goods_id+','+item.state+')"></a>'
-									+'<a class="decrease hide" data-goods_id="575" style="right: 60px;"></a>'
-								+'</div>'
 							+'</div>'
 						+'</li>'
 					+'</div>';
 				}
 				$('.tablelist-append').html(html);
+				img_lazyload();	
 			}
 		}
 	});

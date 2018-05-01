@@ -17,7 +17,7 @@
 		.print_area{
 			width: auto;
    			margin: 20px;
-   			height:1026px
+   			height:1000px
 		}
 		.print_area table{
 			border-top: 1px solid #aaa;
@@ -91,7 +91,7 @@
 </head>
 <body>
 	{foreach name="$order_list" item="vo"}
-	<div class="print_area">
+	<div class="print_area" style="page-break-after: always;">
 		<table style="border-top: none;padding: 0;">
 			<tr>
 				<th><img src="{:__IMG($web_info['logo'])}" alt=""></th>
@@ -171,7 +171,7 @@
 		<table>
 			<tr>
 				<td>收货人：{$vo.receiver_name}</td>
-				<td style="text-align: right;">地址：{$vo.receiver_province_name} {$vo.receiver_city_name} {$vo.receiver_district_name} {$vo.receiver_address}</td>
+				<td style="text-align: right;">地址：{$vo.receiver_address}</td>
 			</tr>
 			<tr>
 				<td>收货人手机号：{$vo.receiver_mobile}

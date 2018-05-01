@@ -8,7 +8,8 @@ function btn() {
 }
 $(function () {
     $("#addrole").click(function () {
-        popupOperate("gray-add-role", "用户组设置", "gray-add-role");
+    	$('#add_user').modal(show);
+        //popupOperate("gray-add-role", "用户组设置", "gray-add-role");
         $("[name = add_per]:checkbox").attr("checked", false);
     })
 });
@@ -49,8 +50,10 @@ function AllCheckBoxClick(event) {
         if ($(eventSrc).attr("checked") == "checked") {
 
             $("input[type=checkbox]", $(eventSrc).parent("li")).not($(eventSrc)).attr("checked", "checked");
+            $(eventSrc).parents('li').find("input[type=checkbox]").parent().addClass('selected');
         } else {
             $("input[type=checkbox]", $(eventSrc).parent("li")).not($(eventSrc)).attr("checked", false);
+            $(eventSrc).parents('li').find("input[type=checkbox]").parent().removeClass('selected');
         }
     }
     // 当选中的是parent
@@ -58,8 +61,10 @@ function AllCheckBoxClick(event) {
         // 选中旗下所有的checkBox
         if ($(eventSrc).attr("checked") == "checked") {
             $("input[type=checkbox]", $(eventSrc).parents("tr")[0]).not($(eventSrc)).attr("checked", "checked");
+            $(eventSrc).parents('tr.tr-Current').find("input[type=checkbox]").parent().addClass('selected');
         } else {
             $("input[type=checkbox]", $(eventSrc).parents("tr")[0]).not($(eventSrc)).attr("checked", false);
+            $(eventSrc).parents('tr.tr-Current').find("input[type=checkbox]").parent().removeClass('selected');
         }
     }
     // 当选中的是son
@@ -68,32 +73,48 @@ function AllCheckBoxClick(event) {
     		$(eventSrc).parent().parent().parent().parent().find("[dir='son']").prop("checked",true);
     		$(eventSrc).parent().parent().parent().parent().parent().parent().find("[dir='parent']").prop("checked",true);
             $("input[type=checkbox]", $(eventSrc).parents("ul.second")[0]).not($(eventSrc)).attr("checked", "checked");
+            $(eventSrc).parents('ul.second').find("input[type=checkbox]").parent().addClass('selected');
+            $(eventSrc).parents('tr.tr-Current').find("[dir='parent']").attr('checked',true).parent().addClass('selected');
         } else {
             $("input[type=checkbox]", $(eventSrc).parents("ul.second")[0]).not($(eventSrc)).attr("checked", false);
+            $(eventSrc).parents('ul.second').find("input[type=checkbox]").parent().removeClass('selected');
+            var two_obj = $(eventSrc).parents('tr.tr-Current').find("[dir='son']:checked");
+            
+            if(two_obj.length == 0){
+            	$(eventSrc).parents('tr.tr-Current').find("[dir='parent']").attr('checked',false).parent().removeClass('selected');
+            }
+            var one_obj = $(eventSrc).parents('tbody').find("[dir='parent']");
+            if(one_obj.length == 0){
+            	$(eventSrc).parents('li').find("[dir='title']").attr('checked',false).parent().removeClass('selected');
+            }
         }
     	// 选中旗下所有的checkBox
         
     }
     if ($(eventSrc).attr("dir") == "sonson") {   	
     	if ($(eventSrc).attr("checked") == "checked") {
-    		$(eventSrc).parent().parent().parent().parent().find("[dir='son']").prop("checked",true);
-    		$(eventSrc).parent().parent().parent().parent().parent().parent().find("[dir='parent']").prop("checked",true);
-           // $("input[type=checkbox]", $(eventSrc).parents("ul.second")[0]).not($(eventSrc)).attr("checked", "checked");
+    		$(eventSrc).parents('ul.second').find("[dir='son']").prop("checked",true);
+    		$(eventSrc).parents('tr.tr-Current').find("[dir='parent']").prop("checked",true);
+    		//为二级添加选中状态
+    		$(eventSrc).parents('ul.second').find("[dir='son']").parent().addClass('selected');
+    		//为一级添加选中状态
+    		$(eventSrc).parents('tr.tr-Current').find("[dir='parent']").parent().addClass('selected');
         } else {
-        	var parentObj=$(eventSrc).parent().parent().parent().parent().find("[dir='sonson']:checked");
-        	var parentsObj=$(eventSrc).parent().parent().parent().parent().parent().parent().find("[dir='parent']:checked");
+        	//如果三级数量归零，则相应二级去除选中状态
+        	var parentObj=$(eventSrc).parents('ul.second').find("[dir='sonson']:checked");
         	var num = parentObj.length;
-        	var nums = parentsObj.length;
-//        	alert(num);
-//        	alert(nums);
         	if(num ==0){
-        		$(eventSrc).parent().parent().parent().parent().find("[dir='son']").prop("checked",false);
+        		$(eventSrc).parents('ul.second').find("[dir='son']").prop("checked",false);
+        		$(eventSrc).parents('ul.second').find("[dir='son']").parent().removeClass('selected');
         	}
+        	//如果二级数量归零，则相应一级去除选中状态
+        	var parentsObj=$(eventSrc).parents('tr.tr-Current').find("[dir='son']:checked");
+        	var nums = parentsObj.length;
         	if(nums ==0){
-        		$(eventSrc).parent().parent().parent().parent().parent().parent().find("[dir='parent']").prop("checked",false);
+        		$(eventSrc).parents('tr.tr-Current').find("[dir='parent']").prop("checked",false);
+        		$(eventSrc).parents('tr.tr-Current').find("[dir='parent']").parent().removeClass('selected');
         	}
-        	//$(eventSrc).parent().parent().parent().find("[dir='son']").prop("checked",true);
-            //$("input[type=checkbox]", $(eventSrc).parents("ul.second")[0]).not($(eventSrc)).attr("checked", false);
+        	
         }
     	// 选中旗下所有的checkBox
         
@@ -183,6 +204,6 @@ function EditAllCheckBoxClick(event) {
     }
 };
 function Editbtn() {
-    EditsendDatas();
+	EditsendDatas();
     $("#EditSubmit").submit();
 }

@@ -8,33 +8,32 @@
 	<dl>
 		<dt><span class="required">*</span>标题：</dt>
 		<dd>
-			<input id="title" type="text" class="input-common" />
+			<input id="title" type="text" class="input-common long" />
 		</dd>
 	</dl>
 	<dl style="display:none;">
 		<dt>标题图片：</dt>
 		<dd>
-			<div class="class-logo">
-				<p>
-					<img id="imglogo">
-				</p>
-			</div>
-			<div class="upload-btn">
-				<span>
-					<input class="input-file" name="file_upload" id="uploadImg" type="file" onchange="imgUpload(this);">
-					<input type="hidden" id="logo" />
-				</span>
-				<p><i class="fa fa-cloud-upload"></i>上传图片</p>
+			<div class="upload-btn-common">
+				<div>
+					<input class="input-file" name="file_upload" id="uploadLogo" type="file" onchange="imgUpload(this);" title="上传">
+					<input type="hidden" id="logo" value="">
+				</div>
+				
+				<input type="text" id="text_logo" class="input-common" readonly="readonly" value="">
+				<em>上传</em>								
+				<img id="preview_logo" src="__STATIC__/blue/img/upload-common-select.png" data-src="" data-html="true" data-container="body" data-placement="top" data-trigger="manual" data-original-title="" title="">
 			</div>
 			<p class="hint">
-				<span style="color: orange;">建议使用宽100像素-高100像素内的GIF或PNG透明图片；点击下方"提交"按钮后生效。</span>
+				<span style="color:orange;">建议使用宽100像素-高100像素内的GIF或PNG透明图片；点击下方"提交"按钮后生效。</span>
 			</p>
+			<p class="error">请上传图片</p>
 		</dd>
 	</dl>
 	<dl style="display:none;">
 		<dt>链接地址：</dt>
 		<dd>
-			<input id="link_url" type="text" class="input-common" />
+			<input id="link_url" type="text" class="input-common long" />
 		</dd>
 	</dl>
 	<dl>
@@ -62,13 +61,16 @@
 	<dl>
 		<dt>排序：</dt>
 		<dd>
-			<input id="sort" class="input-common" type="text" onkeyup="this.value=this.value.replace(/\D/g,'')" />
+			<input id="sort" class="input-common harf" type="number" onkeyup="this.value=this.value.replace(/\D/g,'')" />
 		</dd>
 	</dl>
 	
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="setConfigAjax();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="setConfigAjax();">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
 	</dl>
 </div>
 <script src="__STATIC__/js/ajax_file_upload.js" type="text/javascript"></script>
@@ -138,11 +140,11 @@ function setConfigAjax() {
 	var is_visibility = $("#is_visibility").is(":checked") ? 1 : 0;
 	var sort = $("#sort").val();
 	if(title == ""){
-		showMessage('error', "请输入标题");
+		showTip("请输入标题",'warning');
 		return;
 	}
 	if(content == ""){
-		showMessage('error', "请输入内容");
+		showTip("请输入内容",'warning');
 		return;
 	}
 	if(!if_submit){
@@ -162,9 +164,10 @@ function setConfigAjax() {
 			success : function(data) {
 				if_submit  = false;
 				if (data["code"] > 0) {
-					showMessage('success', data["message"], "{:__URL('ADMIN_MAIN/config/helpdocument')}");
+					showTip(data["message"],'success');
+					window.location.href = "{:__URL('ADMIN_MAIN/config/helpdocument')}";
 				} else {
-					showMessage('error', data["message"]);
+					showTip(data["message"],'error');
 				}
 			}
 		});
@@ -173,11 +176,13 @@ function setConfigAjax() {
 //图片上传
 function imgUpload(event) {
 	var fileid = $(event).attr("id");
-	var data = { 'file_path' : UPLOADCOMMON };
+	var data = {'file_path' : UPLOADCOMMON }
+	var id = $(event).next().attr("id");
 	uploadFile(fileid,data,function(res){
 		if(res.code){
-			$("#imglogo").attr("src",__IMG(res.data));
-			$("#logo").val(res.data);
+			$("#" + id).val(res.data);
+			$("#text_" + id).val(res.data);
+			$("#preview_"+ id).attr("data-src",__IMG(res.data));
 			showTip(res.message,"success");
 		}else{
 			showTip(res.message,"error");

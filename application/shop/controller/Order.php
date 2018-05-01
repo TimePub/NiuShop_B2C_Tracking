@@ -18,6 +18,9 @@ namespace app\shop\controller;
 use data\service\Express;
 use data\service\Member;
 use data\service\Order as OrderService;
+use data\service\promotion\PromoteRewardRule;
+use data\service\Config as Config;
+use data\service\GroupBuy;
 
 /**
  * 订单控制器
@@ -48,16 +51,14 @@ class Order extends BaseController
         $pay_type = request()->post("pay_type", 1); // 支付方式
         $buyer_invoice = request()->post("buyer_invoice", ""); // 发票
         $pick_up_id = request()->post("pick_up_id", 0); // 自提点
-        $shipping_type = 1; // 配送方式，1：物流，2：自提
+        $shipping_type = request()->post("shipping_type",1); // 配送方式，1：商家配送，2：自提  3：本地配送
+        $shipping_time = request()->post("shipping_time", 0); // 配送时间
         $express_company_id = request()->post("express_company_id", 0); // 物流公司
-        if ($pick_up_id != 0) {
-            $shipping_type = 2;
-        }
+ 
         $member = new Member();
-        $shipping_time = date("Y-m-d H::i:s", time());
         $address = $member->getDefaultExpressAddress();
-        $coin = 0; //购物币
-        
+        $coin = 0; // 购物币
+                   
         // 查询商品限购
         $purchase_restriction = $order->getGoodsPurchaseRestrictionForOrder($goods_sku_list);
         if (! empty($purchase_restriction)) {
@@ -67,7 +68,7 @@ class Order extends BaseController
             );
             return $res;
         } else {
-            $order_id = $order->orderCreate('1', $out_trade_no, $pay_type, $shipping_type, '1', 1, $leavemessage, $buyer_invoice, $shipping_time, $address['mobile'], $address['province'], $address['city'], $address['district'], $address['address'], $address['zip_code'], $address['consigner'], $integral, $use_coupon, 0, $goods_sku_list, $user_money, $pick_up_id, $express_company_id, $coin, $address["phone"]);
+            $order_id = $order->orderCreate('1', $out_trade_no, $pay_type, $shipping_type, '1', 1, $leavemessage, $buyer_invoice, $shipping_time, $address['mobile'], $address['province'], $address['city'], $address['district'], $address["address_info"].'&nbsp;'.$address['address'], $address['zip_code'], $address['consigner'], $integral, $use_coupon, 0, $goods_sku_list, $user_money, $pick_up_id, $express_company_id, $coin, $address["phone"]);
             // Log::write($order_id);
             if ($order_id > 0) {
                 $order->deleteCart($goods_sku_list, $this->uid);
@@ -77,6 +78,98 @@ class Order extends BaseController
                 return AjaxReturn($order_id);
             }
         }
+    }
+    
+    /**
+     * 预售订单创建
+     */
+    public function presellOrderCreate(){
+        
+        $order = new OrderService();
+        // 获取支付编号
+        $out_trade_no = $order->getOrderTradeNo();
+        $use_coupon = request()->post('use_coupon', 0); // 优惠券
+        $integral = request()->post('integral', 0); // 积分
+        $goods_sku_list = request()->post('goods_sku_list', ''); // 商品列表
+        $leavemessage = request()->post('leavemessage', ''); // 留言
+        $user_money = request()->post("account_balance", 0); // 使用余额
+        $pay_type = request()->post("pay_type", 1); // 支付方式
+        $buyer_invoice = request()->post("buyer_invoice", ""); // 发票
+        $pick_up_id = request()->post("pick_up_id", 0); // 自提点
+        $shipping_type = request()->post("shipping_type",1); // 配送方式，1：商家配送，2：自提  3：本地配送
+        $shipping_time = request()->post("shipping_time", 0); // 配送时间
+        $express_company_id = request()->post("express_company_id", 0); // 物流公司
+        $is_full_payment = request()->post('is_full_payment', 0);
+        $member = new Member();
+        $address = $member->getDefaultExpressAddress();
+        $coin = 0; // 购物币
+         
+        // 查询商品限购
+        $purchase_restriction = $order->getGoodsPurchaseRestrictionForOrder($goods_sku_list);
+        if (! empty($purchase_restriction)) {
+            $res = array(
+                "code" => 0,
+                "message" => $purchase_restriction
+            );
+            return $res;
+        } else {
+            
+            //预售订单添加
+            $order_id = $order->orderCreatePresell(6, $out_trade_no, $pay_type, $shipping_type, '1', 1, $leavemessage, $buyer_invoice, $shipping_time, $address['mobile'], $address['province'], $address['city'], $address['district'], $address["address_info"].'&nbsp;'.$address['address'], $address['zip_code'], $address['consigner'], $integral, $use_coupon, 0, $goods_sku_list, $user_money, $pick_up_id, $express_company_id, $coin, $address["phone"], $is_full_payment);
+            // Log::write($order_id);
+            if ($order_id > 0) {
+                $order->deleteCart($goods_sku_list, $this->uid);
+                $_SESSION['order_tag'] = ""; // 订单创建成功会把购物车中的标记清楚
+                return AjaxReturn($out_trade_no);
+            } else {
+                return AjaxReturn($order_id);
+            }
+        }
+    }
+    
+    /**
+     * 创建订单（团购订单）
+     */
+    public function groupBuyOrderCreate()
+    {
+        $order = new OrderService();
+        $group_buy_service = new GroupBuy();
+        // 获取支付编号
+        $out_trade_no = $order->getOrderTradeNo();
+        $use_coupon = request()->post('use_coupon', 0); // 优惠券
+        $integral = request()->post('integral', 0); // 积分
+        $goods_sku_list = request()->post('goods_sku_list', ''); // 商品列表
+        $leavemessage = request()->post('leavemessage', ''); // 留言
+        $user_money = request()->post("account_balance", 0); // 使用余额
+        $pay_type = request()->post("pay_type", 1); // 支付方式
+        $buyer_invoice = request()->post("buyer_invoice", ""); // 发票
+        $pick_up_id = request()->post("pick_up_id", 0); // 自提点
+        $shipping_type = request()->post("shipping_type",1); // 配送方式，1：商家配送，2：自提  3：本地配送
+        $shipping_time = request()->post("shipping_time", 0); // 配送时间
+        $express_company_id = request()->post("express_company_id", 0); // 物流公司
+    
+        $member = new Member();
+        $address = $member->getDefaultExpressAddress(); // 收货人信息
+        $receiver_mobile = $address["mobile"]; // 收货人手机号
+        $receiver_province = $address["province"]; // 收货人地址
+        $receiver_city = $address["city"]; // 收货人地址
+        $receiver_district = $address["district"]; // 收货人地址
+        $receiver_address = $address["address_info"].'&nbsp;'.$address['address']; // 收货人地址
+        $receiver_zip = $address["zip_code"]; // 收货人邮编
+        $receiver_name = $address["consigner"]; // 收货人姓名
+        $coin = 0; // 购物币
+         
+        // 查询商品限购
+        $order_id = $group_buy_service->groupBuyOrderCreate(1, $out_trade_no, $pay_type, $shipping_type, 1, 1, $leavemessage, $buyer_invoice, $shipping_time, $receiver_mobile, $receiver_province, $receiver_city, $receiver_district, $receiver_address, $receiver_zip, $receiver_name, $integral, 0, $goods_sku_list, $user_money, $pick_up_id, $express_company_id, $coin);
+        // Log::write($order_id);
+        if ($order_id > 0) {
+            $order->deleteCart($goods_sku_list, $this->uid);
+            $_SESSION['order_tag'] = ""; // 订单创建成功会把购物车中的标记清楚
+            return AjaxReturn($out_trade_no);
+        } else {
+            return AjaxReturn($order_id);
+        }
+        
     }
 
     /**
@@ -103,6 +196,7 @@ class Order extends BaseController
         $express_company_id = 0; // 物流公司
         $member = new Member();
         $shipping_time = date("Y-m-d H::i:s", time());
+        
         // 查询商品限购
         $purchase_restriction = $order->getGoodsPurchaseRestrictionForOrder($goods_sku_list);
         if (! empty($purchase_restriction)) {
@@ -114,6 +208,101 @@ class Order extends BaseController
         } else {
             $order_id = $order->orderCreateVirtual('2', $out_trade_no, $pay_type, $shipping_type, '1', 1, $leavemessage, $buyer_invoice, $shipping_time, $integral, $use_coupon, 0, $goods_sku_list, $user_money, $pick_up_id, $express_company_id, $user_telephone);
             // Log::write($order_id);
+            if ($order_id > 0) {
+                $order->deleteCart($goods_sku_list, $this->uid);
+                $_SESSION['order_tag'] = ""; // 订单创建成功会把购物车中的标记清楚
+                return AjaxReturn($out_trade_no);
+            } else {
+                return AjaxReturn($order_id);
+            }
+        }
+    }
+
+    /**
+     * 创建订单（组合商品）
+     */
+    public function createComboPackageOrder()
+    {
+        $order = new OrderService();
+        // 获取支付编号
+        $out_trade_no = $order->getOrderTradeNo();
+        $use_coupon = request()->post('use_coupon', 0); // 优惠券
+        $integral = request()->post('integral', 0); // 积分
+        $goods_sku_list = request()->post('goods_sku_list', ''); // 商品列表
+        $leavemessage = request()->post('leavemessage', ''); // 留言
+        $user_money = request()->post("account_balance", 0); // 使用余额
+        $pay_type = request()->post("pay_type", 1); // 支付方式
+        $buyer_invoice = request()->post("buyer_invoice", ""); // 发票
+        $pick_up_id = request()->post("pick_up_id", 0); // 自提点
+        $shipping_type = request()->post("shipping_type", 1); // 配送方式，1：物流，2：自提 3：本地配送
+        $shipping_time = request()->post("shipping_time", 0); // 配送时间
+        $express_company_id = request()->post("express_company_id", 0); // 物流公司
+        $combo_package_id = request()->post("combo_package_id", 0); // 组合套餐id
+        $buy_num = request()->post("buy_num", 1); // 购买套数
+    
+        $member = new Member();
+        $address = $member->getDefaultExpressAddress();
+        $coin = 0; // 购物币
+                   
+        // 查询商品限购
+        $purchase_restriction = $order->getGoodsPurchaseRestrictionForOrder($goods_sku_list);
+        if (! empty($purchase_restriction)) {
+            $res = array(
+                "code" => 0,
+                "message" => $purchase_restriction
+            );
+            return $res;
+        } else {
+            $order_id = $order->orderCreateComboPackage("3", $out_trade_no, $pay_type, $shipping_type, "1", 1, $leavemessage, $buyer_invoice, $shipping_time, $address['mobile'], $address['province'], $address['city'], $address['district'], $address["address_info"].'&nbsp;'.$address['address'], $address['zip_code'], $address['consigner'], $integral, 0, $goods_sku_list, $user_money, $pick_up_id, $express_company_id, $coin, $address["phone"], $combo_package_id, $buy_num);
+            if ($order_id > 0) {
+                $order->deleteCart($goods_sku_list, $this->uid);
+                $_SESSION['order_tag'] = ""; // 订单创建成功会把购物车中的标记清楚
+                return AjaxReturn($out_trade_no);
+            } else {
+                return AjaxReturn($order_id);
+            }
+        }
+    }
+    
+    /**
+     * 创建订单（积分兑换）
+     */
+    public function pointExchangeOrderCreate(){
+        $order = new OrderService();
+        // 获取支付编号
+        $out_trade_no = $order->getOrderTradeNo();
+        $use_coupon = request()->post('use_coupon', 0); // 优惠券
+        $integral = request()->post('integral', 0); // 积分
+        $goods_sku_list = request()->post('goods_sku_list', ''); // 商品列表
+        $leavemessage = request()->post('leavemessage', ''); // 留言
+        $user_money = request()->post("account_balance", 0); // 使用余额
+        $pay_type = 11; //request()->post("pay_type", 1); // 支付方式 积分兑换
+        $buyer_invoice = request()->post("buyer_invoice", ""); // 发票
+        $pick_up_id = request()->post("pick_up_id", 0); // 自提点
+        $shipping_type = request()->post("shipping_type", 1); // 配送方式，1：物流，2：自提 3：本地配送
+        $shipping_time = request()->post("shipping_time", 0); // 配送时间
+        $express_company_id = request()->post("express_company_id", 0); // 物流公司
+        $combo_package_id = request()->post("combo_package_id", 0); // 组合套餐id
+        $buy_num = request()->post("buy_num", 1); // 购买套数
+        $point_exchange_type = request()->post("point_exchange_type", 1);
+        $order_goods_type = request()->post("order_goods_type", 1); //商品类型 0虚拟商品 1实物商品
+        $user_telephone = request()->post("user_telephone", ""); //虚拟商品手机号
+        $order_type = $order_goods_type == 1 ? 1 : 2; //订单类型 1实物订单 2虚拟订单
+        
+        $member = new Member();
+        $address = $member->getDefaultExpressAddress();
+        $coin = 0; // 购物币
+         
+        // 查询商品限购
+        $purchase_restriction = $order->getGoodsPurchaseRestrictionForOrder($goods_sku_list);
+        if (! empty($purchase_restriction)) {
+            $res = array(
+                "code" => 0,
+                "message" => $purchase_restriction
+            );
+            return $res;
+        } else {
+            $order_id = $order->orderCreatePointExhange($order_type, $out_trade_no, $pay_type, $shipping_type, "1", 1, $leavemessage, $buyer_invoice, $shipping_time, $address['mobile'], $address['province'], $address['city'], $address['district'], $address["address_info"].'&nbsp;'.$address['address'], $address['zip_code'], $address['consigner'], $integral, $use_coupon, 0, $goods_sku_list, $user_money, $pick_up_id, $express_company_id, $coin, $address['phone'], $point_exchange_type, $order_goods_type, $user_telephone);
             if ($order_id > 0) {
                 $order->deleteCart($goods_sku_list, $this->uid);
                 $_SESSION['order_tag'] = ""; // 订单创建成功会把购物车中的标记清楚
@@ -278,6 +467,27 @@ class Order extends BaseController
             }
         }
     }
+    
+    /**
+     * 订单后期预定金支付页面
+     */
+    public function orderPresellPay()
+    {
+        $order_id = request()->get('id', 0);
+        $order_service = new OrderService();
+        
+        $presell_order_info = $order_service->getOrderPresellInfo(0, ['relate_id'=>$order_id]);
+        $presell_order_id = $presell_order_info['presell_order_id'];
+   
+        if ( $presell_order_id!= 0) {
+            // 更新支付流水号
+            $new_out_trade_no = $order_service->getPresellOrderNewOutTradeNo($presell_order_id);
+            $url = __URL(__URL__ . '/wap/pay/getpayvalue?out_trade_no=' . $new_out_trade_no);
+            header("Location: " . $url);
+            exit();
+        } 
+    }
+    
 
     /**
      * 收货
@@ -322,6 +532,7 @@ class Order extends BaseController
                 'content' => $goodsEvaluate->content,
                 'addtime' => time(),
                 'image' => $goodsEvaluate->imgs,
+                
                 // 'explain_first' => $goodsEvaluate->explain_first,
                 'member_name' => $this->user->getMemberDetail()['member_name'],
                 'explain_type' => $goodsEvaluate->explain_type,
@@ -331,8 +542,20 @@ class Order extends BaseController
             );
             $dataArr[] = $data;
         }
-        
-        return $order->addGoodsEvaluate($dataArr, $order_id);
+        $result = $order->addGoodsEvaluate($dataArr, $order_id);
+        if ($result) {
+            $Config = new Config();
+            $integralConfig = $Config->getIntegralConfig($this->instance_id);
+            if ($integralConfig['comment_coupon'] == 1) {
+                $rewardRule = new PromoteRewardRule();
+                $res = $rewardRule->getRewardRuleDetail($this->instance_id);
+                if ($res['comment_coupon'] != 0) {
+                    $member = new Member();
+                    $retval = $member->memberGetCoupon($this->uid, $res['comment_coupon'], 2);
+                }
+            }
+        }
+        return $result;
     }
 
     /**
@@ -380,4 +603,42 @@ class Order extends BaseController
             return AjaxReturn($res);
         }
     }
+
+    /**
+     * 申请  售后
+     */
+    public function orderGoodsCustomerServiceAskfor()
+    {
+        $order_goods_id = request()->post("order_goods_id", 0);
+        $refund_type = request()->post("refund_type", 1);
+        $refund_money = request()->post("refund_money", 0);
+        $refund_reason = request()->post("refund_reason", "");
+        $order_service = new OrderService();
+        $retval = $order_service->orderGoodsCustomerServiceAskfor($order_goods_id, $refund_type, $refund_money, $refund_reason);
+        return AjaxReturn($retval);
+    }
+    
+    /**
+     * 买家退货  售后
+     *
+     * @return Ambigous <multitype:unknown, multitype:unknown unknown string >
+     */
+    public function orderGoodsCustomerExpress()
+    {
+        $id = isset($_POST['id']) ? $_POST['id'] : 0;
+        $order_goods_id = isset($_POST['order_goods_id']) ? $_POST['order_goods_id'] : 0;
+        $refund_express_company = isset($_POST['refund_express_company']) ? $_POST['refund_express_company'] : '';
+        $refund_shipping_no = isset($_POST['refund_shipping_no']) ? $_POST['refund_shipping_no'] : 0;
+
+        $order_service = new OrderService();
+        $retval = $order_service->orderGoodsCustomerExpress($id, $order_goods_id, $refund_express_company, $refund_shipping_no);
+        return AjaxReturn($retval);
+    }
+    
+    public function test(){
+        $order_service = new OrderService();
+        $res = $order_service->presellOrderOffLinePay(3);
+    
+    }
+    
 }

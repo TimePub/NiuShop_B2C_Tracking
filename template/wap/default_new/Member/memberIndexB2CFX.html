@@ -35,9 +35,9 @@
 
 				<i class="face_img" onclick="location.href='{:__URL('APP_MAIN/member/personaldata?shop_id='.$shop_id)}'">
 				{eq name="member_img" value="0"}
-					<img src="__TEMP__/{$style}/public/images/member_default.png" />
+					<img src="{:__IMG($default_headimg)}" />
 				{else/}
-					<img src="__UPLOAD__/{$member_img}"  onerror="this.src='__TEMP__/{$style}/public/images/member_default.png'"/>
+					<img src="{:__IMG($default_headimg)}" class="lazy_load" data-original="{:__IMG($member_img)}" />
 				{/eq}
 				</i>
 				<span class="account_management"  onclick="location.href='{:__URL('APP_MAIN/member/personaldata?shop_id='.$shop_id)}'">账户管理<i class="data-go"></i></span>
@@ -113,7 +113,7 @@
 	<ul class="fu clear" >
 		<li class="last" >
 			<a href="{:__URL('APP_MAIN/order/myorderlist?status=0&shop_id='.$shop_id)}">
-				<img src="__TEMP__/{$style}/public/images/pay.png">
+				<img src="__TEMP__/{$style}/public/images/member_icon/pay.png">
 				{if condition="$unpaidOrder neq 0"}
 					<div class="tips">{$unpaidOrder}</div>
 				{/if}
@@ -122,7 +122,7 @@
 		</li>
 		<li class="last">
 			<a href="{:__URL('APP_MAIN/order/myorderlist?status=1&shop_id='.$shop_id)}">
-				<img src="__TEMP__/{$style}/public/images/send.png">
+				<img src="__TEMP__/{$style}/public/images/member_icon/send.png">
 				{if condition="$shipmentPendingOrder neq 0"}
 				<div class="tips">{$shipmentPendingOrder}</div>
 				{/if}
@@ -131,7 +131,7 @@
 		</li>
 		<li class="last">
 			<a href="{:__URL('APP_MAIN/order/myorderlist?status=2&shop_id='.$shop_id)}">
-				<img src="__TEMP__/{$style}/public/images/recieve.png">
+				<img src="__TEMP__/{$style}/public/images/member_icon/recieve.png">
 				{if condition="$goodsNotReceivedOrder neq 0"}
 				<div class="tips">{$goodsNotReceivedOrder}</div>
 				{/if}
@@ -140,13 +140,13 @@
 		</li>
 		<li class="last">
 			<a href="{:__URL('APP_MAIN/order/myorderlist?status=3&shop_id='.$shop_id)}">
-				<img src="__TEMP__/{$style}/public/images/recieved.png">
+				<img src="__TEMP__/{$style}/public/images/member_icon/received.png">
 				<p>{:lang('member_received_goods')}</p>
 			</a>
 		</li>
 		<li class="last">
 			<a href="{:__URL('APP_MAIN/order/myorderlist?status=4&shop_id='.$shop_id)}">
-				<img src="__TEMP__/{$style}/public/images/reback.png"/>
+				<img src="__TEMP__/{$style}/public/images/member_icon/reback.png"/>
 				{if condition="$refundOrder neq 0"}
 				<div class="tips">{$refundOrder}</div>
 				{/if}
@@ -188,9 +188,8 @@
 			{notempty name="$vo['url']"}
 			<li>
 				<a href="{:__URL('APP_MAIN/'.$vo['url'])}">
-					<i class=" module-icon {$vo.class}" ></i>
+					<i class="member-icon icon_{$vo.class}"></i>
 					<span >{$vo.title}</span>
-					<span class='jiantou'></span>
 				</a>
 			</li>
 			{/notempty}

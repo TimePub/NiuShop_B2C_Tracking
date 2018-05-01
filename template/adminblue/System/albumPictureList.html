@@ -1,4 +1,4 @@
-{extend name="adminblue/base" /}
+	{extend name="adminblue/base" /}
 {block name="resources"/}
 <link rel="stylesheet" type="text/css" href="__STATIC__/blue/css/album_list.css"/>
 <link rel="stylesheet" type="text/css" href="ADMIN_CSS/plugin/jquery.searchableSelect.css"/>
@@ -6,15 +6,14 @@
 <script src="ADMIN_JS/plugin/jquery.searchableSelect.js"></script>
 <style type="text/css">
 .album-intro {min-height: 52px;padding: 10px 0 10px 60px;border-bottom: 1px solid #e5e5e5;position: relative;z-index: 1;overflow: hidden;margin:0;}
-.album-intro .album-name {font-size: 14px;color: #0072D2;height: 20px;margin:2px 10px;}
+.album-intro .album-name {font-size: 14px;color: #126AE4;height: 20px;margin:2px 10px;}
 .album-intro .album-covers {line-height: 0;background-color: #FFF;text-align: center;vertical-align: middle;display: table-cell;width: 48px;height: 48px;border: solid 1px #e5e5e5;overflow: hidden;position: absolute;z-index: 1;top: 12px;left: 0;}
 .album-intro .album-info {font-size: 12px;color: #999;width: 75%;height: 32px;overflow: hidden;}
 .album-intro .album-covers img {max-width: 48px;max-height: 48px;margin-top: expression(48-this .height/ 2);}
-.search-form {color: #999;width: 100%;border-bottom: solid 1px #e5e5e5;}
-.search-form th {font-size: 12px;line-height: 22px;text-align: right;width: 50px;padding: 8px 8px 8px 0;font-weight: normal;}
+.search-form {color: #999;width: 100%;}
+.search-form th {font-size: 12px;line-height: 22px;text-align: right;padding: 8px 0;font-weight: normal;}
 .search-form td {text-align: left;padding: 8px 0;}
-#albumList li dl dt .checkbox {position: absolute;z-index: 2;top: 15px;left: 15px;}
-#albumList li dl dt .editInput1 {font-size: 12px;font-weight: bold;line-height: 20px;color: #555;background-color: transparent;width: 140px;height: 20px;border: 0;position: absolute;z-index: 1;top: 180px;left: 15px;}
+#albumList li dl dt .editInput1 {font-size: 12px;font-weight: bold;line-height: 20px;color: #555;background-color: transparent;width: 140px;height: 20px;border: 0;position: absolute;z-index: 1;top: 165px;left: 15px;}
 #albumList li dl dt span {font-size: 12px;line-height: 16px;vertical-align: middle;text-align: center;width: 16px;height: 16px;position: absolute;z-index: 2;top: 182px;right: 10px;}
 #albumList li dl dd.buttons .upload-btn {width: 85px;height: 25px;display: inline-block;zoom: 1;margin:0;float:left;}
 .ncsc-picture-list li dl dd.buttons a {float:left;}
@@ -25,15 +24,15 @@
 .right-side-operation ul li{position: relative;}
 .modal-body{overflow: inherit;}
 .dropdown.bootstrapMenu{z-index:4000 !important;}
+#albumList li dl dt {height: 175px;position: relative;}
+.checkbox-common{position: absolute;top: 3px;left: 3px;}
+.input-file{width: 68px !important;}
 </style>
 {/block}
 {block name="right_tab"}
-<li>
-	<a id="open_uploader"><i class="fa fa-cloud-upload"></i>上传图片</a>
-	<input type="file" id="fileupload" class="input-file" name="file_upload" multiple="multiple"/>
 	{include file="adminblue/System/uploadAlbumImg"/}
-</li>
 {/block}
+{block name="alert_info"}注：在使用‘替换上传’功能时，请保持图片的扩展名与被替换图片相同。{/block}
 {block name="main"}
 <input type="hidden" id="album_id" value="{$album_id}" />
 <dl class="album-intro">
@@ -46,17 +45,20 @@
 <table class="search-form">
 	<tbody>
 		<tr>
-			<th style="width: 70px;">批量处理</th>
-			<td>
-				<a href="javascript:void(0);" onclick="checkAll()">全选</a>
-				<a href="javascript:void(0);" onclick="uncheckAll()">取消</a>
-				<a href="javascript:void(0);" onclick="switchAll()">反选</a>
-				<a href="javascript:void(0);" onclick="submit_form('del')">删除</a>
-				<a href="javascript:void(0);" onclick="submit_form('changealbum')">转移相册</a>
-			</td>
-			<th>排序方式</th>
+			<th style="text-align: left;">
+				<span style="position: relative;">
+					<button class="btn-common-delete" id="open_uploader">上传图片</button>
+					<input type="file" id="fileupload" class="input-file" name="file_upload" multiple="multiple"/>
+				</span>
+				<button class="btn-common" onclick="checkAll()">全选</button>
+				<button class="btn-common" onclick="uncheckAll()">取消</button>
+				<button class="btn-common" onclick="switchAll()">反选</button>
+				<button class="btn-common" onclick="submit_form('del')">删除</button>
+				<button class="btn-common" onclick="submit_form('changealbum')">转移相册</button>
+			</th>
 			<th>
-				<select id="is_use" onchange="LoadingInfo(1);" class="select-common">
+				<span>排序方式：</span>
+				<select id="is_use" onchange="LoadingInfo(1);" class="select-common middle">
 					<option value="0">全部</option>
 					<option value="1">未使用</option>
 				</select>
@@ -65,9 +67,6 @@
 	</tbody>
 </table>
 <div class="ncsc-picture-list">
-	<div class="alert alert-info">
-		<strong>注：在使用‘替换上传’功能时，请保持图片的扩展名与被替换图片相同。</strong>
-	</div>
 	<ul id="albumList"></ul>
 </div>
 <input type="hidden" id="album_cover_id" value="{$album_cover}">
@@ -95,8 +94,8 @@
 				</div>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-primary" onclick="changeAlbumClass();">修改</button>
-				<button type="button" class="btn" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn-common btn-big" onclick="changeAlbumClass();">修改</button>
+				<button type="button" class="btn btn-big" data-dismiss="modal">关闭</button>
 			</div>
 		</div>
 	</div>
@@ -146,9 +145,10 @@ function LoadingInfo(page_index) {
 		url : "{:__URL('ADMIN_MAIN/system/albumpicturelist')}",
 		data : { "page_index" : page_index, "page_size" : $("#showNumber").val(), "album_id" : album_id, "is_use" : $("#is_use").val() },
 		success : function(data) {
-			var html = '';
 			if (data["data"].length > 0) {
+				$("#albumList").empty();
 				for (var i = 0; i < data["data"].length; i++) {
+					var html = '';
 					if(album_cover == "" ){
 						if(i == 0) $("#album_cover").attr("src",__IMG(data["data"][i]["pic_cover"]));
 					}else if(data["data"][i]["pic_id"] == album_cover){
@@ -159,7 +159,8 @@ function LoadingInfo(page_index) {
 					}else{
 						html += '<li style="opacity: 1;border-width:0 1px 1px 0;"><dl><dt><div class="picture"><a href="javascript:void(0);"> <img id="img_'+data["data"][i]["pic_id"]+'" src="'+__IMG(data["data"][i]["pic_cover"])+'"></a></div>';
 					}
-					html += '<input id="C'+data["data"][i]["pic_id"]+'" name="id[]" value="'+data["data"][i]["pic_id"]+'" type="checkbox" class="checkbox">';
+					html += '<i class="checkbox-common"><input id="C'+data["data"][i]["pic_id"]+'" name="id[]" value="'+data["data"][i]["pic_id"]+'" type="checkbox" class="checkbox"></i>';
+					//html += '<input id="C'+data["data"][i]["pic_id"]+'" name="id[]" value="'+data["data"][i]["pic_id"]+'" type="checkbox" class="checkbox">';
 					html += '<input id="' + data["data"][i]["pic_id"] + '" class="editInput1" readonly="" ondblclick="$(this).unbind();_focus($(this));" value="'+data["data"][i]["pic_name"]+'" title="双击名称可以进行编辑" style="cursor:pointer;">';
 					html += '<span ondblclick="_focus($(this).prev());" title="双击名称可以进行编辑"><i class="icon-pencil"></i></span></dt><dd class="date"><p>上传时间：'
 							+ data["data"][i]["upload_time"]
@@ -172,11 +173,12 @@ function LoadingInfo(page_index) {
 					html += '<a href="javascript:;" nc_type="dialog" dialog_title="转移相册" uri="rfghfdg" onclick="changeAlbumClassBox('+ data["data"][i]["album_id"]
 						+ ','+ data["data"][i]["pic_id"]+ ')">转移相册</a> <a href="javascript:;" onclick="changeAlbumClassCover('
 							+ data["data"][i]["pic_id"]+ ')">设为封面</a> <a href="javascript:;" onclick="deletePicture('+data["data"][i]["pic_id"]+')" >删除图片</a> <a href="JavaScript:void(0);" onclick="JScopy('+data["data"][i]["pic_id"]+');" style="width:75px;">复制图片路径</a> <input type="text" style = "width:146px;margin-top: 10000px;border: 0px;" id="hidden_img_'+data["data"][i]["pic_id"]+'" value="'+__IMG(data["data"][i]["pic_cover"])+'"/></dd></dl></li>';
+					$("#albumList").append(html);
 				}
 			} else {
-				html += '暂无符合条件的数据记录';
+				var html = '暂无符合条件的数据记录';
+				$("#albumList").html(html);
 			}
-			$("#albumList").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}
@@ -211,21 +213,23 @@ function getAlbumClassListByAlbumPicture(album_name,search_name) {
 //全选
 function checkAll() {
 	$('input[type="checkbox"]').each(function() {
-		$(this).attr('checked', true);
+		$(this).prop('checked', true).parent().addClass("selected");
 	});
 }
 
 // 取消
 function uncheckAll() {
 	$('input[type="checkbox"]').each(function() {
-		$(this).attr('checked', false);
+		$(this).prop('checked', false).parent().removeClass("selected");
 	});
 }
 
 // 反选
 function switchAll() {
-	$('input[type="checkbox"]').each(function() {
-		$(this).attr('checked', !$(this).attr('checked'));
+	$('input[type="checkbox"]').each(function(i,e) {
+		var checked = e.checked;
+		if(checked) $(e).prop('checked', false).parent().removeClass("selected");
+		else $(e).prop('checked', true).parent().addClass("selected");
 	});
 }
 
@@ -240,7 +244,7 @@ function submit_form(type) {
 	if (id == '') {
 		$( "#dialog" ).dialog({
 			buttons: {
-				"确定,#e57373": function() {
+				"确定,#0059d6,#fff": function() {
 					$(this).dialog('close');
 				}
 			},
@@ -283,7 +287,7 @@ function deletePicture(pic_id_array) {
 						}else{
 							$( "#dialog" ).dialog({
 								buttons: {
-									"确定,#e57373": function() {
+									"确定,#0059d6,#fff": function() {
 										$(this).dialog('close');
 									}
 								},
@@ -295,7 +299,7 @@ function deletePicture(pic_id_array) {
 					}
 				})
 			},
-			"取消,#e57373":function() {
+			"取消,#f5f5f5,#666":function() {
 				$(this).dialog('close');
 			}
 		},
@@ -384,7 +388,7 @@ function _save(obj){
 				LoadingInfo(1);
 				$( "#dialog" ).dialog({
 					buttons: {
-						"确定,#e57373": function() {
+						"确定,#0059d6,#fff": function() {
 							$(this).dialog('close');
 						}
 					},
@@ -394,7 +398,7 @@ function _save(obj){
 			}else{
 				$( "#dialog" ).dialog({
 					buttons: {
-						"确定,#e57373": function() {
+						"确定,#0059d6,#fff": function() {
 							$(this).dialog('close');
 						}
 					},

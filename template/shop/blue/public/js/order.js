@@ -24,6 +24,9 @@ function operation(no,order_id){
 	case 'logistics' ://查看物流
 		logistics(order_id);
 		break;
+	case 'pay_presell' : //预定金支付
+		pay_presell(order_id);
+		break;
 	}
 }
 /**
@@ -33,6 +36,13 @@ function operation(no,order_id){
 function pay(order_id){
 	//去支付
 	window.location.href = __URL(SHOPMAIN+"/order/orderPay?id="+order_id);
+}
+
+/**
+ * 预定金去支付
+ */
+function pay_presell(order_id){
+	window.location.href = __URL(SHOPMAIN+"/order/orderPresellPay?id="+order_id);
 }
 
 /**
@@ -63,7 +73,7 @@ function orderClose(order_id){
 				})
 				$(this).dialog('close');
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 			},
 		},
@@ -106,7 +116,7 @@ function delete_order(order_id){
 				});
 				$(this).dialog('close');
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 			},
 		},

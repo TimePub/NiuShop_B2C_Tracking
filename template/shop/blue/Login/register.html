@@ -24,10 +24,11 @@ $(document).ready(function(){
 	});
 	$("#password").keyup(function(){
 		var password = $("#password").val();
-		if(password.length<5){
+		var password_length = "{$reg_config['pwd_len']}";
+		if(password.length < password_length){
 			$("#password").trigger("focus");
 			$('#password').css("border","1px solid red");
-			$("#yzpassword").css("color","red").text("密码最小长度为5");
+			$("#yzpassword").css("color","red").text("密码最小长度为{$reg_config['pwd_len']}");
 			return false;
 		}else{
 			$('#password').css("border","1px solid #ccc");
@@ -154,7 +155,7 @@ $(document).ready(function(){
 			<div class="reg-con">
 				{include file='shop/blue/loginTopNav'/}
 				<div class="reg-wrap">
-					<div class="reg-wrap-con" style="background: url(__TEMP__/{$style}/public/images/register_bg_image.png) no-repeat right 70px;">
+					<div class="reg-wrap-con" style="background: {$register_adv['background']} url({:__IMG($register_adv['adv_image'])}) no-repeat right 60px;background-size: 420px 220px">
 						<form id="EmailRegisterModel" class="form-horizontal" name="EmailRegisterModel" action="{:__URL('SHOP_MAIN/login/register')}" method="post">
 						<input type="hidden" name="_csrf" value="Q2dXM2NPVXYbFDZYMT0TNycsLkklHQ1HAQsGAA5/OjAaHxtUG3s7Dg==">
 							<!-- 用户名 -->

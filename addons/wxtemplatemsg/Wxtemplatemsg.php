@@ -157,6 +157,7 @@ class Wxtemplatemsg extends \addons\Addons
      */
     public function orderGoodsRefundAskforSuccess($params = [])
     {
+        \think\Log::write('ccccccc' .$params);
         $wchat = new WchatOauth();
         $order_id = $params['order_id'];
         $order = new Order();
@@ -178,6 +179,7 @@ class Wxtemplatemsg extends \addons\Addons
         $keyword2 = $goods_name; // 商品详情
         $keyword3 = $order_info['order_no']; // 订单编号
         $keyword4 = ''; // 无
+        \think\Log::write('订单申请退款通知：' . $keyword1 . $keyword2 . $keyword3 . $keyword4);
         $this->templateMessageSend('OPENTM207103254', '', $uid, $url, $keyword1, $keyword2, $keyword3, $keyword4);
     }
 
@@ -214,7 +216,7 @@ class Wxtemplatemsg extends \addons\Addons
         $keyword1 = $info['cash']; // 本次提现金额
         $keyword2 = $info['account_number']; // 提现账户
         $keyword3 = getTimeStampTurnTime($info['ask_for_date']); // 申请时间
-        $keyword4 = ''; // 预计到账时间
+        $keyword4 = getTimeStampTurnTime($info['ask_for_date']  + 3*24*3600); // 预计到账时间
         $this->templateMessageSend('OPENTM207292959', '提现申请提醒', $uid, $url, $keyword1, $keyword2, $keyword3, $keyword4);
     }
 
@@ -233,9 +235,9 @@ class Wxtemplatemsg extends \addons\Addons
         $keyword1 = $info['cash']; // 本次提现金额
         $keyword2 = $info['account_number']; // 提现账户
         $keyword3 = getTimeStampTurnTime($info['ask_for_date']); // 申请时间
-        $keyword4 = ''; // 预计到账时间
+        $keyword4 = '已通过';
         \think\Log::write('测试模板消息会员提现申请审核通过：' . $keyword1 . $keyword2 . $keyword3 . $keyword4);
-        $this->templateMessageSend('OPENTM207292959', '提现审核结果通知', $uid, $url, $keyword1, $keyword2, $keyword3, $keyword4);
+        $this->templateMessageSend('OPENTM400094285', '提现审核结果通知', $uid, $url, $keyword1, $keyword2, $keyword3, $keyword4);
     }
 
     /**

@@ -68,6 +68,7 @@
 		<label>{:lang('member_phone_number')}</label>
 		<input type="text" id="user_telephone" value="{$user_telephone}" placeholder="手机号码" style="border:none;"/>
 	</div>
+	<div class="dividing-line"><!-- 分隔行 --></div>
 	
 	{if condition="count($coupon_list) >0"}
 	<div class="item-options" data-flag="use-coupon">
@@ -91,13 +92,15 @@
 	</div>
 	{/if}
 	
+
 	<div class="item-options">
 		<label>{:lang('existing_integral')}</label>
 		<span>
 			<b class="account_balance">{$member_account.point}</b>个
 		</span>
 	</div>
-
+	
+	<div class="dividing-line"><!-- 分隔行 --></div>
 	{if condition="count($shop_config.order_invoice_content_list)"}
 	<div class="item-options" data-flag="invoice" data-select="0">
 		<label>{:lang('member_invoice_information')}<span style="font-size:12px;color:#FF9800;font-weight:bold;"></span></label>
@@ -130,6 +133,7 @@
 		<textarea id="leavemessage" placeholder="{:lang('leave_a_message_for_the_seller')}" maxlength="100"></textarea>
 	</div>
 	
+	<div class="dividing-line"><!-- 分隔行 --></div>
 	<div class="order-list">
 		<h3>{:lang('member_settlement_information')}</h3>
 		<p>

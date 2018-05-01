@@ -24,6 +24,7 @@ use data\service\Platform;
 use data\service\Promotion;
 use data\service\Shop as Shop;
 use data\service\Upgrade;
+use data\service\Notice;
 use Qiniu\json_decode;
 use data\service\WebSite;
 
@@ -108,6 +109,12 @@ class Config extends BaseController
                 'menu_name' => "客服",
                 "active" => 0,
                 "tag" => 14
+            ),
+            array(
+                'url' => "config/merchantService",
+                'menu_name' => "商家服务",
+                "active" => 0,
+                "tag" => 15
             )
         );
         
@@ -271,24 +278,12 @@ class Config extends BaseController
     public function loginConfig()
     {
         $type = request()->get('type', 'qq');
-        if ($type == "qq") {
-            $child_menu_list = array(
-                array(
-                    'url' => "config/loginconfig?type=qq",
-                    'menu_name' => "QQ登录",
-                    "active" => 1
-                )
-            );
+        if ($type == "qq") { 
+            $secend_menu['module_name'] = "QQ登录";
         } else {
-            $child_menu_list = array(
-                array(
-                    'url' => "config/loginconfig?type=wchat",
-                    'menu_name' => "微信登录",
-                    "active" => 1
-                )
-            );
+            $secend_menu['module_name'] = "微信登录";
         }
-        $this->assign('child_menu_list', $child_menu_list);
+        $this->assign("secend_menu", $secend_menu);
         $this->assign("type", $type);
         $web_config = new WebConfig();
         // qq登录配置
@@ -363,6 +358,12 @@ class Config extends BaseController
                 }
                 $this->assign("original_road_refund_setting_info", $original_road_refund_setting_info);
                 
+                // 转账
+                $accounts_data = $web_config->getTransferAccountsSetting($this->instance_id, 'wechat');
+                if (! empty($data)) {
+                    $transfer_accounts_setting_info = json_decode($accounts_data['value'], true);
+                }
+                $this->assign("transfer_accounts_setting_info", $transfer_accounts_setting_info);
                 
                 return view($this->style . "Config/payConfig");
             }
@@ -407,7 +408,56 @@ class Config extends BaseController
         }
         $this->assign("original_road_refund_setting_info", $original_road_refund_setting_info);
         
+        // 转账
+        $accounts_data = $web_config->getTransferAccountsSetting($this->instance_id, 'alipay');
+        if (! empty($data)) {
+            $transfer_accounts_setting_info = json_decode($accounts_data['value'], true);
+        }
+        $this->assign("transfer_accounts_setting_info", $transfer_accounts_setting_info);
+        
         return view($this->style . "Config/payAliConfig");
+    }
+
+    /**
+     * 银联卡支付
+     */
+    public function unionPayConfig()
+    {
+        $web_config = new WebConfig();
+        if (request()->isAjax()) {
+            // 银联卡
+            $merchant_number = str_replace(' ', '', request()->post('merchant_number', ''));
+            $certificate_key = str_replace(' ', '', request()->post('certificate_key', ''));
+            $service_charge = str_replace(' ', '', request()->post('service_charge', ''));
+            $is_use = request()->post('is_use', 0);
+            // 获取数据
+            $retval = $web_config->setUnionpayConfig($this->instance_id, $merchant_number, $certificate_key, $service_charge, $is_use);
+            return AjaxReturn($retval);
+        }
+        
+        $data = $web_config->getUnionpayConfig($this->instance_id);
+        $this->assign("config", $data);
+        
+        $pay_list = $web_config->getPayConfig($this->instance_id);
+        $wechat_is_use = 0; // 微信支付开启标识
+        foreach ($pay_list as $v) {
+            if ($v['key'] == "ALIPAY") {
+                $alipay_is_use = $v['is_use'];
+            } elseif ($v['key'] == 'WPAY') {
+                $wechat_is_use = $v['is_use'];
+            }
+        }
+        $this->assign("alipay_is_use", $alipay_is_use);
+        
+        // 退款
+        $refund_data = $web_config->getOriginalRoadRefundSetting($this->instance_id, 'alipay');
+        
+        if (! empty($data)) {
+            $original_road_refund_setting_info = json_decode($refund_data['value'], true);
+        }
+        $this->assign("original_road_refund_setting_info", $original_road_refund_setting_info);
+        
+        return view($this->style . "Config/unionPayConfig");
     }
 
     /**
@@ -506,7 +556,9 @@ class Config extends BaseController
             $shop = new Shop();
             $page_index = request()->post("page_index", 1);
             $page_size = request()->post('page_size', PAGESIZE);
-            $list = $shop->ShopNavigationList($page_index, $page_size, '', 'sort');
+            $type = request()->post("nav_type", 1);
+            $condition['type'] = $type; // 导航类型 1：pc端 2：手机端
+            $list = $shop->ShopNavigationList($page_index, $page_size, $condition, 'sort');
             return $list;
         } else {
             return view($this->style . "Config/shopNavigationList");
@@ -543,6 +595,7 @@ class Config extends BaseController
                 'menu_name' => "手机端模板",
                 "active" => 0
             )
+          
         );
         $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . "Config/pcTemplate");
@@ -707,12 +760,15 @@ class Config extends BaseController
             $nav_type = request()->post('nav_type', '');
             $is_blank = request()->post('is_blank', '');
             $template_name = request()->post("template_name", '');
-            $retval = $shop->addShopNavigation($nav_title, $nav_url, $type, $sort, $align, $nav_type, $is_blank, $template_name);
+            $nav_icon = request()->post("nav_icon", '');
+            $is_show = request()->post('is_show', '');
+            $retval = $shop->addShopNavigation($nav_title, $nav_url, $type, $sort, $align, $nav_type, $is_blank, $template_name, $nav_icon, $is_show);
             return AjaxReturn($retval);
         } else {
-            $shopNavTemplate = $shop->getShopNavigationTemplate(1);
+            $use_type = "1,2";
+            $shopNavTemplate = $shop->getShopNavigationTemplate($use_type);
             $this->assign("shopNavTemplate", $shopNavTemplate);
-            
+            $this->assign("shopNavTemplateJson", json_encode($shopNavTemplate));
             return view($this->style . "Config/addShopNavigation");
         }
     }
@@ -735,7 +791,9 @@ class Config extends BaseController
             $nav_type = request()->post('nav_type', '');
             $is_blank = request()->post('is_blank', '');
             $template_name = request()->post("template_name", '');
-            $retval = $shop->updateShopNavigation($nav_id, $nav_title, $nav_url, $type, $sort, $align, $nav_type, $is_blank, $template_name);
+            $nav_icon = request()->post("nav_icon", '');
+            $is_show = request()->post('is_show', '');
+            $retval = $shop->updateShopNavigation($nav_id, $nav_title, $nav_url, $type, $sort, $align, $nav_type, $is_blank, $template_name, $nav_icon, $is_show);
             return AjaxReturn($retval);
         } else {
             $nav_id = request()->get('nav_id', '');
@@ -744,9 +802,10 @@ class Config extends BaseController
             }
             $data = $shop->shopNavigationDetail($nav_id);
             $this->assign('data', $data);
-            $shopNavTemplate = $shop->getShopNavigationTemplate(1);
+            $use_type = "1,2";
+            $shopNavTemplate = $shop->getShopNavigationTemplate($use_type);
             $this->assign("shopNavTemplate", $shopNavTemplate);
-            
+            $this->assign("shopNavTemplateJson", json_encode($shopNavTemplate));
             return view($this->style . "Config/updateShopNavigation");
         }
     }
@@ -981,7 +1040,7 @@ class Config extends BaseController
             $child_menu_list = array(
                 array(
                     'url' => "Config/messageConfig?type=email",
-                    'menu_name' => "邮箱设置",
+                    'menu_name' => "邮件设置",
                     "active" => 1
                 ),
                 array(
@@ -990,11 +1049,12 @@ class Config extends BaseController
                     "active" => 0
                 )
             );
+            $secend_menu['module_name'] = "邮件设置";
         } else {
             $child_menu_list = array(
                 array(
                     'url' => "Config/messageConfig?type=email",
-                    'menu_name' => "邮箱设置",
+                    'menu_name' => "邮件设置",
                     "active" => 0
                 ),
                 array(
@@ -1003,6 +1063,7 @@ class Config extends BaseController
                     "active" => 1
                 )
             );
+            $secend_menu['module_name'] = "短信设置";
         }
         $config = new WebConfig();
         $email_message = $config->getEmailMessage($this->instance_id);
@@ -1011,6 +1072,7 @@ class Config extends BaseController
         $this->assign('mobile_message', $mobile_message);
         $this->assign('child_menu_list', $child_menu_list);
         $this->assign('type', $type);
+        $this->assign("secend_menu", $secend_menu);
         return view($this->style . 'Config/messageConfig');
     }
 
@@ -1202,7 +1264,7 @@ class Config extends BaseController
             $page_index = request()->post("page_index", 1);
             $page_size = request()->post('page_size', PAGESIZE);
             $platform = new Platform();
-            $list = $platform->getPlatformHelpDocumentList($page_index, $page_size, '', 'sort desc');
+            $list = $platform->getPlatformHelpDocumentList($page_index, $page_size, '', 'sort asc');
             return $list;
         }
         return view($this->style . "Config/helpDocument");
@@ -1505,45 +1567,13 @@ class Config extends BaseController
 
     public function areaManagement()
     {
-        $child_menu_list = array(
-            array(
-                'url' => "express/expresscompany",
-                'menu_name' => "物流公司",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/areamanagement",
-                'menu_name' => "地区管理",
-                "active" => 1
-            ),
-            array(
-                'url' => "order/returnsetting",
-                'menu_name' => "商家地址",
-                "active" => 0
-            ),
-            array(
-                'url' => "shop/pickuppointlist",
-                'menu_name' => "自提点管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "shop/pickuppointfreight",
-                'menu_name' => "自提点运费",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/distributionareamanagement",
-                'menu_name' => "货到付款地区管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/expressmessage",
-                'menu_name' => "物流跟踪设置",
-                "active" => 0
-            )
-        );
-        
+        // 获取物流配送三级菜单
+        $express = new Express();
+        $child_menu_list = $express->getExpressChildMenu(1);
         $this->assign('child_menu_list', $child_menu_list);
+        $express_child = $express->getExpressChild(1, 2);
+        $this->assign('express_child', $express_child);
+        
         $dataAddress = new DataAddress();
         $area_list = $dataAddress->getAreaList(); // 区域地址
         $list = $dataAddress->getProvinceList();
@@ -1742,17 +1772,19 @@ class Config extends BaseController
             $order_buy_close_time = request()->post("order_buy_close_time", 0);
             $buyer_self_lifting = request()->post("buyer_self_lifting", 0);
             $seller_dispatching = request()->post("seller_dispatching", '1');
+            $is_open_o2o = request()->post("is_open_o2o", '0');
             $is_logistics = request()->post("is_logistics", '1');
             $shopping_back_points = request()->post("shopping_back_points", 0);
             $is_open_virtual_goods = request()->post("is_open_virtual_goods", 0); // 是否开启虚拟商品
             $order_designated_delivery_time = request()->post("order_designated_delivery_time", 0); // 是否开启指定配送时间
-            $retval = $Config->SetShopConfig($shop_id, $order_auto_delinery, $order_balance_pay, $order_delivery_complete_time, $order_show_buy_record, $order_invoice_tax, $order_invoice_content, $order_delivery_pay, $order_buy_close_time, $buyer_self_lifting, $seller_dispatching, $is_logistics, $shopping_back_points, $is_open_virtual_goods, $order_designated_delivery_time);
+            $retval = $Config->SetShopConfig($shop_id, $order_auto_delinery, $order_balance_pay, $order_delivery_complete_time, $order_show_buy_record, $order_invoice_tax, $order_invoice_content, $order_delivery_pay, $order_buy_close_time, $buyer_self_lifting, $seller_dispatching, $is_open_o2o, $is_logistics, $shopping_back_points, $is_open_virtual_goods, $order_designated_delivery_time);
             return AjaxReturn($retval);
         } else {
             // 订单收货之后多长时间自动完成
             $shop_id = $this->instance_id;
             $shopSet = $Config->getShopConfig($shop_id);
             $this->assign("shopSet", $shopSet);
+            $this->assign("is_support_o2o", IS_SUPPORT_O2O);
             return view($this->style . "Config/shopSet");
         }
     }
@@ -1931,7 +1963,10 @@ class Config extends BaseController
             $shop_id = $this->instance_id;
             $key = 'SERVICE_ADDR';
             $value = array(
-                'service_addr' => request()->post('service_addr', '')
+                'meiqia_service_addr' => request()->post('meiqia_service_addr', ''),
+                'kf_service_addr' => request()->post('kf_service_addr', ''),
+                'qq_service_addr' => request()->post('qq_service_addr', ''),
+                'checked_num' => request()->post('checked_num', '')
             );
             $config_service = new WebConfig();
             $retval = $config_service->setcustomserviceConfig($shop_id, $key, $value);
@@ -2060,45 +2095,12 @@ class Config extends BaseController
      */
     public function distributionAreaManagement()
     {
-        $child_menu_list = array(
-            array(
-                'url' => "express/expresscompany",
-                'menu_name' => "物流公司",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/areamanagement",
-                'menu_name' => "地区管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "order/returnsetting",
-                'menu_name' => "商家地址",
-                "active" => 0
-            ),
-            array(
-                'url' => "shop/pickuppointlist",
-                'menu_name' => "自提点管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "shop/pickuppointfreight",
-                'menu_name' => "自提点运费",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/distributionareamanagement",
-                'menu_name' => "货到付款地区管理",
-                "active" => 1
-            ),
-            array(
-                'url' => "config/expressmessage",
-                'menu_name' => "物流跟踪设置",
-                "active" => 0
-            )
-        );
-        
+        // 获取物流配送三级菜单
+        $express = new Express();
+        $child_menu_list = $express->getExpressChildMenu(1);
         $this->assign('child_menu_list', $child_menu_list);
+        $express_child = $express->getExpressChild(1, 4);
+        $this->assign('express_child', $express_child);
         
         $dataAddress = new DataAddress();
         $provinceList = $dataAddress->getProvinceList();
@@ -2195,45 +2197,13 @@ class Config extends BaseController
 
     public function expressMessage()
     {
-        $child_menu_list = array(
-            array(
-                'url' => "express/expresscompany",
-                'menu_name' => "物流公司",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/areamanagement",
-                'menu_name' => "地区管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "order/returnsetting",
-                'menu_name' => "商家地址",
-                "active" => 0
-            ),
-            array(
-                'url' => "shop/pickuppointlist",
-                'menu_name' => "自提点管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "shop/pickuppointfreight",
-                'menu_name' => "自提点运费",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/distributionareamanagement",
-                'menu_name' => "货到付款地区管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/expressmessage",
-                'menu_name' => "物流跟踪设置",
-                "active" => 1
-            )
-        );
-        
+        // 获取物流配送三级菜单
+        $express = new Express();
+        $child_menu_list = $express->getExpressChildMenu(1);
         $this->assign('child_menu_list', $child_menu_list);
+        $express_child = $express->getExpressChild(1, 5);
+        $this->assign('express_child', $express_child);
+        
         $config_service = new WebConfig();
         if (request()->isAjax()) {
             $shop_id = $this->instance_id;
@@ -2375,6 +2345,9 @@ class Config extends BaseController
             $info = $config_service->getPictureUploadSetting($this->instance_id);
             $this->assign("pic_info", $info);
             
+            // 获取默认图
+            $result = $config_service->getDefaultImages($this->instance_id);
+            $this->assign("info", $result);
             // 附件上传
             
             $config_data = array();
@@ -2384,6 +2357,10 @@ class Config extends BaseController
             $config_qiniu_info = $config_service->getQiniuConfig($this->instance_id);
             $config_data["data"]["qiniu"] = $config_qiniu_info;
             $this->assign("config_data", $config_data);
+            
+            // 获取水印图片配置
+            $config_water_info = $config_service->getWatermarkConfig($this->instance_id);
+            $this->assign("water_info", $config_water_info);
             
             return view($this->style . 'Config/pictureUploadSetting');
         }
@@ -2513,6 +2490,12 @@ class Config extends BaseController
         $this->assign("alipay_is_use", $alipay_is_use);
         $this->assign("wechat_is_use", $wechat_is_use);
         
+        $data = $config_service->getTransferAccountsSetting($this->instance_id, $type);
+        if (! empty($data)) {
+            $transfer_accounts_setting_info = json_decode($data['value'], true);
+        }
+        $this->assign("transfer_accounts_setting_info", $transfer_accounts_setting_info);
+        
         if ($type == "alipay") {
             
             $child_menu_list = array(
@@ -2534,6 +2517,30 @@ class Config extends BaseController
         $this->assign('child_menu_list', $child_menu_list);
         $this->assign("type", $type);
         return view($this->style . "Config/transferAccountsSetting");
+    }
+
+    /**
+     * 设置转账配置信息 ajax
+     *
+     *
+     * @return number|boolean
+     */
+    public function setTransferAccountsSetting($type, $value)
+    {
+        $type = request()->post("type", "");
+        $value = request()->post("value", "");
+        $res = 0;
+        if (! empty($type) && ! empty($value)) {
+            $config_service = new WebConfig();
+            $retval = $config_service->checkPayConfigEnabledOne($this->instance_id, $type);
+            if ($retval == 1) {
+                $res = $config_service->setTransferAccountsSetting($this->instance_id, $type, $value);
+            } else {
+                $res = $retval;
+            }
+        }
+        
+        return $res;
     }
 
     /**
@@ -2745,7 +2752,7 @@ class Config extends BaseController
      */
     public function visitConfig()
     {
-        if (request()->isPost()) {
+        if (request()->isAjax()) {
             
             $web_style_admin = request()->post('web_style_admin', ''); // 后台网站风格
             $web_status = request()->post("web_status", ''); // 网站运营状态
@@ -2753,8 +2760,8 @@ class Config extends BaseController
             $visit_pattern = request()->post('visit_pattern', '');
             $close_reason = request()->post("close_reason", ''); // 站点关闭原因
             $is_show_follow = request()->post("is_show_follow", 1);
+            $retval = $this->website->updateVisitWebSite($web_style_admin, $visit_pattern, $web_status, $wap_status, $close_reason);
             
-            $retval = $this->website->updateVisitWebSite($web_style_admin, $visit_pattern, $web_status, $wap_status, $is_show_follow, $close_reason);
             return AjaxReturn($retval);
         } else {
             
@@ -2771,6 +2778,7 @@ class Config extends BaseController
             $this->assign('style_list_pc', $style_list_pc);
             $this->assign('style_list_admin', $style_list_admin);
             $this->assign("website", $list);
+            // dump($list);exit();
             $this->assign("qrcode_path", $path);
             return view($this->style . "Config/visitConfig");
         }
@@ -2911,7 +2919,14 @@ class Config extends BaseController
             $res_one = $web_config->setWpayConfig($this->instance_id, $appkey, $appsecret, $MCHID, $paySignKey, $is_use);
             $res_two = $web_config->setOriginalRoadRefundSetting($this->instance_id, 'wechat', $value);
             
-            if ($res_one > 0 && $res_two > 0) {
+            // $retval = $web_config->checkPayConfigEnabledOne($this->instance_id, 'wechat');
+            // if ($retval == 1) {
+            $res_three = $web_config->setTransferAccountsSetting($this->instance_id, 'wechat', $transferValue);
+            // } else {
+            // $res_three = $retval;
+            // }
+            
+            if ($res_one > 0 && $res_two > 0 && $res_three > 0) {
                 return AjaxReturn(1);
             } else {
                 return AjaxReturn(- 1);
@@ -2940,7 +2955,14 @@ class Config extends BaseController
             
             $res_two = $web_config->setOriginalRoadRefundSetting($this->instance_id, 'alipay', $value);
             
-            if ($res_one > 0 && $res_two) {
+            // $retval = $web_config->checkPayConfigEnabledOne($this->instance_id, 'alipay');
+            // if ($retval == 1) {
+            $res_three = $web_config->setTransferAccountsSetting($this->instance_id, 'alipay', $transferValue);
+            // } else {
+            // $res_three = $retval;
+            // }
+            
+            if ($res_one > 0 && $res_two > 0 && $res_three > 0) {
                 return AjaxReturn(1);
             } else {
                 return AjaxReturn(- 1);
@@ -2980,11 +3002,138 @@ class Config extends BaseController
             $qi_value = json_encode($qi_value);
             $res_two = $config_service->setQiniuConfig($shop_id, $qi_value);
             
-            if ($res_one > 0 && $res_two > 0) {
+            $img_value = array(
+                "default_goods_img" => request()->post("default_goods_img", ""),
+                "default_headimg" => request()->post("default_headimg", ""),
+                "default_cms_thumbnail" => request()->post("default_cms_thumbnail", "")
+            );
+            $img_value = json_encode($img_value);
+            $res_three = $config_service->setDefaultImages($this->instance_id, $img_value);
+            
+            $watermark = request()->post("watermark", "0");
+            $transparency = request()->post("transparency", "0");
+            $waterPosition = request()->post("waterPosition", "");
+            $imgWatermark = request()->post("default_watermark", "");
+            $data_water = array(
+                "watermark" => $watermark,
+                "transparency" => $transparency,
+                "waterPosition" => $waterPosition,
+                "imgWatermark" => $imgWatermark
+            );
+            $res_four = $config_service->setPictureWatermark($this->instance_id, json_encode($data_water));
+            
+            if ($res_one > 0 && $res_two > 0 && $res_three > 0 && $res_four > 0) {
                 return AjaxReturn(1);
             } else {
                 return AjaxReturn(- 1);
             }
+        }
+    }
+
+    /**
+     * 商家服务
+     * 创建时间：2018年1月22日17:41:08
+     *
+     * @return Ambigous <\think\response\View, \think\response\$this, \think\response\View>
+     */
+    public function merchantService()
+    {
+        $config = new WebConfig();
+        if (request()->isAjax()) {
+            $value = request()->post("value", "");
+            $res = $config->setMerchantServiceConfig($this->instance_id, $value);
+            return AjaxReturn($res);
+        } else {
+            $this->infrastructureChildMenu(15);
+            $list = $config->getMerchantServiceConfig($this->instance_id);
+            $this->assign("list", $list);
+            return view($this->style . 'Config/merchantService');
+        }
+    }
+
+    /**
+     * 通知记录
+     */
+    public function notifyList()
+    {
+        $type = request()->get('type', '');
+        $status = request()->get('status', '-1');
+        $child_menu_list = array(
+            array(
+                'url' => "config/notifylist?type=" . $type,
+                'menu_name' => "全部"
+            ),
+            array(
+                'url' => "config/notifylist?type=" . $type . "&status=0",
+                'menu_name' => "未发送"
+            ),
+            array(
+                'url' => "config/notifylist?type=" . $type . "&status=1",
+                'menu_name' => "发送成功"
+            ),
+            array(
+                'url' => "config/notifylist?type=" . $type . "&status=2",
+                'menu_name' => "发送失败"
+            )
+        );
+        
+        switch (intval($status)) {
+            case 0:
+                $child_menu_list[1]['active'] = 1;
+                break;
+            case 1:
+                $child_menu_list[2]['active'] = 1;
+                break;
+            case 2:
+                $child_menu_list[3]['active'] = 1;
+                break;
+            default:
+                $child_menu_list[0]['active'] = 1;
+        }
+        $this->assign("child_menu_list", $child_menu_list);
+        
+        if (request()->isAjax()) {
+            $notice_service = new Notice();
+            $page_index = request()->post("page_index", 1);
+            $page_size = request()->post("page_size", PAGESIZE);
+            $search_text = request()->post("search_text", '');
+            
+            $send_type = request()->post("type", 1);
+            $is_send = request()->post("status", '');
+            
+            $condition = array();
+            $condition['send_type'] = $send_type;
+            if ($is_send != - 1) {
+                $condition['is_send'] = $is_send;
+            }
+            
+            if ($search_text != "") {
+                $condition['notice_title'] = array(
+                    'like',
+                    '%' . $search_text . '%'
+                );
+            }
+            
+            $list = $notice_service->getNoticeRecordsList($page_index, 10, $condition, 'send_date desc', '');
+            return $list;
+        } else {
+            $this->assign('type', $type);
+            $this->assign('status', $status);
+            return view($this->style . 'Config/notifyList');
+        }
+    }
+
+    /**
+     * 通知明细
+     */
+    public function notifyDetail()
+    {
+        if (request()->isAjax()) {
+            $notice_service = new Notice();
+            $id = request()->post("id", '');
+            $condition["id"] = $id;
+            $notify_detail = $notice_service->getNotifyRecordsDetail($condition);
+            return $notify_detail;
         }
     }
 }

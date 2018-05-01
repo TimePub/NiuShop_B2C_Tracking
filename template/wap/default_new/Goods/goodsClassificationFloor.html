@@ -73,6 +73,12 @@
 <script>
 	$(function(){
 		bottomActive('#bottom_classify');
+		$("img.lazy_load").lazyload({
+			threshold : 0,
+			effect : "fadeIn", //淡入效果
+			skip_invisible : false,
+			container: $(".custom-list-goods")
+		})
 	});
 	// 点击显示分类
 	$(".custom-menu-block ul li").click(function(){
@@ -81,7 +87,16 @@
 		var ca_id = $(this).children("a").data("id");
 		$(".custom-list-goods .content").hide();
 		$("[data-pid='"+ca_id+"']").show();
-		img_lazyload();	
+
+		$("img.lazy_load").lazyload({
+			threshold : 0,
+			effect : "fadeIn", //淡入效果
+			skip_invisible : false,
+			container: $(".custom-list-goods")
+		})
+		
 	})
+
+
 </script>
 {/block}

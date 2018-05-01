@@ -21,6 +21,7 @@ use data\service\User as User;
 use data\service\Weixin;
 use think\helper\Time;
 use data\service\Member;
+use data\service\Config;
 
 /**
  * 后台主界面
@@ -46,7 +47,52 @@ class Index extends BaseController
         $goods_rank = $this->getGoodsRealSalesRank();
         $this->assign("goods_list", $goods_rank);
         $this->assign("is_index", true);
+        
+        //权限选项
+        $right_list = $this->website->getInstanceModuleQuery();
+        $menu_list = [];
+        foreach($right_list as $key=>$val){
+            $child_list = [];
+            if($val['pid'] == 0){
+                foreach($right_list as $k=>$v){
+                    if($v['pid'] == $val['module_id']){
+                        $child_list[] = $v;
+                    }
+                }
+                $val['child_list'] = $child_list;
+                $menu_list[] = $val;
+            }
+        }
+        $this->assign('menu_list',$menu_list);
+        
+        //快捷菜单选项
+        $config_service = new Config();
+        $shortcut_menu_list = $config_service->getShortcutMenu($this->instance_id, $this->uid);
+        $this->assign('shortcut_menu_list',$shortcut_menu_list['data']);
+        
+        //快捷菜单id数组
+        $selected_ids = [];
+        foreach($shortcut_menu_list['data'] as $key=>$val){
+            $selected_ids[] = $val['module_id'];
+        }
+        $this->assign('selected_ids',$selected_ids);
+        
+        $this->assign('is_show_shortcut_menu',1);
+        
         return view($this->style . 'Index/index');
+    }
+    
+    /**
+     * 设置快捷菜单
+     */
+    public function setShortcutMenu(){
+        $config_service = new Config();
+        $menu_ids = request()->post('menu_ids');
+        $shop_id = $this->instance_id;
+        $uid = $this->uid;
+        $res = $config_service->setShortcutMenu($shop_id, $uid, $menu_ids);
+        
+        return AjaxReturn($res);
     }
 
     /**

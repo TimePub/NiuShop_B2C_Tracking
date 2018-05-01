@@ -82,7 +82,7 @@ button{outline:none;}
 													<option value="goods_no">商品编码</option>
 												</select> -->
 												<input class="js-input" type="text" name="keyword" placeholder="请输入商品名称" data-goods-title="请输入商品名称" data-goods-no="请输入商品编码" style="width: 200px;" id="search_text" />
-												<a href="javascript:;" onclick="LoadingInfo(1)" class="btn btn-primary js-search" style="display: inline-block;">搜索</a>
+												<a href="javascript:;" onclick="LoadingInfo(1)" class="btn-common js-search" style="display: inline-block;">搜索</a>
 											</div>
 										</div>
 									</div>
@@ -180,7 +180,7 @@ function cancel_join(goods_id,e){
 				break;
 			}
 		}
-		var a = '<a href="javascript:;" class="btn btn-primary js-add-reward" onclick="join('+goods_id+',this)">参加活动</a>';
+		var a = '<a href="javascript:;" class="btn-common js-add-reward" onclick="join('+goods_id+',this)">参加活动</a>';
 		$(e).parent("td").html(a);
 		$("#select_"+goods_id+" .goods-opt").html(a);
 	}
@@ -241,14 +241,15 @@ function LoadingInfo(page_index) {
 			"page_index" : page_index,
 			"page_size" : $("#showNumber").val(),
 			"search_text" : search_text,
-			"group_id":group_id,
+			"group_id":group_id
 		},
 		success : function(data) {
 			$data_array = data['data'];
-			var html = '';
 			if (data['data'].length > 0) {
 				$("#DiscountList").show();
+				$("tbody.goods-list").empty();
 				for (var i = 0; i < data['data'].length; i++) {
+					var html = '';
 					var curr = data['data'][i];
 					if(jQuery.inArray(curr["goods_id"], $goodsArr) == "-1"){
 						$goodsArr.push(curr["goods_id"]);
@@ -268,18 +269,19 @@ function LoadingInfo(page_index) {
 					html +='<td class="text-center">'+curr["stock"]+'</td>';
 					if($goods_id_selected_array.length > 0){
 						if(jQuery.inArray(curr["goods_id"], $goods_id_selected_array) == "-1"){
-							html +='<td class="text-center goods-opt"><a href="javascript:;" class="btn btn-primary js-add-reward" onclick="join('+curr["goods_id"]+',this)" >参加活动</a></td></tr>';	
+							html +='<td class="text-center goods-opt"><a href="javascript:;" class="btn-common js-add-reward" onclick="join('+curr["goods_id"]+',this)" >参加活动</a></td></tr>';	
 						}else{
 							html +='<td class="text-center goods-opt"><a href="javascript:;" class="btn btn-default js-remove-reward" onclick="cancel_join('+curr["goods_id"]+',this)">取消参加</a></td></tr>';
 						}
 					}else{
-						html +='<td class="text-center goods-opt"><a href="javascript:;" class="btn btn-primary js-add-reward" onclick="join('+curr["goods_id"]+',this)">参加活动</a></td></tr>';
+						html +='<td class="text-center goods-opt"><a href="javascript:;" class="btn-common js-add-reward" onclick="join('+curr["goods_id"]+',this)">参加活动</a></td></tr>';
 					}
+					$("tbody.goods-list").append(html);
 				}
 			} else {
-				html += '<tr align="center"><td colspan="4">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr align="center"><td colspan="4">暂无符合条件的数据记录</td></tr>';
+				$("tbody.goods-list").html(html);
 			}
-			$("tbody.goods-list").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}

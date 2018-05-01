@@ -2012,8 +2012,8 @@
 
             wrap.removeClass('aui_state_drag');
         };
-
-        isResize = event.target === DOM.se[0] ? true : false;
+        //isResize = event.target === DOM.se[0] ? true : false;
+        isResize = false;
         limit = (function () {
             var maxX, maxY,
 			wrap = api.DOM.wrap[0],

@@ -40,7 +40,7 @@ interface IGoodsGroup
           is_visible bit(1) NOT NULL DEFAULT b'1' COMMENT '是否可视',
           sort tinyint(4) NOT NULL DEFAULT 0 COMMENT '排序',
      */
-    function addOrEditGoodsGroup($group_id, $shop_id, $group_name, $pid, $is_visible, $sort, $group_pic);
+    function addOrEditGoodsGroup($group_id, $shop_id, $group_name, $pid, $is_visible, $sort, $group_pic, $group_dec);
     
     /**
      * 删除商品分组

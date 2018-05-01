@@ -56,9 +56,10 @@ function LoadingInfo(page_index) {
 			"page_index" : page_index, "page_size" : $("#showNumber").val(), "search_text" : search_text
 		},
 		success : function(data) {
-			var html = '';
 			if (data['data'].length > 0) {
+				$("#list").empty();
 				for (var i = 0; i < data['data'].length; i++) {
+					var html = '';
 					var block_id = data['data'][i]['block_id'];
 					html += '<tr align="center">';
 					html += '<td><label style="margin-left: 10px;"> <input type="checkbox" name="sub" value="'+ block_id+'"></lable></td>';
@@ -72,11 +73,12 @@ function LoadingInfo(page_index) {
 					}
 					html += '<td class="center"><a href="'+__URL('ADMIN_MAIN/system/updateblock?block_id=' + block_id)+'">编辑</a>&nbsp;&nbsp;<a href="javascript:;" onclick="delBlock(' + block_id + ')">删除</a></td> ';
 					html += '</tr>';
+					$("#list").append(html);
 				}
 			} else {
-				html += '<tr align="center"><td colspan="6">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr align="center"><td colspan="6">暂无符合条件的数据记录</td></tr>';
+				$("#list").html(html);
 			}
-			$("#list").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}
@@ -108,7 +110,7 @@ function delBlock(block_id){
 					}
 				})
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 			}
 		},

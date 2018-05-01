@@ -3,6 +3,7 @@
 <link rel="stylesheet" type="text/css" href="__STATIC__/blue/css/album_list.css"/>
 <style>
 .right-side-operation ul li{position: relative;}
+#addalbum dt{width:80px !important;}
 </style>
 {/block}
 {block name="right_tab"}
@@ -13,7 +14,7 @@
 <table class="mytable">
 	<tr>
 		<th style="text-align:left;">
-			<button class="btn-common btn-small" data-toggle="modal" data-target="#addalbum">创建相册</button>
+			<button class="btn-common-delete btn-small" data-toggle="modal" data-target="#addalbum">创建相册</button>
 			<button class="btn-common btn-small" id="open_uploader" style="position: relative;">上传图片<input type="file" id="fileupload" class="input-file" name="file_upload" multiple="multiple" style="left: 0;height: 30px !important;"/></button>
 		</th>
 		<th>
@@ -34,22 +35,26 @@
 			</div>
 			<div class="modal-body">
 				<div class="dislog-style">
-					<ul>
-						<li>
-							<span>相册名称</span>
-							<input type="text" class="input-common" id="album_name" />
-							<span style="width: inherit;color: red;display:none;">请输入相册名称</span>
-						</li>
-						<li>
-							<span>排序</span>
-							<input type="text" class="input-common" id="sort" onkeyup='this.value=this.value.replace(/\D/gi,"")' />
-						</li>
-					</ul>
+					<div class="set-style">
+						<dl>
+							<dt>相册名称：</dt>
+							<dd>
+								<input type="text" class="input-common" id="album_name" />
+								<p class="error" >请输入相册名称</p>
+							</dd>
+						</dl>
+						<dl>
+							<dt>排序：</dt>
+							<dd>
+								<input type="number" class="input-common harf" id="sort" onkeyup='this.value=this.value.replace(/\D/gi,"")' />
+							</dd>
+						</dl>
+					</div>
 				</div>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-primary" onclick="addAlbumClass();">创建</button>
-				<button type="button" class="btn" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn-common btn-big" onclick="addAlbumClass();">保存</button>
+				<button type="button" class="btn btn-big" data-dismiss="modal">关闭</button>
 			</div>
 		</div>
 	</div>
@@ -68,20 +73,20 @@
 					<input type="hidden" id="editAlbum_id" class="input-common" />
 					<ul>
 						<li>
-							<span>相册名称</span>
+							<span>相册名称：</span>
 							<input type="text" class="input-common" id="edit_album_name" />
 							<span style="width: inherit;color: red;display:none;">请输入相册名称</span>
 						</li>
 						<li>
-							<span>排序</span>
+							<span>排序：</span>
 							<input type="text" class="input-common" id="edit_sort" onkeyup='this.value=this.value.replace(/\D/gi,"")' />
 						</li>
 					</ul>
 				</div>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-primary" onclick="updateAlbumClass();">保存</button>
-				<button type="button" class="btn" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn-common btn-big" onclick="updateAlbumClass();">保存</button>
+				<button type="button" class="btn btn-big" data-dismiss="modal">关闭</button>
 			</div>
 		</div>
 	</div>
@@ -98,9 +103,10 @@ function LoadingInfo(page_index) {
 		url : "{:__URL('ADMIN_MAIN/system/albumlist')}",
 		data : { "page_index" : page_index, "page_size" : $("#showNumber").val(), "search_text" : search_text },
 		success : function(data) {
-			var html = '';
 			if (data["data"].length > 0) {
+				$("#albumList").empty();
 				for (var i = 0; i < data["data"].length; i++) {
+					var html = '';
 					if(i==0||i%5==0){
 						html += '<li style="border-width:0 1px 1px 1px;"><dl><dt><div class="covers">';
 					}else{
@@ -122,11 +128,12 @@ function LoadingInfo(page_index) {
 						html += '<a href="javascript:void(0)" title="删除相册" onclick="deleteAlbumClass(' + data["data"][i]["album_id"] + ')"><i class="fa fa-remove"></i>删除</a>';
 					}
 					html += '</dd></dl></li>';
+					$("#albumList").append(html);
 				}
 			} else {
-				html += '<p style="text-align:center;margin:20px;">暂无符合条件的数据记录</p>';
+				var html = '<p style="text-align:center;margin:20px;">暂无符合条件的数据记录</p>';
+				$("#albumList").html(html);
 			}
-			$("#albumList").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}
@@ -153,7 +160,7 @@ function addAlbumClass() {
 		url : "{:__URL('ADMIN_MAIN/system/addalbumclass')}",
 		data : {
 			"album_name" : album_name,
-			"sort" : sort,
+			"sort" : sort
 		},
 		success : function(data) {
 			if (data['code'] > 0) {
@@ -205,14 +212,14 @@ function deleteAlbumClass(aclass_id_array) {
 					}
 				})
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 			}
 		},
 		contentText:"删除相册?\n注意：相册内的图片将转移到默认相册",
 	});
-}	
-	
+}
+
 //修改相册
 function updateAlbumClass() {
 	var album_name = $("#edit_album_name").val();

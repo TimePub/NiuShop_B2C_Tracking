@@ -3,6 +3,7 @@
 <link href="ADMIN_CSS/express/freight_edit.css"  rel="stylesheet" type="text/css" />
 {/block}
 {block name="main"}
+<div class="space-10"></div>
 <div class="freight-template">
 	<div class='table-div'>
 		<table>
@@ -19,9 +20,9 @@
 				</td>
 				<td>
 				{if condition="$shipping_fee_id"}
-					<input id="shipping_fee_name" type="text" value="{$shipping_fee_detail.shipping_fee_name}" />
+					<input id="shipping_fee_name" type="text" class="input-common" value="{$shipping_fee_detail.shipping_fee_name}" />
 				{else/}
-					<input id="shipping_fee_name" type="text" />
+					<input id="shipping_fee_name" type="text" class="input-common"/>
 				{/if}
 				</td>
 			</tr>
@@ -32,7 +33,7 @@
 					<label>模板地区类型</label>
 				</td>
 				<td>
-					<select id="is_default">
+					<select id="is_default" class="select-common">
 						<option value="1">默认地区</option>
 						{if condition="$shipping_fee_id"}
 							{if condition="$shipping_fee_detail.province_id_array"}
@@ -105,33 +106,37 @@
 						<tr>
 							<td align="center">
 							{if condition="$shipping_fee_id"}
-								<input type="text" value="{$shipping_fee_detail.bynum_snum}" placeholder="0" id="bynum_snum" data-msg="首件不能是负数、并且必须是整数" data-rule="int" />
+								<input type="text" value="{$shipping_fee_detail.bynum_snum}" class="input-common harf" placeholder="0" id="bynum_snum" data-msg="首件不能是负数、并且必须是整数" data-rule="int" 
+								onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
 							{else/}
-								<input type="text" placeholder="0" id="bynum_snum" data-msg="首件不能是负数、并且必须是整数" data-rule="int" />
+								<input type="text" placeholder="0" id="bynum_snum" class="input-common harf" data-msg="首件不能是负数、并且必须是整数" data-rule="int" 
+								onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
 							{/if}
 							</td>
 							
 							<td align="center">
 							{if condition="$shipping_fee_id"}
-								<input type="text" value="{$shipping_fee_detail.bynum_sprice}" placeholder="0" id="bynum_sprice" data-msg="首件运费不能为负数，并且保留两位小数" />
+								<input type="text" value="{$shipping_fee_detail.bynum_sprice}" class="input-common harf" placeholder="0" id="bynum_sprice" data-msg="首件运费不能为负数，并且保留两位小数" data-rule="double"/>
 							{else/}
-								<input type="text" placeholder="0" id="bynum_sprice" data-msg="首件运费不能为负数，并且保留两位小数" />
+								<input type="text" placeholder="0" id="bynum_sprice" class="input-common harf" data-msg="首件运费不能为负数，并且保留两位小数" data-msg="首件运费不能为负数，并且保留两位小数" data-rule="double"/>
 							{/if}
 							</td>
 							
 							<td align="center">
 							{if condition="$shipping_fee_id"}
-								<input type="text" value="{$shipping_fee_detail.bynum_xnum}" placeholder="0" id="bynum_xnum" data-msg="续件不能是负数、并且必须是整数" data-rule="int" />
+								<input type="text" value="{$shipping_fee_detail.bynum_xnum}" placeholder="0" id="bynum_xnum" class="input-common harf" data-msg="续件不能是负数、并且必须是整数" data-rule="int" 
+								onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
 							{else/}
-								<input type="text" placeholder="0" id="bynum_xnum" data-msg="续件不能是负数、并且必须是整数" data-rule="greater_int" />
+								<input type="text" placeholder="0" id="bynum_xnum" class="input-common harf" data-msg="续件不能是负数、并且必须是整数" data-rule="greater_int" data-msg="首件运费不能为负数，并且保留两位小数" data-rule="int"
+								onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
 							{/if}
 							</td>
 							
 							<td align="center">
 							{if condition="$shipping_fee_id"}
-								<input type="text" value="{$shipping_fee_detail.bynum_xprice}" placeholder="0" id="bynum_xprice" data-msg="续件运费不能为负数，并且保留两位小数" data-rule="greater_double" />
+								<input type="text" value="{$shipping_fee_detail.bynum_xprice}" placeholder="0" id="bynum_xprice" class="input-common harf" data-msg="续件运费不能为负数，并且保留两位小数" data-rule="double" />
 							{else/}
-								<input type="text" placeholder="0" id="bynum_xprice" data-msg="续件运费不能为负数，并且保留两位小数" data-rule="greater_double" />
+								<input type="text" placeholder="0" id="bynum_xprice" data-msg="续件运费不能为负数，并且保留两位小数" class="input-common harf" data-rule="double" />
 							{/if}
 							</td>
 							
@@ -171,33 +176,35 @@
 						<tr>
 							<td align="center">
 							{if condition="$shipping_fee_id"}
-								<input value="{$shipping_fee_detail.weight_snum}" type="text" placeholder="0" id="weight_snum" data-msg="首重不能为负数，并且保留两位小数" />
+								<input value="{$shipping_fee_detail.weight_snum}" type="text" placeholder="0" id="weight_snum" class="input-common harf" data-msg="首重不能为负数，并且保留两位小数" 
+								/>
 							{else/}
-								<input type="text" placeholder="0" id="weight_snum" data-msg="首重不能为负数，并且保留两位小数" />
+								<input type="text" placeholder="0" id="weight_snum" class="input-common harf" data-msg="首重不能为负数，并且保留两位小数" 
+								/>
 							{/if}
 							</td>
 							
 							<td align="center">
 							{if condition="$shipping_fee_id"}
-								<input value="{$shipping_fee_detail.weight_sprice}" type="text" placeholder="0" id="weight_sprice" data-msg="首重运费不能为负数，并且保留两位小数" />
+								<input value="{$shipping_fee_detail.weight_sprice}" type="text" placeholder="0" id="weight_sprice" class="input-common harf" data-msg="首重运费不能为负数，并且保留两位小数" data-rule="double"/>
 							{else/}
-								<input type="text" placeholder="0" id="weight_sprice" data-msg="首重运费不能为负数，并且保留两位小数" />
+								<input type="text" placeholder="0" id="weight_sprice" class="input-common harf" data-msg="首重运费不能为负数，并且保留两位小数" data-rule="double"/>
 							{/if}
 							</td>
 							
 							<td align="center">
 							{if condition="$shipping_fee_id"}
-								<input value="{$shipping_fee_detail.weight_xnum}" type="text" placeholder="0" id="weight_xnum" data-msg="续重必须大于0，并且保留两位小数" data-rule="greater_double" />
+								<input value="{$shipping_fee_detail.weight_xnum}" type="text" placeholder="0" id="weight_xnum" class="input-common harf" data-msg="续重必须大于0，并且保留两位小数" data-rule="double" />
 							{else/}
-								<input type="text" placeholder="0" id="weight_xnum" data-msg="续重必须大于0，并且保留两位小数" data-rule="greater_double" />
+								<input type="text" placeholder="0" id="weight_xnum" data-msg="续重必须大于0，并且保留两位小数" class="input-common harf" data-rule="double" />
 							{/if}
 							</td>
 							
 							<td align="center">
 							{if condition="$shipping_fee_id"}
-								<input value="{$shipping_fee_detail.weight_xprice}" type="text" placeholder="0" id="weight_xprice" data-msg="续重运费必须大于0，并且保留两位小数" data-rule="greater_double" />
+								<input value="{$shipping_fee_detail.weight_xprice}" type="text" placeholder="0" id="weight_xprice" class="input-common harf" data-msg="续重运费必须大于0，并且保留两位小数" data-rule="double" />
 							{else/}
-								<input type="text" placeholder="0" id="weight_xprice" data-msg="续重运费必须大于0，并且保留两位小数" data-rule="greater_double" />
+								<input type="text" placeholder="0" id="weight_xprice" data-msg="续重运费必须大于0，并且保留两位小数" class="input-common harf" data-rule="double" />
 							{/if}
 							</td>
 							
@@ -236,33 +243,33 @@
 						<tr>
 							<td align="center">
 							{if condition="$shipping_fee_id"}
-								<input type="text" value="{$shipping_fee_detail.volume_snum}" placeholder="0" id="volume_snum" data-msg="首体积量不能为负数，并且保留两位小数" />
+								<input type="text" value="{$shipping_fee_detail.volume_snum}" placeholder="0" id="volume_snum" class="input-common harf" data-msg="首体积量不能为负数，并且保留两位小数" data-rule="double"/>
 							{else/}
-								<input type="text" placeholder="0" id="volume_snum" data-msg="首体积量不能为负数，并且保留两位小数" />
+								<input type="text" placeholder="0" id="volume_snum" class="input-common harf" data-msg="首体积量不能为负数，并且保留两位小数" data-rule="double"/>
 							{/if}
 							</td>
 							
 							<td align="center">
 							{if condition="$shipping_fee_id"}
-								<input type="text" value="{$shipping_fee_detail.volume_sprice}" placeholder="0" id="volume_sprice" data-msg="首体积运费不能为负数，并且保留两位小数" />
+								<input type="text" value="{$shipping_fee_detail.volume_sprice}" placeholder="0" id="volume_sprice" class="input-common harf" data-msg="首体积运费不能为负数，并且保留两位小数" data-rule="double"/>
 							{else/}
-								<input type="text" placeholder="0" id="volume_sprice" data-msg="首体积运费不能为负数，并且保留两位小数" />
+								<input type="text" placeholder="0" id="volume_sprice" class="input-common harf" data-msg="首体积运费不能为负数，并且保留两位小数" data-rule="double"/>
 							{/if}
 							</td>
 							
 							<td align="center">
 							{if condition="$shipping_fee_id"}
-								<input type="text" value="{$shipping_fee_detail.volume_xnum}" placeholder="0" id="volume_xnum" data-msg="续体积量不能为负数，并且保留两位小数" data-rule="greater_double" />
+								<input type="text" value="{$shipping_fee_detail.volume_xnum}" placeholder="0" id="volume_xnum" class="input-common harf" data-msg="续体积量不能为负数，并且保留两位小数" data-rule="double" />
 							{else/}
-								<input type="text" placeholder="0" id="volume_xnum" data-msg="续体积量不能为负数，并且保留两位小数" data-rule="greater_double" />
+								<input type="text" placeholder="0" id="volume_xnum" class="input-common harf" data-msg="续体积量不能为负数，并且保留两位小数" data-rule="double" />
 							{/if}
 							</td>
 							
 							<td align="center">
 							{if condition="$shipping_fee_id"}
-								<input type="text" value="{$shipping_fee_detail.volume_xprice}" placeholder="0" id="volume_xprice" data-msg="续体积运费不能为负数，并且保留两位小数" data-rule="greater_double" />
+								<input type="text" value="{$shipping_fee_detail.volume_xprice}" placeholder="0" id="volume_xprice" class="input-common harf" data-msg="续体积运费不能为负数，并且保留两位小数" data-rule="double" />
 							{else/}
-								<input type="text" placeholder="0" id="volume_xprice" data-msg="续体积运费不能为负数，并且保留两位小数" data-rule="greater_double" />
+								<input type="text" placeholder="0" id="volume_xprice" class="input-common harf" data-msg="续体积运费不能为负数，并且保留两位小数" data-rule="double" />
 							{/if}
 							</td>
 							
@@ -287,6 +294,7 @@
 	</div>
 	<div class="freight-template-footer">
 		<button type="button" class="btn-common btn-big">保存</button>
+		<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
 		<input type="hidden" id="hidden_co_id" value="{$co_id}" />
 		<input type="hidden" id="hidden_shipping_fee_id" value="{$shipping_fee_id}" />
 		{if condition="$shipping_fee_id"}

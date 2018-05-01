@@ -135,22 +135,11 @@ interface IUser
      */
     function ModifyUserPassword($uid, $old_password, $new_password);
 
-    /**
-     * 添加用户日志
-     * 
-     * @param unknown $uid            
-     * @param unknown $is_system            
-     * @param unknown $controller            
-     * @param unknown $method            
-     * @param unknown $ip            
-     * @param unknown $get_data            
-     */
-    function addUserLog($uid, $is_system, $controller, $method, $ip, $get_data);
 
     /**
      * 获取用户详细信息
      */
-    function getUserDetail();
+    function getUserDetail($uid = '');
 
     /**
      * 用户锁定
@@ -347,5 +336,15 @@ interface IUser
      * @param unknown $user_tel
      */
     function  updateUsertelByUserid($userid,$user_tel);
+    
+    /**
+     * 获取用户操作日志列表
+     * @param unknown $page_index
+     * @param unknown $page_size
+     * @param unknown $condition
+     * @param unknown $order
+     * @param unknown $field
+     */
+    function getUserOperationLogList($page_index, $page_size, $condition, $order, $field);
 }
 

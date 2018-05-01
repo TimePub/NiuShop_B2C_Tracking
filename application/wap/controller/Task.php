@@ -25,6 +25,7 @@ use data\service\WebSite;
 use think\Cache;
 use think\Controller;
 use data\service\Notice;
+use data\service\Verification;
 \think\Loader::addNamespace('data', 'data/');
 
 /**
@@ -60,9 +61,11 @@ class Task extends Controller
         $retval_mansong_operation = $event->mansongOperation();
         $retval_discount_operation = $event->discountOperation();
         $retval_auto_coupon_close = $event->autoCouponClose();
-        
-        $notice=new Notice();
+
+        // 营销游戏变化活动状态
+        $notice = new Notice();
         $notice->sendNoticeRecords();
+        
     }
 
     /**
@@ -125,7 +128,7 @@ class Task extends Controller
         }
         $bottom_info['web_gov_record'] = $web_site_info["web_gov_record"];
         $bottom_info['web_gov_record_url'] = $web_site_info["web_gov_record_url"];
-                
+        
         $result["bottom_info"] = $bottom_info;
         $result["default_logo"] = "/blue/img/logo.png";
         return $result;

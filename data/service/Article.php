@@ -24,6 +24,10 @@ use data\model\NcCmsCommentModel;
 use data\model\NcCmsCommentViewModel;
 use data\model\NcCmsTopicModel;
 use think\Model;
+use think\Cache;
+use think\Log;
+
+
 /**
  * 文章服务层
  * @author Administrator
@@ -36,9 +40,32 @@ class Article extends BaseService implements IArticle
      */
     public function getArticleList($page_index = 1, $page_size = 0, $condition = '', $order = '')
     {
-        $articleview = new NcCmsArticleViewModel();
-        $list = $articleview->getViewList($page_index, $page_size, $condition, $order);
-        return $list;
+        $data = array($page_index, $page_size, $condition, $order);
+        $data = json_encode($data);
+        
+        $cache = Cache::tag("article")->get("getArticleList".$data);
+        if(empty($cache))
+        {
+            $articleview = new NcCmsArticleViewModel();
+            //查询该分类以及子分类下的文章列表
+            if(!empty($condition['nca.class_id'])){
+                $article_class = new NcCmsArticleClassModel();
+                $article_class_array = $article_class -> getQuery([
+                    "class_id|pid" => $condition['nca.class_id']
+                ], "class_id", ""); 
+                $new_article_class_array = array();
+                foreach ($article_class_array as $v){
+                    $new_article_class_array[] = $v["class_id"];
+                }
+                $condition["nca.class_id"] = array("in", $new_article_class_array);
+            }
+            $list = $articleview->getViewList($page_index, $page_size, $condition, $order);
+            Cache::tag("article")->set("getArticleList".$data, $list);
+            return $list;
+        }else{
+            return $cache;
+        }
+       
         // TODO Auto-generated method stub
         
     }
@@ -48,9 +75,17 @@ class Article extends BaseService implements IArticle
      */
     public function getArticleDetail($article_id)
     {
-        $article = new NcCmsArticleModel();
-        $data = $article->get($article_id);
-        return $data;
+        $cache = Cache::tag("article")->get("getArticleDetail".$article_id);
+        if(empty($cache))
+        {
+            $article = new NcCmsArticleModel();
+            $data = $article->get($article_id);
+            Cache::tag("article")->set("getArticleDetail".$article_id, $data);
+            return $data;
+        }else{
+            return $cache;
+        }
+      
         // TODO Auto-generated method stub
         
     }
@@ -60,9 +95,19 @@ class Article extends BaseService implements IArticle
      */
     public function getArticleClass($page_index = 1, $page_size = 0, $condition = '', $order = '')
     {
-        $article_class = new NcCmsArticleClassModel();
-        $list = $article_class->pageQuery($page_index, $page_size, $condition, $order, '*');
-        return $list;
+        $data = array($page_index, $page_size, $condition, $order);
+        $data = json_encode($data);
+        $cache = Cache::tag("article")->get("getArticleClass".$data);
+        if(empty($cache))
+        {
+            $article_class = new NcCmsArticleClassModel();
+            $list = $article_class->pageQuery($page_index, $page_size, $condition, $order, '*');
+            Cache::tag("article")->set("getArticleClass".$data, $list);
+            return $list;
+        }else{
+            return $cache;
+        }
+       
         // TODO Auto-generated method stub
         
     }
@@ -72,9 +117,17 @@ class Article extends BaseService implements IArticle
      */
     public function getArticleClassDetail($class_id)
     {
-        $article_class = new NcCmsArticleClassModel();
-        $list = $article_class->get($class_id);
-        return $list;
+        $cache = Cache::tag("article")->get("getArticleClassDetail".$class_id);
+        if(empty($cache))
+        {
+            $article_class = new NcCmsArticleClassModel();
+            $list = $article_class->get($class_id);
+            Cache::tag("article")->set("getArticleClassDetail".$class_id, $list);
+            return $list;
+        }else{
+            return $cache;
+        }
+        
         // TODO Auto-generated method stub
         
     }
@@ -84,6 +137,7 @@ class Article extends BaseService implements IArticle
      */
     public function addArticle($title, $class_id, $short_title, $source, $url, $author, $summary, $content, $image, $keyword, $article_id_array, $click, $sort, $commend_flag, $comment_flag, $status, $attachment_path, $tag, $comment_count, $share_count)
     {
+        Cache::tag("article")->clear();
         $member = new Member();
         $user_info = $member -> getUserInfoDetail($this->uid);
         $article = new NcCmsArticleModel();
@@ -127,6 +181,7 @@ class Article extends BaseService implements IArticle
      */
     public function updateArticle($article_id, $title, $class_id, $short_title, $source, $url, $author, $summary, $content, $image, $keyword, $article_id_array, $click, $sort, $commend_flag, $comment_flag, $status, $attachment_path, $tag, $comment_count, $share_count)
     {
+        Cache::tag("article")->clear();
         $member = new Member();
         $user_info = $member -> getUserInfoDetail($this->uid);
         $article = new NcCmsArticleModel();
@@ -168,6 +223,7 @@ class Article extends BaseService implements IArticle
      */
     public function addAritcleClass($name, $sort, $pid)
     {
+        Cache::tag("article")->clear();
         $article_class = new NcCmsArticleClassModel();
         $data = array(
             'name' => $name,
@@ -185,6 +241,7 @@ class Article extends BaseService implements IArticle
      */
     public function updateArticleClass($class_id, $name, $sort, $pid)
     {
+        Cache::tag("article")->clear();
         $article_class = new NcCmsArticleClassModel();
         $data = array(
             'name' => $name,
@@ -202,6 +259,7 @@ class Article extends BaseService implements IArticle
      */
     public function modifyArticleSort($article_id, $sort)
     {
+        Cache::tag("article")->clear();
         $article = new NcCmsArticleModel();
         $data = array(
             'sort' => $sort
@@ -217,6 +275,7 @@ class Article extends BaseService implements IArticle
      */
     public function modifyArticleClassSort($class_id, $sort)
     {
+        Cache::tag("article")->clear();
         $article_class = new NcCmsArticleClassModel();
         $data = array(
             'sort' => $sort
@@ -231,6 +290,7 @@ class Article extends BaseService implements IArticle
      * @see \data\api\cms\IArticle::deleteArticleClass()
      */
     public function deleteArticleClass($class_id){
+        Cache::tag("article")->clear();
         $article_class = new NcCmsArticleClassModel();
         $retval=$article_class->destroy($class_id);
         return $retval; 
@@ -239,8 +299,10 @@ class Article extends BaseService implements IArticle
      * @see \data\api\cms\IArticle::deleteArticle()
      */
     public function deleteArticle($article_id){
+        Cache::tag("article")->clear();
         $article=new NcCmsArticleModel();
-        $retval=$article->destroy($article_id);
+        $condition['article_id'] = ['in',$article_id];
+        $retval=$article->destroy($condition);
         return $retval;
     }
     
@@ -289,16 +351,22 @@ class Article extends BaseService implements IArticle
      * @see \data\api\IArticle::getArticleClassQuery()
      */
     public function getArticleClassQuery(){
-        $list = array();
-        $first_list = $this->getArticleClass(1,0,'pid=0','sort');
-        $list = $first_list['data'];
-        foreach ($list as $k => $v)
+        $cache = Cache::tag("article")->get("getArticleClassQuery");
+        if(empty($cache))
         {
-            $second_list = $this->getArticleClass(1,0,'pid='.$v['class_id'],'sort');
-            $list[$k]['child_list'] = $second_list['data'];
+            $list = array();
+            $list = $this->getArticleClass(1,0,'pid=0','sort');
+            foreach ($list["data"] as $k => $v)
+            {
+                $second_list = $this->getArticleClass(1,0,'pid='.$v['class_id'],'sort');
+                $list["data"][$k]['child_list'] = $second_list['data'];
+            }
+            Cache::tag("article")->set("getArticleClassQuery", $list);
+            return $list;
+        }else{
+            return $cache;
         }
-        $first_list['data'] = $list;
-        return $first_list;
+      
     }
     
     /**
@@ -384,6 +452,7 @@ class Article extends BaseService implements IArticle
       * @see \data\api\IArticle::cmsfyField()
       */
      public function cmsField($class_id, $sort, $name){
+         Cache::tag("article")->clear();
          $article_class = new NcCmsArticleClassModel();
          $data = array(
              $sort => $name,

@@ -14,7 +14,7 @@ function collectionGoodsOrShop(obj, fav_id, fav_type, log_msg) {
 					"log_msg" : log_msg
 				},
 				success : function(res) {
-					showBox(res.message);
+					showBox(res.message,"success");
 					if (res.code > 0) {
 						is_member_fav_shop = 1;
 						$(obj).text("已收藏");
@@ -30,7 +30,7 @@ function collectionGoodsOrShop(obj, fav_id, fav_type, log_msg) {
 					"fav_type" : fav_type
 				},
 				success : function(res) {
-					showBox(res.message);
+					showBox(res.message,"success");
 					if (res.code > 0) {
 						is_member_fav_shop = 0;
 						$(obj).text("收藏店铺");

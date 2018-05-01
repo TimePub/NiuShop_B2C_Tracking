@@ -84,7 +84,7 @@ interface IShop
      * @param unknown $type            
      * @param unknown $sort            
      */
-    function addShopNavigation($nav_title, $nav_url, $type, $sort, $align, $nav_type, $is_blank, $template_name);
+    function addShopNavigation($nav_title, $nav_url, $type, $sort, $align, $nav_type, $is_blank, $template_name, $nav_icon, $is_show);
 
     /**
      * 店铺导航修改
@@ -95,7 +95,7 @@ interface IShop
      * @param unknown $type            
      * @param unknown $sort            
      */
-    function updateShopNavigation($nav_id, $nav_title, $nav_url, $type, $sort, $align, $nav_type, $is_blank, $template_name);
+    function updateShopNavigation($nav_id, $nav_title, $nav_url, $type, $sort, $align, $nav_type, $is_blank, $template_name, $nav_icon, $is_show);
 
     /**
      * 店铺导航删除

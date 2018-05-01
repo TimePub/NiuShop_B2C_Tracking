@@ -8,7 +8,7 @@ $(function() {
 		$("div[role='dialog']").draggable();
 	})
 
-	$.ajax({
+/*	$.ajax({
 		type : "post",
 		url : __URL(ADMINMAIN+"/upgrade/isneedtoupgrade"),
 		success : function(data) {
@@ -16,7 +16,7 @@ $(function() {
 				$(".is-upgrade").show();
 			}
 		}
-	});
+	});*/
 });
 
 // 弹出修改密码的弹窗

@@ -47,7 +47,7 @@
 												<dl>
 													<dt> 
 														<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$cart_info['goods_id'])}" target="_blank">
-														<img src="{:__IMG($cart_info['picture_info']['pic_cover_small'])}" border="0" title="{$cart_info.goods_name}"></a>
+														<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($cart_info['picture_info']['pic_cover_small'])}" border="0" title="{$cart_info.goods_name}"></a>
 													</dt>
 													<dd>
 														<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$cart_info['goods_id'])}" target="_blank" class="f6">{$cart_info.goods_name}</a>
@@ -59,13 +59,13 @@
 										</td>
 										<td align="center" width="15%">
 											<div class="jm_cartnum">
-												<span class="jmminu" onclick="minus_num({$cart_info.cart_id},{$cart_info.max_buy},{$cart_info.stock}, {$cart_info.min_buy});">-</span>
+												<span class="jmminu"  onselectstart="return false;" onclick="minus_num({$cart_info.cart_id},{$cart_info.max_buy},{$cart_info.stock}, {$cart_info.min_buy}, {$cart_info.goods_id}, this);">-</span>
 												<input type="text" id="goods_number_{$cart_info.cart_id}" value="{$cart_info.num}" data-default-num="{$cart_info.num}" class="jminputBg" onkeydown="if(event.keyCode == 13) event.returnValue = false" onblur="change_price({$cart_info.cart_id},{$cart_info.max_buy},{$cart_info.goods_id},this,{$cart_info.stock}, {$cart_info.min_buy})" data-goods-id="{$cart_info.goods_id}">
-												<span class="jmadd" onclick="javascript:add_num({$cart_info.cart_id},{$cart_info.max_buy},{$cart_info.goods_id},this,{$cart_info.stock})" data-goods-id="{$cart_info.goods_id}">+</span>
+												<span class="jmadd"  onselectstart="return false;" onclick="javascript:add_num({$cart_info.cart_id},{$cart_info.max_buy},{$cart_info.goods_id},this,{$cart_info.stock})" data-goods-id="{$cart_info.goods_id}">+</span>
 											</div>
 										</td>
 										<td align="center" width="15%">
-											<font class="cart_jmprice" id="goods_price_{$cart_info.cart_id}">
+											<font class="cart_jmprice" id="goods_price_{$cart_info.cart_id}" data-price="{$cart_info.promotion_price}">
 											￥{$cart_info.price}
 											{if condition="$cart_info.point_exchange_type==1 "}
 												{if condition=" $cart_info.point_exchange>0"}
@@ -85,7 +85,7 @@
 					</tr>
 				</tbody>
 			</table>
-			{/foreach} 
+			{/foreach}
 			<!-- <table width="100%" align="center" border="0" cellpadding="5" cellspacing="0" bgcolor="#ffffff" style="border-top:1px dashed #eee; margin-bottom:10px;">
 				<tbody>
 					<tr>
@@ -192,6 +192,7 @@
 		</table>
 	</div>
 </div> -->
+<input type="hidden" id="goods_ladder_preferential" value='{$goods_ladder_preferential}'>
 {/block}
 {block name="javascript"}
 <script type="text/javascript" src="__TEMP__/{$style}/public/js/user.js"></script>

@@ -11,16 +11,21 @@
 .count-box li{font-size: 12px;}
 </style>
 {/block}
+{block name="alert_info"}
+1、符合以下任何一种条件的订单即为有效订单：1）采用在线支付方式支付并且已付款；2）采用货到付款方式支付并且交易已完成<br/>
+2、以下关于订单和订单商品近30天统计数据的依据为：从昨天开始最近30天的有效订单
+{/block}
 {block name="main"}
+<div class="space-10"></div>
 <div class="count-box">
 
 	<div class="main-content" id="mainContent">
-		<div class="alert mt10 top-alert">
+		<!-- <div class="alert mt10 top-alert">
 			<ul class="mt5">
 				<li>1、符合以下任何一种条件的订单即为有效订单：1）采用在线支付方式支付并且已付款；2）采用货到付款方式支付并且交易已完成</li>
 				<li>2、以下关于订单和订单商品近30天统计数据的依据为：从昨天开始最近30天的有效订单</li>
 			</ul>
-		</div>
+		</div> -->
 		<div class="alert alert-info mt10" style="clear:both;">
 			<ul class="mt5">
 				<li>
@@ -80,7 +85,7 @@
 		</div>
 		
 		<div class="w450 fl" style="display: none;">
-			<div class="alert alert-info" style="margin-bottom:0px;"><strong>同行热卖</strong>
+			<div class="alert alert-info" style="margin-bottom:0;"><strong>同行热卖</strong>
 				&nbsp;<i title="拥有相同经营类目同行店铺热销商品推荐，了解行业热卖便于调整商品结构" class="tip icon-question-sign"></i>
 			</div>
 			<table class="ncsc-default-table">

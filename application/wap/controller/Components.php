@@ -124,38 +124,6 @@ class Components extends BaseController
         $good_list = $goods->getGoodsList(1, $number, $condition, $order = 'ng.create_time desc');
         return $good_list['data'];
     }
-
-    /**
-     * 上传图片
-     *
-     * @return boolean
-     */
-    public function imgUpload()
-    {
-        $upFilePath = 'upload/evaluate/';
-        $guid = time();
-        $extend = explode(".", $_FILES["imgPhoto"]["name"]);
-        $key = count($extend) - 1;
-        $ext = "." . $extend[$key];
-        $newfile = $guid . $ext;
-        $size = $_FILES["imgPhoto"]["size"];
-        $ext = $_FILES["imgPhoto"]["type"];
-        if (substr($ext, - 3) == 'php') {
-            echo "非法操作";
-            return false;
-        }
-        if (! file_exists($upFilePath)) {
-            $mode = intval('0777',8);
-            mkdir($upFilePath,$mode,true);
-        }
-        $ok = move_uploaded_file($_FILES["imgPhoto"]["tmp_name"], $upFilePath . $newfile);
-        /**
-         * 存库并返回图片id
-        */
-        $img_path = $upFilePath . $newfile;
-        @unlink($_FILES['imgPhoto']);
-        return $img_path;
-    }
     
     /**
      * 删除上传的图片

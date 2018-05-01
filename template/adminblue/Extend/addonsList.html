@@ -2,30 +2,30 @@
 {block name="resources"/}
 <link rel="stylesheet" type="text/css" href="ADMIN_CSS/product.css">
 <style type="text/css">
-.num{width:40px;text-align:center;}
-.table-class table input {margin-bottom: 0;}
-.table-class table input.sort {width: auto;text-align: center;}
 </style>
 {/block}
 {block name="main"}
+<div class="space-10"></div>
 <table class="table-class">
 	<colgroup>
+		<col style="width: 2%;">
+		<col style="width: 18%;">
+		<col style="width: 15%;">
+		<col style="width: 5%;">
 		<col style="width: 10%;">
-		<col style="width: 11%;">
-		<col style="width: 25%;">
 		<col style="width: 10%;">
-		<col style="width: 10%;">
-		<col style="width: 10%">
+		<col style="width: 25%">
 		<col style="width: 15%">
 		</colgroup>
 	<thead>
 		<tr align="center">
+			<th><i class="checkbox-common"><input type="checkbox" onclick="CheckAll(this)"></i></th>
 			<th align="left">名称</th>
 			<th align="left">标识</th>
-			<th align="left">描述</th>
 			<th align="left">状态</th>
 			<th>作者</th>
 			<th>版本</th>
+			<th align="left">描述</th>
 			<th>操作</th>
 		</tr>
 	</thead>
@@ -41,7 +41,7 @@
 			</div>
 			<div class="set-style">
 				<dl>
-					<dt>详情:</dt>
+					<dt>详情：</dt>
 					<dd>
 						<div id="content" style="min-width:400px;min-height:100px;"></div>
 					</dd>
@@ -59,9 +59,10 @@ function LoadingInfo(page_index) {
 		url : __URL("ADMIN_MAIN/extend/addonslist"),
 		data : { "page_index" : page_index, "page_size" : $("#showNumber").val() },
 		success : function(data) {
-			var html = '';
 			if (data['data'].length > 0) {
+				$(".table-class tbody").empty();
 				for (var i = 0; i < data['data'].length; i++) {
+					var html = '';
 					var status = '';
 					var operation = '';
 					var url = '';
@@ -75,28 +76,31 @@ function LoadingInfo(page_index) {
 						operation = '';
 					}else if(data['data'][i]['status'] == 0){
 						status = '禁用';
-						operation = '<a href="'+url+'">设置</a>&nbsp;<a href="javascript:;" onclick="detail('+ data['data'][i]['id'] +')">详情</a>&nbsp;<a href="ADMIN_MAIN/extend/enable?id='+ data['data'][i]['id'] +'">启用</a>&nbsp;<a href="'+__URL('ADMIN_MAIN/extend/uninstall?id='+ data['data'][i]['id'])+'" >卸载</a>';
+						operation = '<a href="'+url+'">设置</a><a href="javascript:;" onclick="detail('+ data['data'][i]['id'] +')">详情</a><a href="ADMIN_MAIN/extend/enable?id='+ data['data'][i]['id'] +'">启用</a><a href="'+__URL('ADMIN_MAIN/extend/uninstall?id='+ data['data'][i]['id'])+'" >卸载</a>';
 					}else if(data['data'][i]['status'] == 1){
 						status = '启用';
-						operation = '<a href="'+url+'">设置</a>&nbsp;<a href="javascript:;" onclick="detail('+ data['data'][i]['id'] +')">详情</a>&nbsp;<a href="'+__URL('ADMIN_MAIN/extend/disable?id='+ data['data'][i]['id'])+'">禁用</a>&nbsp;<a href="'+__URL('ADMIN_MAIN/extend/uninstall?id='+ data['data'][i]['id'])+'" >卸载</a>';
+						operation = '<a href="'+url+'">设置</a><a href="javascript:;" onclick="detail('+ data['data'][i]['id'] +')">详情</a><a href="'+__URL('ADMIN_MAIN/extend/disable?id='+ data['data'][i]['id'])+'">禁用</a><a href="'+__URL('ADMIN_MAIN/extend/uninstall?id='+ data['data'][i]['id'])+'" >卸载</a>';
 					}else if(data['data'][i]['status'] == undefined){
 						operation = '<a href="'+__URL('ADMIN_MAIN/extend/install?addon_name='+ data['data'][i]['name'])+'">安装</a>';
 						status = '未安装';
 					}
 					html += '<tr align="center">';
+					html += '<td  style="text-align: center;"><i class="checkbox-common"><input name="sub" type="checkbox" value="'+ data["data"][i]["id"]+'" ></i></td>';
 					html += '<td align="left">'+ data['data'][i]['title'] +'</td>';
 					html += '<td align="left">'+ data['data'][i]['name'] +'</td>';
-					html += '<td align="left">'+ data['data'][i]['description'] +'</td>';
+					
 					html += '<td align="left">'+ status +'</td>';
 					html += '<td>'+ data['data'][i]['author'] +'</td>';
 					html += '<td>'+ data['data'][i]['version'] +'</td>';
+					html += '<td align="left">'+ data['data'][i]['description'] +'</td>';
 					html += '<td>'+ operation +'</td>';
 					html += '</tr>';
+					$(".table-class tbody").append(html);
 				}
 			} else {
-				html += '<tr align="center"><th colspan="8">暂无符合条件的数据记录</th></tr>';
+				var html = '<tr align="center"><th colspan="8">暂无符合条件的数据记录</th></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
 			initPageData(data["page_count"],data.length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}
@@ -113,6 +117,13 @@ function detail(id){
 			$("#detail").modal("show");
 		}
 	});
+}
+//全选
+function CheckAll(event){
+	var checked = event.checked;
+	$(".table-class tbody input[type = 'checkbox']").prop("checked",checked);
+	if(checked) $(".table-class tbody input[type = 'checkbox']").parent().addClass("selected");
+	else $(".table-class tbody input[type = 'checkbox']").parent().removeClass("selected");
 }
 </script>
 {/block}

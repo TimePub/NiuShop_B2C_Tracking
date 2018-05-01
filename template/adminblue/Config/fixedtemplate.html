@@ -8,11 +8,7 @@
 .panel-heading{height:40px;line-height:40px;margin-top:15px;background:#F9F9F9;padding:0 15px;color:#00C0FF;}
 .handle{display:inline-block;background:#FB6B5B;padding:0 8px;font-size:12px;color:#fff;margin:7px;line-height:25px;float:right;}
 .td{width:20%;text-align:center;}
-.set-style{width:100%;}
-.set-style dl{width:100%;font-size: 0;clear: both;padding: 0;margin: 0;border-bottom: dotted 1px #E6E6E6;overflow: hidden;}
-.set-style dl dt{font-size: 12px;line-height: 32px;vertical-align: top;letter-spacing: normal;word-spacing: normal;text-align: right;display: inline-block;width: 19%;padding: 10px 1% 10px 0;margin: 0;font-weight:normal;}
-.set-style dl dd{font-size: 12px;line-height: 32px;vertical-align: top;letter-spacing: normal;word-spacing: normal;display: inline-block;width: 78%;padding: 10px 0 10px 5px;}
-.borderclass{font-size: 12px;line-height: 32px;vertical-align: top;letter-spacing: normal;word-spacing: normal;display: inline-block;width: 78%;padding-left: 7px;border-left: 1px dotted #ccc;}
+.borderclass{font-size: 12px;line-height: 32px;vertical-align: top;letter-spacing: normal;word-spacing: normal;display: inline-block;width: 78%;padding-left: 7px;}
 .set-style dl dd input[type="text"]{font: 12px/20px Arial;color: #777;background-color: #FFF;vertical-align: top;display: inline-block;height:24px;line-height:24px;padding: 4px;border: 1px solid #CCC;outline: 0 none;width: 400px;margin:0;}
 .set-style dl dd textarea{font: 12px/20px Arial;color: #777;background-color: #FFF;vertical-align: top;display: inline-block;height: 60px;padding: 4px;border: solid 1px #CCC;outline: 0 none;width: 400px;margin:0;}
 .hint{font-size: 12px;line-height: 16px;color: #BBB;margin-top: 10px;}
@@ -28,39 +24,45 @@
 .goods-logo-class ul{overflow:hidden;margin: 0px;}
 .goods-logo-class ul li{float:left;width:20%;cursor:pointer;}
 .imglogo{width:90%;margin:0 auto;}
+.app-template{padding:0px;}
 .app-template li{width:220px;}
-.edit_button{margin: 12px auto;padding: 3px 10px;border: 0;background: #0072D2;color: #fff;width:100px;height:35px;}
+.edit_button{margin: 12px auto;padding: 3px 10px;border: 0;background: #126AE4;color: #fff;width:100px;height:35px;}
 .btn-submit{text-align:center;}
 .classified-display-mode label{display: inline-block;margin:0 10px;}
+.ns-main{margin-top:0px;}
 </style>
 {/block}
 {block name="main"}
 <div class="set-style">
-	<dl>
-		<dt><span style="color:red;margin-right:10px;"></span>用户通知:</dt>
+	<!-- <dl>
+		<dt><span style="color:red;margin-right:10px;"></span>用户通知：</dt>
 		<dd class="borderclass">
 			<textarea rows="2" id="notice_message" class="textarea w400 input-common" maxlength="50">{$info.notice_message}</textarea>
 		</dd>
 	</dl>
 	<dl>
-		<dt>是否启用用户通知:</dt>
+		<dt>是否启用用户通知：</dt>
 		<dd class="borderclass">
 			<p>
 				<input id="is_enable" type="checkbox" class="checkbox" {if condition="$info.is_enable==1"} checked="checked"{/if}/>
 			</p>
 		</dd>
-	</dl>
+	</dl> -->
 	<dl>
-		<dt>分类显示方式:</dt>
+		<dt>分类显示方式：</dt>
 		<dd class="borderclass classified-display-mode">
-			<p>
-				<label><input type="radio" name="input-classified-display-mode" value="1"{if condition="$classified_display_mode==1"} checked="checked"{/if}/>&nbsp;缩略图模式</label>
-				<label><input type="radio" name="input-classified-display-mode" value="2"{if condition="$classified_display_mode==2"} checked="checked"{/if}/>&nbsp;列表模式</label>
-			</p>
+				<label class="radio inline normal">
+					<i class="radio-common {if condition="$classified_display_mode==1"}selected{/if}"><input type="radio" name="input-classified-display-mode" value="1"{if condition="$classified_display_mode==1"} checked="checked"{/if}/></i>
+					<span>缩略图模式</span>
+				</label>
+				<label class="radio inline normal">
+					<i class="radio-common {if condition="$classified_display_mode==2"}selected{/if}"><input type="radio" name="input-classified-display-mode" value="2"{if condition="$classified_display_mode==2"} checked="checked"{/if}/></i>
+					<span>列表模式</span>
+				</label>
 		</dd>
 	</dl>
 	<dl class="hide">
-		<dt>首页商品分类显示:</dt>
+		<dt>首页商品分类显示：</dt>
 		<dd class="borderclass">
 			<p>
 				<input id="is_category" type="checkbox" class="checkbox" {if condition="$lists['value']['is_category'] eq 1"}checked="checked"{/if} onchange="chagecategoryblock();"/>
@@ -68,7 +70,7 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>模板列表</dt>
+		<dt>模板列表：</dt>
 		<dd class="borderclass">
 			<div class="app-template">
 				<ul>
@@ -86,11 +88,14 @@
 			</div>
 		</dd>
 	</dl>
+	<dl >
+		<dt></dt>
+		<dd class="borderclass">
+			<button class="btn-common btn-big" onclick="setConfigAjax();" >保存</button>
+		</dd>
+	</dl>
 </div>
 <div id="bottom_div"></div>
-<div class="btn-submit">
-	<button class="edit_button" onclick="setConfigAjax();" style="margin: 12px auto;">提交</button>
-</div>
 {/block}
 {block name="script"}
 <script>
@@ -127,7 +132,7 @@ function chagecategoryblock(){
 		success : function(data) {
 			if (data['code'] > 0) {
 			} else {
-				showMessage('error',"提交失败");
+				showTip("提交失败",'error');
 			}
 		}
 	});
@@ -171,9 +176,10 @@ function setConfigAjax(){
 		data:{ 'notice_message' : notice_message, 'is_enable' : is_enable,'classified_display_mode' : classified_display_mode },
 		success:function (data) {
 			if (data["code"] > 0) {
-				showMessage('success', data["message"],"{:__URL('ADMIN_MAIN/config/fixedtemplate')}");
+				showTip(data["message"],"success");
+				location.href = "{:__URL('ADMIN_MAIN/config/fixedtemplate')}";
 			}else{
-				showMessage('error', data["message"]);
+				showTip(data["message"],"error");
 			}
 		}
 	});

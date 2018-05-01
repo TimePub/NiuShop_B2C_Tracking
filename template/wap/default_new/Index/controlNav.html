@@ -2,56 +2,19 @@
 <div class="navi">
 	<div class="navi-item">
 		<nav class="navi-item_row">
-			<!-- <a href="{:__URL('APP_MAIN')}">
-				<span>
-					<img src="__TEMP__/{$style}/public/images/navimg/home.png"><span>首页</span>
-				</span>
-			</a> -->
-			<a href="{:__URL('APP_MAIN/goods/goodsClassificationList')}">
-				<span>
-					<img src="__TEMP__/{$style}/public/images/navimg/category.png"><span>{:lang("classification_goods")}</span>
-				</span>
-			</a>
-			<a href="{:__URL('APP_MAIN/index/discount')}">
-				<span>
-					<img src="__TEMP__/{$style}/public/images/navimg/discount.png"><span>{:lang("goods_discount")}</span>
-				</span>
-			</a>
-			<a href="{:__URL('APP_MAIN/goods/brandlist')}">
-				<span>
-					<img src="__TEMP__/{$style}/public/images/navimg/brand.png"><span>{:lang("brands_area")}</span>
-				</span>
-			</a>
-			<a href="{:__URL('APP_MAIN/member/index')}">
-				<span>
-					<img src="__TEMP__/{$style}/public/images/navimg/usercenter.png"><span>{:lang("member_member_center")}</span>
-				</span>
-			</a>
-			<a href="{:__URL('APP_MAIN/articlecenter')}">
-				<span>
-					<img src="__TEMP__/{$style}/public/images/navimg/helpcenter.png"><span>{:lang("article_topic")}</span>
-				</span>
-			</a>
-			<!-- <a href="{:__URL('APP_MAIN/articlecenter')}">
-				<span>
-					<img src="__TEMP__/{$style}/public/images/navimg/shop.png"><span>店铺街</span>
-				</span>
-			</a>
-			<a href="{:__URL('APP_MAIN/goods/integralcenter')}">
-				<span>
-					<img src="__TEMP__/{$style}/public/images/navimg/cart.png"><span>购物车</span>
-				</span>
-			</a>
-			<a href="{:__URL('APP_MAIN/articlecenter')}">
-				<span>
-					<img src="__TEMP__/{$style}/public/images/navimg/directstore.png"><span>直营店铺</span>
-				</span>
-			</a>
-			<a href="{:__URL('APP_MAIN/member/index')}">
-				<span>
-					<img src="__TEMP__/{$style}/public/images/navimg/attractinvestment.png"><span>招商加盟	</span>
-				</span>
-			</a> -->
+			{if count($navigation_list) > 0}
+				{foreach name="$navigation_list" item="vo"}
+					{if condition='$vo.nav_type eq 0'}
+					<a href="{:__URL('APP_MAIN'.$vo.nav_url)}">
+					{else/}
+					<a href="{$vo.nav_url}">
+					{/if}
+						<span>
+							<img src="{:__IMG($vo.nav_icon)}"><span>{$vo.nav_title}</span>
+						</span>
+					</a>
+				{/foreach}
+			{/if}
 		</nav>
 	</div>
 </div>

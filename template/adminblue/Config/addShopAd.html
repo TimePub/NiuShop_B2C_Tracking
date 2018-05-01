@@ -8,7 +8,7 @@
 {block name="main"}
 <div class="set-style">
 	<dl>
-		<dt>图片:</dt>
+		<dt>图片：</dt>
 		<dd>
 			<div><p><img id="imgLogo"></p></div>
 			<div class="upload-btn">
@@ -22,28 +22,28 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>链接地址:</dt>
+		<dt>链接地址：</dt>
 		<dd>
 			<p><input id="link_url" type="text" class="input-common"></p>
 			<p class="error">请输入链接地址</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>类型:</dt>
+		<dt>类型：</dt>
 		<dd>
 			<p><select id="type"><option value="0">PC端</option><option value="1">手机端</option></select></p>
 			<p class="error">请选择类型</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>背景色:</dt>
+		<dt>背景色：</dt>
 		<dd>
-			<p><input id="background" type="color" class="input-common"></p>
+			<p><input id="background" type="color" class="input-common-color"></p>
 			<p class="error">请选择类型</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>排序:</dt>
+		<dt>排序：</dt>
 		<dd>
 			<p><input id="sort" type="text" class="input-common"></p>
 			<p class="error">请输入序号</p>
@@ -51,7 +51,10 @@
 	</dl>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="addShopAdAjax();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="addShopAdAjax();">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
 	</dl>
 </div>
 <script src="__STATIC__/js/ajax_file_upload.js" type="text/javascript"></script>

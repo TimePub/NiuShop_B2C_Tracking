@@ -11957,7 +11957,8 @@ $.widget( "ui.dialog", {
 
 		this._trigger( "open" );
 		//添加的动作
-		this.element.html("<div class='text-img'><i class='dlalog-icon "+this.options.msgType+"'></i></div><h2 class='text-h2'>"+this.options.title+"</h2><p class='text-class'>"+this.options.contentText+"</p><p class='text-class time-class'></p>");
+		// <i class='dlalog-icon "+this.options.msgType+"'></i>
+		this.element.html("<p class='text-class'><span class='dialog-content "+this.options.msgType+"'>"+this.options.contentText+"</span></p><p class='text-class time-class'></p>");
 		var time = this.options.time;
 		if(time >0){
 			//$(".time-class").show();
@@ -12131,6 +12132,7 @@ $.widget( "ui.dialog", {
 		uiDialogTitle = $( "<span>" ).uniqueId().prependTo( this.uiDialogTitlebar );
 		this._addClass( uiDialogTitle, "ui-dialog-title" );
 		this._title( uiDialogTitle );
+		uiDialogTitle.html(this.options.title);
 
 		this.uiDialogTitlebar.prependTo( this.uiDialog );
 
@@ -12187,7 +12189,7 @@ $.widget( "ui.dialog", {
 			if(arr.length == 1){
 				props = $.extend( { type: "button" }, props );
 			}else{
-				props = $.extend( { type: "button",style:"background-color:"+arr[1] }, props );	
+				props = $.extend( { type: "button",style:"background-color:"+arr[1]+";color:"+arr[2]+";border:1px solid #ddd" }, props );	
 			}
 			
 

@@ -22,6 +22,8 @@ use data\service\Express as ExpressService;
 use data\service\Order\OrderGoods;
 use data\service\Order\OrderStatus;
 use data\service\Order as OrderService;
+use data\service\Order\OrderExpress;
+use data\service\O2o;
 use data\service\Pay\AliPay;
 use data\service\Pay\WeiXinPay;
 
@@ -54,6 +56,7 @@ class Order extends BaseController
             $order_status = request()->post('order_status', '');
             $receiver_mobile = request()->post('receiver_mobile', '');
             $payment_type = request()->post('payment_type', 1);
+            $shipping_type = request()->post('shipping_type', 0); //配送类型
             $condition['order_type'] = array(
                 "in",
                 "1,3"
@@ -114,6 +117,9 @@ class Order extends BaseController
             if (! empty($receiver_mobile)) {
                 $condition['receiver_mobile'] = $receiver_mobile;
             }
+            if($shipping_type != 0){
+                $condition['shipping_type'] = $shipping_type;
+            }    
             $condition['shop_id'] = $this->instance_id;
             $order_service = new OrderService();
             $list = $order_service->getOrderList($page_index, $page_size, $condition, 'create_time desc');
@@ -388,6 +394,7 @@ class Order extends BaseController
         }
         $order_service = new OrderService();
         $detail = $order_service->getOrderDetail($order_id);
+        //var_dump($detail);exit();
         if (empty($detail)) {
             $this->error("没有获取到订单信息");
         }
@@ -401,6 +408,32 @@ class Order extends BaseController
             $detail['operation'] = $operation_array;
         }
         $this->assign("order", $detail);
+        
+        //根据当前订单id获取小于该订单id
+        $condition['order_type'] = array(
+            "in",
+            "1,3"
+        ); // 订单类型
+        $condition["is_deleted"] = 0;
+        $condition['order_id'] = array(
+            'lt',
+            $order_id
+        );
+        $prev_order = $order_service -> getOrderList(1,1,$condition,'order_id desc');
+        $this->assign('prev_order',$prev_order['data']);
+        //根据当前订单id获取大于该订单id
+        $conditions['order_type'] = array(
+            "in",
+            "1,3"
+        ); // 订单类型
+        $conditions["is_deleted"] = 0;
+        $conditions['order_id'] = array(
+            'gt',
+            $order_id
+        );
+        $next_order = $order_service -> getOrderList(1,1,$conditions,'order_id desc');
+        $this->assign('next_order',$next_order['data']);
+          
         return view($this->style . "Order/orderDetail");
     }
 
@@ -525,6 +558,28 @@ class Order extends BaseController
         $data['order_goods_list'] = $order_goods_list;
         return $data;
     }
+    
+    /**
+     * o2o发货 所需数据
+     */
+    public function o2oDeliveryData()
+    {
+        $order_service = new OrderService();
+        $o2o_service = new O2o();
+        $address_service = new AddressService();
+        $order_id = request()->post('order_id', '');
+        $order_info = $order_service->getOrderDetail($order_id);
+        $order_info['address'] = $address_service->getAddress($order_info['receiver_province'], $order_info['receiver_city'], $order_info['receiver_district']);
+        $shopId = $this->instance_id;
+        // 配送人员列表
+        $o2o_delivery_user_list = $o2o_service->getDistributionUserList(1, 0);
+        // 订单商品项
+        $order_goods_list = $order_service->getOrderGoods($order_id);
+        $data['order_info'] = $order_info;
+        $data['o2o_delivery_user_list'] = $o2o_delivery_user_list['data'];
+        $data['order_goods_list'] = $order_goods_list;
+        return $data;
+    }
 
     /**
      * 订单发货
@@ -544,6 +599,21 @@ class Order extends BaseController
             $res = $order_service->orderGoodsDelivery($order_id, $order_goods_id_array);
         }
         return AjaxReturn($res);
+    }
+    
+    /**
+     * 本地配送发货
+     */
+    public function o2oDelivery()
+    {
+        $o2o = new O2o();
+        $order_id = request()->post('order_id', '');
+        $o2o_delivery_user_id = request()->post('o2o_delivery_user_id', 0);
+        $o2o_delivery_no = request()->post('o2o_delivery_no', '');
+        $remark = request()->post('remark', "");
+
+        $res = $o2o ->O2oOrderDelivery($order_id, $o2o_delivery_user_id, $o2o_delivery_no, $remark);
+        return $res;
     }
 
     /**
@@ -812,45 +882,13 @@ class Order extends BaseController
      */
     public function returnSetting()
     {
-        $child_menu_list = array(
-            array(
-                'url' => "express/expresscompany",
-                'menu_name' => "物流公司",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/areamanagement",
-                'menu_name' => "地区管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "order/returnsetting",
-                'menu_name' => "商家地址",
-                "active" => 1
-            ),
-            array(
-                'url' => "shop/pickuppointlist",
-                'menu_name' => "自提点管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "shop/pickuppointfreight",
-                'menu_name' => "自提点运费",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/distributionareamanagement",
-                'menu_name' => "货到付款地区管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/expressmessage",
-                'menu_name' => "物流跟踪设置",
-                "active" => 0
-            )
-        );
-        
+        //获取物流配送三级菜单
+        $express = new Express();
+        $child_menu_list = $express->getExpressChildMenu(1);
         $this->assign('child_menu_list', $child_menu_list);
+        $express_child = $express->getExpressChild(1,3);
+        $this->assign('express_child', $express_child);
+        
         $order_service = new OrderService();
         $shop_id = $this->instance_id;
         if (request()->isAjax()) {
@@ -1385,7 +1423,7 @@ class Order extends BaseController
         return 0;
     }
 
-    /**
+  /**
      * 查询当前订单的付款方式，用于进行退款操作时，选择退款方式
      * 创建时间：2017年10月16日 10:01:55 王永杰
      */
@@ -1401,26 +1439,27 @@ class Order extends BaseController
                 $temp['type_id'] = 1;
                 $temp['type_name'] = "微信";
                 array_push($json, $temp);
-                $temp['type_id'] = 10;
-                $temp['type_name'] = "线下";
-                array_push($json, $temp);
+                
             } elseif ($type == "支付宝") {
                 $temp['type_id'] = 2;
                 $temp['type_name'] = "支付宝";
                 array_push($json, $temp);
-                $temp['type_id'] = 10;
-                $temp['type_name'] = "线下";
-                array_push($json, $temp);
-            } else {
-                $temp['type_id'] = 10;
-                $temp['type_name'] = "线下";
+                
+            } elseif($type == "银联卡"){
+                
+                $temp['type_id'] = 3;
+                $temp['type_name'] = "银联卡";
                 array_push($json, $temp);
             }
+            
+            $temp['type_id'] = 10;
+            $temp['type_name'] = "线下";
+            array_push($json, $temp);
+            
             return json_encode($json);
         }
         return "";
     }
-
     /**
      * 检测支付配置是否开启，支付配置和原路退款配置都要开启才行（配置信息也要填写）
      * 创建时间：2017年10月17日 15:00:29 王永杰
@@ -1546,5 +1585,273 @@ class Order extends BaseController
         $list = $order_service->getOrderList(1, 0, $condition, '');
         $this->assign("order_list", $list['data']);
         return view($this->style . "Order/printVirtualOrder");
+    }
+    
+
+    /**
+     * 订单快递数据
+     */
+    public function updateOrderExpress()
+    {
+        $order_express_service = new OrderExpress();
+        $order_goods_express_id = request()->post('order_goods_express_id', '');
+        $express_name = request()->post('express_name', '');
+        $shipping_type = request()->post('shipping_type', '');
+        $express_company_id = request()->post('express_company_id', '');
+        $express_no = request()->post('express_no', '');
+        $res = $order_express_service->update_delivey($order_goods_express_id, $express_name, $shipping_type, $express_company_id, $express_no);
+        return AjaxReturn($res);
+    }
+    
+    /*
+     * 发票管理
+     */
+    public function invoiceList(){
+        if(request()->post()){
+            $page_index = request()->post('page_index', 1);
+            $page_size = request()->post('page_size', PAGESIZE);
+            $start_date = request()->post('start_date') == "" ? 0 : getTimeTurnTimeStamp(request()->post('start_date'));
+            $end_date = request()->post('end_date') == "" ? 0 : getTimeTurnTimeStamp(request()->post('end_date'));
+            $order_no = request()->post('order_no', '');
+            
+            $order_service = new OrderService();
+            $condition['buyer_invoice'] = ['neq',''];
+            if ($start_date != 0 && $end_date != 0) {
+                $condition["create_time"] = [
+                    [
+                        ">",
+                        $start_date
+                    ],
+                    [
+                        "<",
+                        $end_date
+                    ]
+                ];
+            } elseif ($start_date != 0 && $end_date == 0) {
+                $condition["create_time"] = [
+                    [
+                        ">",
+                        $start_date
+                    ]
+                ];
+            } elseif ($start_date == 0 && $end_date != 0) {
+                $condition["create_time"] = [
+                    [
+                        "<",
+                        $end_date
+                    ]
+                ];
+            }
+            if($order_no != ''){
+                $condition['order_no'] = $order_no;
+            }
+            
+            $list = $order_service->getOrderList($page_index, $page_size, $condition, 'create_time desc');
+            foreach($list['data'] as $key=>$val){
+                $val['invoice'] = explode('$',$val['buyer_invoice']);
+            }
+            return $list;
+        }else{
+            return view($this->style . "Order/invoiceList");
+        }
+    }
+    
+    /**
+     * 售后列表
+     */
+    public function customerServiceList()
+    {
+        if (request()->isAjax()) {
+            $page_index = request()->post('page_index', 1);
+            $page_size = request()->post('page_size', PAGESIZE);
+            $start_date = request()->post('start_date') == "" ? 0 : getTimeTurnTimeStamp(request()->post('start_date'));
+            $end_date = request()->post('end_date') == "" ? 0 : getTimeTurnTimeStamp(request()->post('end_date'));
+ 
+            if ($start_date != 0 && $end_date != 0) {
+                $condition["create_time"] = [
+                    [
+                        ">",
+                        $start_date
+                    ],
+                    [
+                        "<",
+                        $end_date
+                    ]
+                ];
+            } elseif ($start_date != 0 && $end_date == 0) {
+                $condition["create_time"] = [
+                    [
+                        ">",
+                        $start_date
+                    ]
+                ];
+            } elseif ($start_date == 0 && $end_date != 0) {
+                $condition["create_time"] = [
+                    [
+                        "<",
+                        $end_date
+                    ]
+                ];
+            }
+        
+            $condition['shop_id'] = $this->instance_id;
+            $order_service = new OrderService();
+            $list = $order_service->getCustomerServiceList($page_index, $page_size, $condition, 'create_time desc');
+            return $list;
+        } else {
+            
+            // 获取物流公司
+            $express = new ExpressService();
+            $expressList = $express->expressCompanyQuery();
+            $this->assign('expressList', $expressList);
+            return view($this->style . "Order/customerServiceList");
+        }
+    }
+    
+    /**
+     * 订单售后详情
+     */
+    public function orderCustomerDetail()
+    {
+        $id = request()->get('id', 0);
+        $order_goods_id = request()->get('itemid', 0);
+        if ($order_goods_id == 0) {
+            $this->error("没有获取到退款信息");
+        }
+        $order_service = new OrderService();
+        $info = $order_service->getCustomerServiceInfo($id, $order_goods_id);
+        $refund_account_records = $order_service->getOrderCustomerAccountRecordsByOrderGoodsId($order_goods_id);
+        $remark = ""; // 退款备注，只有在退款成功的状态下显示
+        if (! empty($refund_account_records)) {
+            if (! empty($refund_account_records['remark'])) {
+    
+                $remark = $refund_account_records['remark'];
+            }
+        }
+        $order_goods = new OrderGoods();
+        // 退款余额
+        $refund_balance = $order_goods->orderGoodsRefundBalance($order_goods_id);
+        $this->assign("refund_balance", sprintf("%.2f", $refund_balance));
+        $this->assign('order_goods', $info);
+        $this->assign("remark", $remark);
+    
+        return view($this->style . "Order/orderCustomerDetail");
+    }
+    /**
+     * 买家同意买家退款申请 售后
+     *
+     * @return number
+     */
+    public function orderGoodsCustomerAgree()
+    {
+        $id = request()->post('id', '');
+        $order_id = request()->post('order_id', '');
+        $order_goods_id = request()->post('order_goods_id', '');
+        if (empty($order_id) || empty($order_goods_id)) {
+            $this->error('缺少必需参数');
+        }
+        $order_service = new OrderService();
+        $retval = $order_service->orderGoodsCustomerAgree($id, $order_id, $order_goods_id);
+        return AjaxReturn($retval);
+    }
+    
+    /**
+     * 卖家拒绝本次退款 售后
+     *
+     * @return Ambigous <number, Exception>
+     */
+    public function orderCustomerRefuseOnce()
+    {
+        $id = request()->post('id', '');
+        $order_id = request()->post('order_id', '');
+        $order_goods_id = request()->post('order_goods_id', '');
+        if (empty($order_id) || empty($order_goods_id)) {
+            $this->error('缺少必需参数');
+        }
+        $order_service = new OrderService();
+        $retval = $order_service->orderCustomerRefuseOnce($id, $order_id, $order_goods_id);
+        return AjaxReturn($retval);
+    }
+    /**
+     * 买家永久拒绝本次退款 售后
+     *
+     * @return Ambigous <number, Exception>
+     */
+    public function orderCustomerRefuseForever()
+    {
+        $id = request()->post('id', '');
+        $order_id = request()->post('order_id', '');
+        $order_goods_id = request()->post('order_goods_id', '');
+        if (empty($order_id) || empty($order_goods_id)) {
+            $this->error('缺少必需参数');
+        }
+        $order_service = new OrderService();
+        $retval = $order_service->orderCustomerRefuseForever($id, $order_id, $order_goods_id);
+        return AjaxReturn($retval);
+    }
+    
+    /**
+     * 确认收货 售后 详情
+     */
+    public function getOrderCustomerDetialAjax()
+    {
+        if (request()->isAjax()) {
+            $order_goods_id = request()->post("order_goods_id", '');
+            $id = request()->post("id", '');
+            $order_goods = new OrderGoods();
+            $res = $order_goods->getCustomerServiceDetail($id,$order_goods_id);
+            return $res;
+        }
+    }
+    
+    /**
+     * 卖家确认收货 售后 
+     *
+     * @return Ambigous <number, Exception>
+     */
+    public function orderCustomerConfirmRecieve()
+    {
+        $id = request()->post('id', '');
+        $order_id = request()->post('order_id', '');
+        $order_goods_id = request()->post('order_goods_id', '');
+        if (empty($order_id) || empty($order_goods_id)) {
+            $this->error('缺少必需参数');
+        }
+        $storage_num = request()->post("storage_num", "");
+        $isStorage = request()->post("isStorage", "");
+        $goods_id = request()->post("goods_id", '');
+        $sku_id = request()->post('sku_id', '');
+        $order_service = new OrderService();
+        $retval = $order_service->orderCustomerConfirmRecieve($id, $order_id, $order_goods_id, $storage_num, $isStorage, $goods_id, $sku_id);
+        return AjaxReturn($retval);
+    }
+    
+    /**
+     * 卖家确认退款 售后 
+     *
+     * @return Ambigous <Exception, unknown>
+     */
+    public function orderCustomerConfirmRefund()
+    {
+        $id = request()->post('id', '');
+        $order_id = request()->post('order_id', '');
+        $order_goods_id = request()->post('order_goods_id', '');
+        $refund_real_money = request()->post('refund_real_money', 0); // 退款金额
+        $refund_balance_money = request()->post("refund_balance_money", 0); // 退款余额
+        $refund_way = request()->post("refund_way", ""); // 退款方式
+        $refund_remark = request()->post("refund_remark", ""); // 退款备注
+        if (empty($order_id) || empty($order_goods_id) || $refund_real_money === '' || empty($refund_way)) {
+            $this->error('缺少必需参数');
+        }
+        $order_service = new OrderService();
+        $retval = $order_service->orderCustomerConfirmRefund($id, $order_id, $order_goods_id, $refund_real_money, $refund_balance_money, $refund_way, $refund_remark);
+        if (is_numeric($retval)) {
+            return AjaxReturn($retval);
+        } else {
+            return array(
+                "code" => 0,
+                "message" => $retval
+            );
+        }
     }
 }

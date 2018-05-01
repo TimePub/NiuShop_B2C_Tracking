@@ -3,7 +3,7 @@
 {block name="main"}
 <div class="set-style">
 	<dl>
-		<dt><span class="color-red">*</span>钩子名称:</dt>
+		<dt><span class="color-red">*</span>钩子名称：</dt>
 		<dd>
 			<p><input id="name" type="text" class="input-common"></p>
 			<p class="error">请输入钩子名称</p>
@@ -11,14 +11,14 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>钩子描述:</dt>
+		<dt>钩子描述：</dt>
 		<dd>
-			<p><textarea id="desc" class="input-common"></textarea></p>
+			<p><textarea id="desc" class="textarea-common"></textarea></p>
 			<p class="hint">钩子的描述信息</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>钩子类型:</dt>
+		<dt>钩子类型：</dt>
 		<dd>
 			<p>
 				<select id="type" class="select-common">
@@ -31,7 +31,10 @@
 	</dl>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="save()">确定</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="save()" >保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
 	</dl>
 </div>
 <script>
@@ -50,10 +53,11 @@ function save() {
 				'type' : type,
 			},
 			success : function(data) {
-				if (data["code"] > 0) {
-					showMessage('success', "添加成功","{:__URL('ADMIN_MAIN/extend/hookslist')}");
+				if(data['code'] > 0){
+					showTip(data["message"],'success');
+					location.href = "{:__URL('ADMIN_MAIN/extend/hookslist')}";
 				}else{
-					showMessage('error', "添加失败");
+					showTip(data["message"],'error');
 				}
 			}
 		});

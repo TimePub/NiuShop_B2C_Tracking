@@ -46,7 +46,7 @@ class Wchat extends Controller
         $use_wap_template = $config->getUseWapTemplate(0);
         
         if (empty($use_wap_template)) {
-            $use_wap_template['value'] = 'default';
+            $use_wap_template['value'] = 'default_new';
         }
         $this->style = "wap/" . $use_wap_template['value'] . "/";
         $this->assign("style", "wap/" . $use_wap_template['value']);
@@ -89,6 +89,7 @@ class Wchat extends Controller
             if ($tmpStr == $signature) {
                 $echostr = request()->get('echostr', '');
                 if (! empty($echostr)) {
+                    ob_clean();
                     echo $echostr;
                 }
                 

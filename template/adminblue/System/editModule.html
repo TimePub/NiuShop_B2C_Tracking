@@ -5,14 +5,14 @@
 <div class="set-style">
 	<input type="hidden" id="module_id"value="{$module_info.module_id}"/>
 	<dl>
-		<dt>模块名:</dt>
+		<dt>模块名：</dt>
 		<dd>
 			<p><input id="module_name" type="text" value="{$module_info.module_name}" class="input-common"></p>
 			<p class="error">请输入模块名</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>上级菜单:</dt>
+		<dt>上级菜单：</dt>
 		<dd>
 			<p>
 				<select class="form-control input-sm select-common" id="pid">
@@ -33,28 +33,28 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>控制器名:</dt>
+		<dt>控制器名：</dt>
 		<dd>
 			<p><input id="controller" type="text" value="{$module_info.controller}" class="input-common"></p>
 			<p class="error">请输入控制器名</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>方法名:</dt>
+		<dt>方法名：</dt>
 		<dd>
 			<p><input id="method" type="text" value="{$module_info.method}" class="input-common"></p>
 			<p class="error">请输入方法名</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>URL:</dt>
+		<dt>URL：</dt>
 		<dd>
 			<p><input id="url" type="text" value="{$module_info.url}" class="input-common"></p>
 			<p class="error">请输入url地址</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>是否是菜单:</dt>
+		<dt>是否是菜单：</dt>
 		<dd>
 			<p>
 				<input id="is_menu" type="checkbox" class="checkbox" {if condition="$module_info.is_menu eq 1"}checked="checked"{/if}/>
@@ -63,7 +63,7 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>是否控制权限:</dt>
+		<dt>是否控制权限：</dt>
 		<dd>
 			<p>
 				<input id="is_control_auth" type="checkbox" class="checkbox" {if condition="$module_info.is_control_auth eq 1"}checked="checked"{/if}/>
@@ -72,7 +72,7 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>是否仅开发者模式可见:</dt>
+		<dt>是否开发者模式可见：</dt>
 		<dd>
 			<p>
 				<input id="is_dev" type="checkbox" class="checkbox" {if condition="$module_info.is_dev eq 1"}checked="checked"{/if} />
@@ -80,44 +80,41 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>排序:</dt>
+		<dt>排序：</dt>
 		<dd>
-			<p><input id="sort" type="text" value="{$module_info.sort}" class="input-common"></p>
+			<p><input id="sort" type="number" value="{$module_info.sort}" class="input-common harf"></p>
 			<p class="error">请输入序号</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>图片:</dt>
+		<dt>图片：</dt>
 		<dd>
-			<div class="class-logo">
-				<p>
-				{if condition="$module_info['module_picture'] != ''"}
-				<img id="imglogo" src="{:__IMG($module_info['module_picture'])}" >
-				{else/}
-				<img id="imglogo">
-				{/if}
-				</p>
+			<div class="upload-btn-common">
+				<div>
+					<input class="input-file" name="file_upload" id="uploadImg" type="file" onchange="imgUpload(this);" title="上传">
+					<input type="hidden" id="Logo" value="{$module_info['module_picture']}">
+				</div>
+				
+				<input type="text" id="text_Logo" class="input-common" readonly="readonly" value="{$module_info['module_picture']}">
+				<em>上传</em>								
+				<img id="preview_Logo" src="__STATIC__/blue/img/upload-common-select.png" data-src="{:__IMG($module_info['module_picture'])}" data-html="true" data-container="body" data-placement="top" data-trigger="manual" data-original-title="" title="">
 			</div>
-			<div class="upload-btn">
-				<span>
-					<input class="input-file" name="file_upload" id="uploadImg" type="file" onchange="imgUpload(this);">
-					<input type="hidden"id="logo"value="{$module_info['module_picture']}"/>
-				</span>
-				<p><i class="fa fa-cloud-upload"></i>上传图片</p>
-			</div>
-			<p class="hint"><span style="color:orange;">建议使用宽50像素-高50像素内的GIF或PNG透明图片；点击下方"提交"按钮后生效。</span></p>
+			<p class="hint">建议使用宽50像素-高50像素内的GIF或PNG透明图片；点击下方"提交"按钮后生效。</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>描述:</dt>
+		<dt>描述：</dt>
 		<dd>
-			<p><textarea id="desc" class="input-common">{$module_info.desc}</textarea></p>
+			<p><textarea id="desc" class="textarea-common">{$module_info.desc}</textarea></p>
 			<p class="error">请输入模块描述</p>
 		</dd>
 	</dl>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="editModuleAjax();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="editModuleAjax();">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
 	</dl>
 </div>
 <script src="__STATIC__/js/ajax_file_upload.js" type="text/javascript"></script>
@@ -181,7 +178,7 @@ function editModuleAjax() {
 	}else{
 		var is_dev = 0;
 	}
-	var module_picture = $("#logo").val();
+	var module_picture = $("#Logo").val();
 	if(verify(module_name, controller, method, url, sort, desc)){
 		if(flag){
 			return;
@@ -206,9 +203,10 @@ function editModuleAjax() {
 			},
 			success : function(data) {
 				if (data["code"] > 0) {
-					showMessage('success', data["message"],"{:__URL('ADMIN_MAIN/system/modulelist')}");
+					showTip(data["message"],'success');
+					location.href = "{:__URL('ADMIN_MAIN/system/modulelist')}";
 				}else{
-					showMessage('error', data["message"]);
+					showTip(data["message"],'error');
 					flag = false;
 				}
 			}
@@ -220,10 +218,12 @@ function editModuleAjax() {
 function imgUpload(event) {
 	var fileid = $(event).attr("id");
 	var data = { 'file_path' : UPLOADADV };
+	var id = $(event).next().attr("id");
 	uploadFile(fileid,data,function(res){
 		if(res.code){
-			$("#imglogo").attr("src",__IMG(res.data));
-			$("#logo").val(res.data);
+			$("#" + id).val(res.data);
+			$("#text_" + id).val(res.data);
+			$("#preview_"+ id).attr("data-src",__IMG(res.data));
 			showTip(res.message,"success");
 		}else{
 			showTip(res.message,"error");

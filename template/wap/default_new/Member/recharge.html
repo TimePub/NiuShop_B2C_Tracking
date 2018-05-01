@@ -59,7 +59,7 @@ function calculateRecharge(){
         		window.location.href = __URL("APP_MAIN/pay/getpayvalue?out_trade_no="+pay_no);
          	}else{
          		is_submint = false;
-         		showBox("{:lang('member_recharge_failed')}");
+         		showBox("{:lang('member_recharge_failed')}", "error");
          	}
         }
     });

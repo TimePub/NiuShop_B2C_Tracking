@@ -20,6 +20,12 @@ use data\api\IVirtualGoods;
 use data\model\NsVirtualGoodsModel;
 use data\model\NsVirtualGoodsTypeModel;
 use data\service\BaseService as BaseService;
+use data\model\NsVirtualGoodsViewModel;
+use data\model\AlbumPictureModel;
+use data\model\NsVirtualGoodsGroupModel;
+use data\model\NsGoodsModel;
+use data\model\NsGoodsSkuModel;
+use think\Log;
 
 class VirtualGoods extends BaseService implements IVirtualGoods
 {
@@ -31,7 +37,7 @@ class VirtualGoods extends BaseService implements IVirtualGoods
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IVirtualGoods::editVirtualGoodsGroup()
      */
@@ -59,7 +65,7 @@ class VirtualGoods extends BaseService implements IVirtualGoods
     /**
      * 根据id查询虚拟商品类型
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IVirtualGoods::getVirtualGoodsTypeById()
      */
@@ -73,13 +79,25 @@ class VirtualGoods extends BaseService implements IVirtualGoods
     }
 
     /**
+     * (non-PHPdoc)
+     *
+     * @see \data\api\IVirtualGoods::getVirtualGoodsTypeInfo()
+     */
+    function getVirtualGoodsTypeInfo($condition = '')
+    {
+        $virtual_goods_type_model = new NsVirtualGoodsTypeModel();
+        $res = $virtual_goods_type_model->getInfo($condition, "*");
+        return $res;
+    }
+
+    /**
      * 编辑虚拟商品类型
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IVirtualGoods::editVirtualGoodsType()
      */
-    public function editVirtualGoodsType($virtual_goods_type_id, $virtual_goods_group_id, $virtual_goods_type_name, $validity_period, $is_enabled, $money, $config_info, $confine_use_number)
+    public function editVirtualGoodsType($virtual_goods_type_id, $virtual_goods_group_id, $validity_period, $confine_use_number, $value_info, $goods_id)
     {
         $virtual_goods_type_model = new NsVirtualGoodsTypeModel();
         $res = 0;
@@ -88,31 +106,46 @@ class VirtualGoods extends BaseService implements IVirtualGoods
             // 添加
             $data = array(
                 'virtual_goods_group_id' => $virtual_goods_group_id,
-                'virtual_goods_type_name' => $virtual_goods_type_name,
                 'validity_period' => $validity_period,
-                'is_enabled' => $is_enabled,
-                'config_info' => $config_info,
-                'money' => $money,
                 'confine_use_number' => $confine_use_number,
                 'shop_id' => $this->instance_id,
-                'create_time' => time()
+                'create_time' => time(),
+                'relate_goods_id' => $goods_id
             );
+            
+            // 如果不是点卡的话，添加配置信息
+            if ($virtual_goods_group_id != 3) {
+                $data['value_info'] = $value_info;
+            }
             $res = $virtual_goods_type_model->save($data);
         } else {
             
             // 修改
             $data = array(
-                'virtual_goods_group_id' => $virtual_goods_group_id,
-                'virtual_goods_type_name' => $virtual_goods_type_name,
                 'validity_period' => $validity_period,
-                'is_enabled' => $is_enabled,
-                'config_info' => $config_info,
-                'money' => $money,
-                'confine_use_number' => $confine_use_number
+                'confine_use_number' => $confine_use_number,
+                'relate_goods_id' => $goods_id
             );
+            
+            // 如果不是点卡的话，添加配置信息
+            if ($virtual_goods_group_id != 3) {
+                $data['value_info'] = $value_info;
+            }
             $res = $virtual_goods_type_model->save($data, [
                 'virtual_goods_type_id' => $virtual_goods_type_id
             ]);
+        }
+        if ($virtual_goods_group_id == 3) {
+            
+            if($value_info != ''){
+                $value_array = json_decode($value_info, true);
+                foreach ($value_array as $item) {
+                    $this->addVirtualGoods($this->instance_id, '', 0.00, '', '', 0, '', $validity_period, 0, 0, 0, $confine_use_number, - 2, $goods_id, $item['remark']);
+                }    
+                
+                //更新库存
+                $this->setVirtualCardByGoodsStock($goods_id);
+            }
         }
         return $res;
     }
@@ -121,7 +154,7 @@ class VirtualGoods extends BaseService implements IVirtualGoods
      * 设置虚拟商品类型启用禁用
      * 创建时间：2017年11月23日 19:37:28 王永杰
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IVirtualGoods::setVirtualGoodsTypeIsEnabled()
      */
@@ -139,7 +172,7 @@ class VirtualGoods extends BaseService implements IVirtualGoods
      * 根据id删除虚拟商品类型
      * 创建时间：2017年11月23日 19:37:19 王永杰
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IVirtualGoods::deleteVirtualGoodsType()
      */
@@ -155,79 +188,11 @@ class VirtualGoods extends BaseService implements IVirtualGoods
         return $res;
     }
 
-    /**
-     * 添加虚拟商品
-     * 创建时间：2017年11月23日 19:37:08 王永杰
-     *
-     * {@inheritdoc}
-     *
-     * @see \data\api\IVirtualGoods::addVirtualGoods()
-     */
-    public function addVirtualGoods($shop_id, $virtual_goods_name, $money, $buyer_id, $buyer_nickname, $order_goods_id, $order_no, $validity_period, $start_time, $end_time, $use_number, $confine_use_number, $use_status)
-    {
-        $virtual_goods_model = new NsVirtualGoodsModel();
-        
-        $data = array(
-            'virtual_code' => $this->generateVirtualCode($shop_id),
-            'virtual_goods_name' => $virtual_goods_name,
-            'money' => $money,
-            'buyer_id' => $buyer_id,
-            'buyer_nickname' => $buyer_nickname,
-            'order_goods_id' => $order_goods_id,
-            'order_no' => $order_no,
-            'validity_period' => $validity_period,
-            'start_time' => $start_time,
-            'end_time' => $end_time,
-            'use_number' => $use_number,
-            'confine_use_number' => $confine_use_number,
-            'use_status' => $use_status,
-            'shop_id' => $shop_id,
-            'create_time' => time()
-        );
-        
-        $res = $virtual_goods_model->save($data);
-        return $res;
-    }
-
-    /**
-     * 生成虚拟码
-     * 创建时间：2017年11月23日 19:37:03 王永杰
-     */
-    public function generateVirtualCode($shop_id)
-    {
-        $code = '';
-        $time_str = date('YmdHs');
-        $virtual_goods_model = new NsVirtualGoodsModel();
-        $order_obj = $virtual_goods_model->getFirstData([
-            "shop_id" => $shop_id
-        ], "virtual_goods_id DESC");
-        $num = 0;
-        if (! empty($order_obj)) {
-            $order_no_max = $order_obj["virtual_code"];
-            if (empty($order_no_max)) {
-                $num = 1;
-            } else {
-                if (substr($time_str, 0, 12) == substr($order_no_max, 0, 12)) {
-                    $max_no = substr($order_no_max, 12, 4);
-                    $num = $max_no * 1 + 1;
-                } else {
-                    $num = 1;
-                }
-            }
-        } else {
-            $num = 1;
-        }
-        $virtual_code = $time_str . sprintf("%04d", $num);
-        $count = $virtual_goods_model->getCount(['virtual_code'=>$virtual_code]);
-        if($count>0){
-            return $this->generateVirtualCode($shop_id);
-        }
-        return $virtual_code;
-    }
-
+ 
+  
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IVirtualGoods::deleteVirtualGoods()
      */
@@ -237,31 +202,48 @@ class VirtualGoods extends BaseService implements IVirtualGoods
     }
 
     /**
-     * 根据订单编号查询虚拟商品列表
-     *
-     * {@inheritdoc}
-     *
-     * @see \data\api\IVirtualGoods::getVirtualGoodsListByOrderNo()
+     * 根据主键id删除虚拟商品
+     * 创建时间：2018年3月6日16:33:57
+     * 
+     * @param unknown $virtual_goods_id            
      */
-    function getVirtualGoodsListByOrderNo($order_no)
+    public function deleteVirtualGoodsById($virtual_goods_id)
     {
         $virtual_goods_model = new NsVirtualGoodsModel();
-        $list = $virtual_goods_model->getQuery([
-            "order_no" => $order_no
-        ], "*", "virtual_goods_id asc");
-        if (! empty($list)) {
-            
-            foreach ($list as $k => $v) {
-                if ($v['use_status'] == - 1) {
-                    $list[$k]['use_status_msg'] = '已过期';
-                } elseif ($v['use_status'] == 0) {
-                    $list[$k]['use_status_msg'] = '未使用';
-                } elseif ($v['use_status'] == 1) {
-                    $list[$k]['use_status_msg'] = '已使用';
-                }
-            }
-            return $list;
-        }
-        return '';
+        
+        $data['virtual_goods_id'] = [
+            'in',
+            $virtual_goods_id
+        ];
+        $res = $virtual_goods_model->destroy($data);
+        return $res;
     }
+
+  
+
+    /**
+     * (non-PHPdoc)
+     *
+     * @see \data\api\IVirtualGoods::getVirtualGoodsGroup()
+     */
+    public function getVirtualGoodsGroup($condition = '1=1')
+    {
+        $virtual_group_model = new NsVirtualGoodsGroupModel();
+        $list = $virtual_group_model->getQuery($condition, '*', '');
+        return $list;
+    }
+    
+    /**
+     * (non-PHPdoc)
+     * @see \data\api\IVirtualGoods::getVirtualGoodsInfo()
+     */
+    public function getVirtualGoodsGroupInfo($virtual_goods_group_id){
+        
+        $virtual_group_model = new NsVirtualGoodsGroupModel();
+        $virtual_goods_group_info = $virtual_group_model->getInfo(['virtual_goods_group_id'=>$virtual_goods_group_id], '*');
+        return $virtual_goods_group_info;
+    }
+   
+    
+  
 }

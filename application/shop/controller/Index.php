@@ -15,13 +15,10 @@
  */
 namespace app\shop\controller;
 
-use data\model\Send;
 use data\service\Article;
 use data\service\Goods;
 use data\service\GoodsCategory;
 use data\service\Platform;
-use data\service\Shop;
-use think\Cache;
 use think\Cookie;
 
 /**
@@ -39,7 +36,7 @@ class Index extends BaseController
 
     public function _empty($name)
     {}
-
+    
     /*
      * 平台首页
      * 创建人：王永杰
@@ -51,7 +48,9 @@ class Index extends BaseController
     {
         $default_client = request()->cookie("default_client", "");
         $web_info = $this->web_site->getWebSiteInfo();
-        if ($default_client == "shop") {} elseif (request()->isMobile() && $web_info['wap_status'] != 2) {
+        if ($default_client == "shop") {
+            // do something
+        } elseif (request()->isMobile() && $web_info['wap_status'] != 2) {
             $redirect = __URL(__URL__ . "/wap");
             $this->redirect($redirect);
             exit();
@@ -78,12 +77,9 @@ class Index extends BaseController
         ], 'public_time desc');
         $this->assign("article_list", $article_list['data']);
         
-        // 楼层版块
-        // $this->controlCommendBlock();
-        // $web_block_list = $platform->getWebBlockListDetail();
         $this->assign('is_head_goods_nav', 1); // 代表默认显示以及分类
-                                               // $this->assign('web_block_list', $web_block_list);
-                                               // 楼层版块新
+                                               
+        // 楼层版块新
         $good_category = new GoodsCategory();
         $shop_id = $this->instance_id;
         $block_list = $good_category->getGoodsCategoryBlockList($shop_id);
@@ -128,6 +124,7 @@ class Index extends BaseController
             $condition['category_id_1'] = $category_id;
         }
         $discount_list = $goods->getDiscountGoodsList($page, 5, $condition, 'end_time');
+
         $assign_get_list = array(
             'page' => $page,
             'page_count' => $discount_list['page_count'], // 总页数
@@ -139,13 +136,13 @@ class Index extends BaseController
             $this->assign($key, $value);
         }
         // 商品促销
-        $this->getRecommendGoodsList();
+        // $this->getRecommendGoodsList();
+        
         // 友情链接
         $link_list = $platform->getLinkList(1, 0, [
             "is_show" => 1
         ], 'link_sort desc');
         $this->assign("link_list", $link_list["data"]);
-        
         return view($this->style . 'Index/index');
     }
 
@@ -178,7 +175,7 @@ class Index extends BaseController
         if (! empty($category_id)) {
             $condition['category_id_1'] = $category_id;
         }
-        $discount_list = $goods->getDiscountGoodsList($page, 20, $condition, 'end_time');
+        $discount_list = $goods->getDiscountGoodsList($page, PAGESIZE, $condition, 'end_time');
         $assign_get_list = array(
             'page' => $page,
             'page_count' => $discount_list['page_count'], // 总页数
@@ -250,14 +247,21 @@ class Index extends BaseController
 
     /**
      * 商品促销
+     * 已废弃
+     * 创建时间：2018年1月3日19:33:43 王永杰
      */
     public function getRecommendGoodsList()
     {
-
-            $Platform = new Platform();
-            $recommend_goods_list = $Platform->getRecommendGoodsQuery($this->instance_id);
-    
+        $Platform = new Platform();
+        $recommend_goods_list = $Platform->getRecommendGoodsQuery($this->instance_id);
         $this->assign("recommend_goods_list", $recommend_goods_list);
+    }
+
+    public function recommend_test()
+    {
+        $goods_service = new Goods();
+        $goods_list = $goods_service->getRecommendGoodsQuery1(1, PAGESIZE, "FIND_IN_SET(2,group_id_array)");
+        print_r(json_encode($goods_list));
     }
 
     /**

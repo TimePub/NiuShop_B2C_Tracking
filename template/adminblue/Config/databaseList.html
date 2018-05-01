@@ -43,9 +43,10 @@ function LoadingInfo(page_index) {
 		type : "post",
 		url : "{:__URL('ADMIN_MAIN/config/databaselist')}",
 		success : function(data) {
-			var html = '';
 			if (data.length > 0) {
+				$(".table-class tbody").empty();
 				for (var i = 0; i < data.length; i++) {
+					var html = '';
 					html += '<tr align="center">';
 					html += '<td><div class="cell"><label><input name="sub" type="checkbox" value="'+ data[i]["name"]+'" class="input-common"></label></div></td>';
 					html += '<td>'+ data[i]["name"]+'</td>';
@@ -54,11 +55,12 @@ function LoadingInfo(page_index) {
 					html += '<td>'+ timeStampTurnTime(data[i]["create_time"])+ '</td>';
 					html += '<td><a target="_blank" href="">优化表</a><a href="">修复表</a></td> ';
 					html += '</tr>';
+					$(".table-class tbody").append(html);
 				}
 			} else {
-				html += '<tr align="center"><td colspan="9">暂无列表</td></tr>';
+				var html = '<tr align="center"><td colspan="9">暂无列表</td></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
 			//initPageData(data["page_count"],data['data'].length,data['total_count']);
 			//$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 			load();
@@ -74,7 +76,7 @@ function batchDelete() {
 	if(_tables.length ==0){
 		$("#dialog").dialog({
 			buttons: {
-				"确定,#e57373": function() {
+				"确定,#0059d6,#fff": function() {
 					$(this).dialog('close');
 				}
 			},
@@ -110,7 +112,7 @@ function ajax_ids(_tables){
 					})
 				}
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 			}
 		},

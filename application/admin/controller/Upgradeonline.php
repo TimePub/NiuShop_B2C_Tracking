@@ -21,6 +21,7 @@ namespace app\admin\controller;
 \think\Loader::addNamespace('data', 'data/');
 use think\Controller;
 use data\extend\upgrade\Upgrade as UpgradeExtend;
+use data\service\Upgrade as UpgradeService;
 
 class Upgradeonline extends Controller
 {
@@ -96,6 +97,11 @@ class Upgradeonline extends Controller
         $version_no = request()->post('version_no', '');
         $upgrade = new UpgradeExtend();
         $result=$upgrade->execute_upgrade_sql($download_update_file, $version_no);
+        
+        if($result['upgrade_code'] == 0){
+            $upgrade = new UpgradeService();
+            $upgrade->updateVersionPatchState(NIU_RELEASE);
+        }
         return $result;
     }
     /**

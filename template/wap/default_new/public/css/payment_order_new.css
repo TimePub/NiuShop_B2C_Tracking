@@ -34,7 +34,7 @@ body {
 }
 
 .item-options[data-flag="shipping_time"] #shipping_time {
-	font-size: 10px;
+	font-size: 12px;
 	float: right;
 }
 
@@ -50,6 +50,13 @@ body {
 
 .item-options[data-flag="shipping_time"] .delete {
 	display: none;
+}
+
+#distribution_time>div{
+	float:right;
+	text-align:right;
+	color:red;
+	font-size:12px;
 }
 
 .item-options>span {
@@ -297,12 +304,13 @@ body {
 	background-repeat: no-repeat;
 }
 
-#account_balance {
+#account_balance,#use_point {
 	width: 60px;
 	border: 0;
 	border-bottom: 1px solid #e3e3e3;
 	line-height: 10px;
 	text-align: center;
+	color: #999;
 }
 
 .pay-style {
@@ -446,7 +454,7 @@ body {
 	height: 34px;
 	background-color: #f7f7f7;
 	border-radius: 4px;
-	font-size: 10px;
+	font-size: 14px;
 	line-height: 34px;
 	text-align: center;
 	margin-left: 2.5vw;
@@ -541,7 +549,7 @@ body {
 }
 
 .copyright .ft-copyright {
-	padding: 50px 0 20px;
+	padding: 20px 0 20px;
 	margin: 0 15px;
 	font-size: 12px;
 	/* 	background: url("../images/logo_copy.png") no-repeat center 15px; */
@@ -568,20 +576,21 @@ body {
 	color: #9A9A9A;
 }
 
-.account_balance {
+.account_balance,.account_point {
 	color: #ff4000;
-	font-size: 12px !important;
+	font-size: 14px !important;
 }
 
 .order-list {
 	color: #333333;
-	padding: 0 10px;
+	padding: 5px 10px 0 10px;
 }
 
-.order-list h3 {
+h3.order-settlement{
 	font-weight: normal;
-	font-size: 16px;
-	padding: 10px 0;
+	font-size: 14px;
+	padding: 10px;
+	border-bottom: 1px solid #F2F2F2;
 }
 
 .order-list p {
@@ -607,3 +616,30 @@ body {
 .invoice {
 	display: none;
 }
+
+.dividing-line{
+	width: 100%;
+	height: 10px;
+	background: #f5f5f5
+}
+#user_telephone{
+	float:right;
+	text-align: right;
+}
+
+.presell_radio{
+	text-align: right;
+}
+.presell_radio label{margin-right: 10px;display: inline-block;}
+.presell_radio label input[type="radio"]{    width: 16px !important;height: 16px !important;vertical-align: middle;opacity: 0;}
+.presell_radio label .radio-common {
+    background: url(../images/radio-common.png) no-repeat;
+    width: 16px !important;
+    height: 16px !important;
+    display: inline-block;
+    vertical-align: middle;
+    background-position: -36px 0;
+    background-size: 330% 103%;
+}
+
+.select{ background-position: 0px 0px !important;}

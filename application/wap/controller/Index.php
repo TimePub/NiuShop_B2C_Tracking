@@ -17,14 +17,14 @@ namespace app\wap\controller;
 
 use data\service\Config;
 use data\service\Goods;
-use data\service\GoodsBrand as GoodsBrand;
 use data\service\GoodsCategory;
-use data\service\Member;
 use data\service\Member as MemberService;
 use data\service\Platform;
 use data\service\promotion\PromoteRewardRule;
 use data\service\WebSite;
 use think\Cookie;
+use data\service\Promotion;
+use data\service\Shop;
 
 class Index extends BaseController
 {
@@ -50,93 +50,58 @@ class Index extends BaseController
      */
     public function index()
     {
-       /*  $default_client = request()->cookie("default_client", "");
-        if(!request()->isMobile()&&$default_client == "")
-        {
-            $redirect = __URL(__URL__);
-            $this->redirect($redirect);
-            exit();
-        } */
+        $platform = new Platform();
+        $good_category = new GoodsCategory();
+        $goods = new Goods();
+        $config = new Config();
+        $member = new MemberService();
+        $this->web_site = new WebSite();
+        $shop_id = $this->instance_id;
+        
+        //首页导航
+        $shop = new Shop();
+        $navigation_list = $shop ->ShopNavigationList(1, 0, ['type'=>2, 'is_show'=>1], "sort");
+        $this->assign("navigation_list", $navigation_list["data"]);
+        
         // 分享
         $ticket = $this->getShareTicket();
         $this->assign("signPackage", $ticket);
-       
+        // 网站信息
+        $web_info = $this->web_site->getWebSiteInfo();
+        
         // 首页轮播图
-        $platform = new Platform();
         $plat_adv_list = $platform->getPlatformAdvPositionDetail(1105);
         $this->assign('plat_adv_list', $plat_adv_list);
+        
         // 首页新品推荐下方广告位
         $index_adv_one = $platform->getPlatformAdvPositionDetail(1188);
         $this->assign('index_adv_one', $index_adv_one);
-        // 首页品牌推荐下方广告位
-        $index_adv_two = $platform->getPlatformAdvPositionDetail(1189);
-        $this->assign('index_adv_two', $index_adv_two);
-        
-        // 促销模块
-        // $cx_condition = [
-        // 'class_type' => 2,
-        // 'is_use' => 1,
-        // 'show_type' => 1
-        // ];
-        // $class_list = $platform->getPlatformGoodsRecommendClass($cx_condition);
-        // $this->assign("class_list", $class_list);
         
         // 首页楼层版块
-        // $good_category = new GoodsCategory();
-        // $shop_id = $this->instance_id;
-        // $block_list = $good_category->getGoodsCategoryBlockList($shop_id);
-        $good_category = new GoodsCategory();
-        $shop_id = $this->instance_id;
         $block_list = $good_category->getGoodsCategoryBlockQuery($shop_id, $this->category_good_num);
         $this->assign('block_list', $block_list);
         
-        // 首页新品推荐列表
-        $goods_platform = new Platform();
-        $shop_id = $this->instance_id;
-        $goods_platform_list = $goods_platform->getRecommendGoodsList($shop_id, $this->recommend_goods_num);
-        $this->assign('goods_platform_list', $goods_platform_list);
-        
-        // 品牌列表
-        $goods_brand = new GoodsBrand();
-        $list = $goods_brand->getGoodsBrandList(1, 6, '', 'sort');
-        $this->assign('list', $list['data']);
-        
         // 限时折扣列表
-        $goods = new Goods();
         $condition['status'] = 1;
         $condition['ng.state'] = 1;
         $discount_list = $goods->getDiscountGoodsList(1, 2, $condition, 'end_time');
-        
-        foreach ($discount_list['data'] as $k => $v) {
-            $v['discount'] = str_replace('.00', '', $v['discount']);
+        if (! empty($discount_list['data'])) {
+            foreach ($discount_list['data'] as $k => $v) {
+                $v['discount'] = str_replace('.00', '', $v['discount']);
+            }
         }
-        
         $this->assign('discount_list', $discount_list['data']);
+        
         // 获取当前时间
         $current_time = $this->getCurrentTime();
         $this->assign('ms_time', $current_time);
         
-        // 首页商城热卖
-        $val['is_hot'] = 1;
-        $goods_hot_list = $goods_platform->getPlatformGoodsList(1, 0, $val);
-        
-        $this->assign('goods_hot_list', $goods_hot_list['data']);
-        // $hot_selling_adv = $platform->getPlatformAdvPositionDetail(1164);
-        // $this->assign('hot_selling_adv', $hot_selling_adv);
-        
-        // 首页商城推荐
-        $val1['is_recommend'] = 1;
-        $goods_recommend_list = $goods_platform->getPlatformGoodsList(1, 0, $val1);
-        
-        $this->assign('goods_recommend_list', $goods_recommend_list['data']);
-        
         // 公众号配置查询
-        $config = new Config();
         $wchat_config = $config->getInstanceWchatConfig($this->instance_id);
         
         $is_subscribe = 0; // 标识：是否显示顶部关注 0：[隐藏]，1：[显示]
-                           // 检查是否配置过微信公众号
         if ($web_info["is_show_follow"] == 1) {
+            // 检查是否配置过微信公众号
             if (! empty($wchat_config['value'])) {
                 if (! empty($wchat_config['value']['appid']) && ! empty($wchat_config['value']['appsecret'])) {
                     // 如何判断是否关注
@@ -155,11 +120,9 @@ class Index extends BaseController
         }
         
         $this->assign("is_subscribe", $is_subscribe);
+        
         // 公众号二维码获取
-        $this->web_site = new WebSite();
-        $web_info = $this->web_site->getWebSiteInfo();
         $this->assign('web_info', $web_info);
-        $member = new MemberService();
         $source_user_name = "";
         $source_img_url = "";
         $source_uid = request()->get('source_uid', '');
@@ -173,20 +136,37 @@ class Index extends BaseController
                 }
             }
         }
+        // 公告
+        $platform = new Platform();
+        $notice = $platform->getNoticeList(1, '', [
+            "shop_id" => $this->instance_id
+        ], "sort");
+        $this->assign("notice", $notice["data"]);
         // 首页公告
-        $notice_arr = $config->getNotice(0);
-        $this->assign('notice', $notice_arr);
+        // $notice_arr = $config->getNotice(0);
+        // $this->assign('notice', $notice_arr);
         $this->assign('source_user_name', $source_user_name);
         $this->assign('source_img_url', $source_img_url);
         
         // 首页优惠券
-        $member = new Member();
         $coupon_list = $member->getMemberCouponTypeList($this->instance_id, $this->uid);
         $this->assign('coupon_list', $coupon_list);
+        
+        // 游戏活动
+        $promotion = new Promotion();
+        $gameList = $promotion->getPromotionGamesList(1, 0, [
+            'status' => 1,
+            "activity_images" => [
+                "neq",
+                ""
+            ]
+        ], 'game_id desc');
+        $this->assign("gameList", $gameList);
+        
         // 判断是否开启了自定义模块
         if ($this->custom_template_is_enable == 1) {
             // 获取自定义模板信息
-            return view($this->style . 'Index/customTemplateIndex');
+            $this->redirect(__URL(\think\Config::get('view_replace_str.APP_MAIN') . "/CustomTemplate/customTemplateIndex"));
         } else {
             
             return view($this->style . 'Index/index');
@@ -206,21 +186,6 @@ class Index extends BaseController
     }
 
     /**
-     * 自定义模板界面
-     * 创建时间：2017年8月14日 16:54:36
-     *
-     * @return \think\response\View
-     */
-    public function customTemplateControl()
-    {
-        $id = request()->get("id", "");
-        $config = new Config();
-        $custom_template_info = [];
-        $this->assign("custom_template", $custom_template_info);
-        return view($this->style . 'Index/customTemplateControl');
-    }
-
-    /**
      * 限时折扣
      */
     public function discount()
@@ -232,7 +197,7 @@ class Index extends BaseController
         if (request()->isAjax()) {
             $goods = new Goods();
             $category_id = request()->get('category_id', '0');
-            $page_index = request()->get("page",1);
+            $page_index = request()->get("page", 1);
             $condition['status'] = 1;
             $condition['ng.state'] = 1;
             if (! empty($category_id)) {
@@ -251,12 +216,12 @@ class Index extends BaseController
                 "is_visible" => 1,
                 "level" => 1
             ]);
-
+            
             // 获取当前时间
             $current_time = $this->getCurrentTime();
             $this->assign('ms_time', $current_time);
             $this->assign('goods_category_list_1', $goods_category_list_1['data']);
-            $this->assign("title_before","限时折扣");
+            $this->assign("title_before", "限时折扣");
             return view($this->style . 'Index/discount');
         }
     }
@@ -307,7 +272,7 @@ class Index extends BaseController
     {
         $coupon_type_id = request()->post('coupon_type_id', 0);
         if (! empty($this->uid)) {
-            $member = new Member();
+            $member = new MemberService();
             $retval = $member->memberGetCoupon($this->uid, $coupon_type_id, 2);
             return AjaxReturn($retval);
         } else {
@@ -333,7 +298,7 @@ class Index extends BaseController
     }
 
     /**
-     * 查看首页商城推荐更多  只用于澳洲模板 2017-10-10
+     * 查看首页商城推荐更多 只用于澳洲模板 2017-10-10
      */
     public function getGoodsRecommendList()
     {
@@ -347,5 +312,53 @@ class Index extends BaseController
         $style = "wap/aozhou/";
         $this->assign('style', $style);
         return view($this->style . 'Index/recommend');
+    }
+
+    /**
+     * 公告详情
+     * 
+     * @return Ambigous <\think\response\View, \think\response\$this, \think\response\View>
+     */
+    public function noticeContent()
+    {
+        $notice_id = request()->get('id', '');
+        $goods_platform = new Platform();
+        $notice_info = $goods_platform->getNoticeDetail($notice_id);
+        if (empty($notice_info)) {
+            $this->error("未获取到公告信息");
+        }
+        $this->assign('article_info', $notice_info);
+        
+        // 上一篇
+        $prev_info = $goods_platform->getNoticeList(1, 1, [
+            "id" => array(
+                "<",
+                $notice_id
+            )
+        ], "id desc");
+        $this->assign("prev_info", $prev_info['data'][0]);
+        // 下一篇
+        $next_info = $goods_platform->getNoticeList(1, 1, [
+            "id" => array(
+                ">",
+                $notice_id
+            )
+        ], "id asc");
+        $this->assign("next_info", $next_info['data'][0]);
+        return view($this->style . 'Index/noticeContent');
+    }
+
+    /**
+     * 公告列表
+     */
+    public function noticeList()
+    {
+        if (request()->isAjax()) {
+            $page = request()->post("page", 1);
+            $goods_platform = new Platform();
+            $article_list = $goods_platform->getNoticeList($page, 0, '', 'sort desc');
+            return $article_list;
+        }
+        return view($this->style . 'Index/noticeList');
     }
 }

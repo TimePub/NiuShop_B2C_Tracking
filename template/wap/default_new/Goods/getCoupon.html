@@ -47,14 +47,14 @@ function getcoupon(coupon_type_id){
 		data : { 'coupon_type_id' : coupon_type_id },
 		success : function(data){
 			if(data["code"]>0){
-				showBox("恭喜您，领取成功");
+				showBox("恭喜您，领取成功","success");
 			}else{
 				if(data["code"] == "-2009"){
 					location.href="{:__URL('APP_MAIN/login/index')}";
 				}else if(data["code"] == "-2010"){
-					showBox("您已领取过，请勿重复领取");
+					showBox("您已领取过，请勿重复领取","warning");
 					$(".get-span").addClass("nogetcoupon");
- 					$(".get-span").text("您已领取过");
+ 					$(".get-span").text("您已领取过","warning");
 				}else{
 					showBox(data["message"]);
 					$(".get-span").addClass("nogetcoupon");

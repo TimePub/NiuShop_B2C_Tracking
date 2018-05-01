@@ -64,11 +64,12 @@ function LoadingInfo(page_index) {
 			"end_date" : end_date
 		},
 		success : function(data) {
-			var html = '';
 			if (data["data"].length > 0) {
+				$(".table-class tbody").empty();
 				for (var i = 0; i < data["data"].length; i++) {
+					var html = '';
 					html += '<tr align="center">';
-					html += '<td>' + data["data"][i]["out_trade_no"] + '</td>';
+					html += '<td>' + data["data"][i]["order_no"] + '</td>';
 					html += '<td>' + data["data"][i]["goods_money"] + '</td>';
 					html += '<td>' + data["data"][i]["order_money"] + '</td>';
 					html += '<td>' + data["data"][i]["user_platform_money"] + '</td>';
@@ -77,11 +78,12 @@ function LoadingInfo(page_index) {
 					html += '<td>' + data["data"][i]["refund_money"] + '</td>';
 					html += '<td>' + timeStampTurnTime(data["data"][i]["create_time"]) + '</td>';
 					html += '</tr>';
+					$(".table-class tbody").append(html);
 				}
 			} else {
-				html += '<tr align="center"><td colspan="8">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr align="center"><td colspan="8">暂无符合条件的数据记录</td></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}

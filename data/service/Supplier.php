@@ -23,7 +23,7 @@ use data\api\ISupplier as ISupplier;
 use data\model\NsSupplierModel;
 use data\model\NsGoodsModel;
 use data\model\NsGoodsDeletedModel;
-use data\model\BaseModel;
+use think\Cache;
 
 class Supplier extends BaseService implements ISupplier
 {
@@ -31,15 +31,27 @@ class Supplier extends BaseService implements ISupplier
      * (non-PHPdoc)
      * @see \data\api\ISupplier::getSupplierList()
      */
-    public function getSupplierList($page_index = 1, $page_size = 0, $condition = '', $order = '', $field = ''){
-        $supplier = new NsSupplierModel();
-        return $supplier->pageQuery($page_index, $page_size, $condition, $order, $field);
+    public function getSupplierList($page_index = 1, $page_size = 0, $condition = '', $order = '', $field = '*'){
+        $data = array($page_index, $page_size, $condition, $order, $field);
+        $data = json_encode($data);
+        $cache = Cache::tag("niu_supplier")->get("getSupplierList".$data);
+        if(empty($cache))
+        {
+            $supplier = new NsSupplierModel();
+            $list = $supplier->pageQuery($page_index, $page_size, $condition, $order, $field);
+            Cache::tag("niu_supplier")->set("getSupplierList".$data, $list);
+            return $list;
+        }else{
+            return $cache;
+        }
+    
     }
     /**
      * (non-PHPdoc)
      * @see \data\api\ISupplier::addSupplier()
      */
     public function addSupplier($uid, $supplier_name, $linkman_name, $linkman_tel, $linkman_address, $desc){
+        Cache::tag("niu_supplier")->clear();
         $supplier = new NsSupplierModel();
         $data = array(
             'uid' => $uid,
@@ -57,6 +69,7 @@ class Supplier extends BaseService implements ISupplier
      * @see \data\api\ISupplier::updateSupplier()
      */
     public function updateSupplier($supplier_id, $supplier_name, $linkman_name, $linkman_tel, $linkman_address,  $desc){
+        Cache::tag("niu_supplier")->clear();
         $supplier = new NsSupplierModel();
         $data = array(
             'uid' => $uid,
@@ -74,6 +87,7 @@ class Supplier extends BaseService implements ISupplier
      * @see \data\api\ISupplier::deleteSupplier()
      */
     public function deleteSupplier($supplier_id_array){
+        Cache::tag("niu_supplier")->clear();
         $supplier = new NsSupplierModel();
         if(strstr($supplier_id_array, ',')){
             $new_array = explode(',', $supplier_id_array);
@@ -111,7 +125,15 @@ class Supplier extends BaseService implements ISupplier
      * @see \data\api\ISupplier::getSupplierInfo()
      */
     public function getSupplierInfo($supplier_id){
-        $supplier = new NsSupplierModel();
-        return $supplier->get($supplier_id);
+        $cache = Cache::tag("niu_supplier")->get("getSupplierInfo".$supplier_id);
+        if(empty($cache))
+        {
+            $supplier = new NsSupplierModel();
+            $data = $supplier->get($supplier_id);
+            Cache::tag("niu_supplier")->set("getSupplierInfo".$supplier_id, $data);
+        }else{
+            return $cache;
+        }
+      
     }
 }

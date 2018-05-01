@@ -26,12 +26,12 @@ $(function() {
 		var nummax = $cart.attr('max') * 1;// 库存数量
 		var cartid = $cart.attr('data-cartid');
 		if(isNaN(num) || $cart.val().indexOf(".") != -1){
-			showBox("格式错误");
+			showBox("格式错误","warning");
 			$cart.val(default_num);
 			return;
 		}
 		if(min_buy != 0 && min_buy>num){
-			showBox("该商品最少购买"+min_buy+"件");
+			showBox("该商品最少购买"+min_buy+"件","warning");
 			$cart.val(min_buy);
 			return;
 		}else if (num == 0||num<0) {
@@ -42,13 +42,13 @@ $(function() {
 		if (max_buy != 0 && num > max_buy) {
 			// 限购
 			$cart.val(max_buy);
-			showBox("每个用户限购" + max_buy + "件");
+			showBox("每个用户限购" + max_buy + "件","warning");
 			return;
 		}
 
 		if (num > nummax) {
 			$cart.val(nummax);
-			showBox("已达到最大库存");
+			showBox("已达到最大库存","warning");
 			return;
 		}
 		$.ajax({
@@ -59,7 +59,7 @@ $(function() {
 				"num" : num
 			},
 			success : function(res) {
-				showBox(res.message);
+				showBox(res.message,"success");
 				$cart.val(num);
 			}
 		});
@@ -127,7 +127,7 @@ $(function() {
 					}
 				}
 			} else {
-				showBox("请先完成之前的操作");
+				showBox("请先完成之前的操作","warning");
 			}
 		} else {
 			// 结算操作
@@ -278,7 +278,7 @@ function settlement() {
 				}
 			});
 			if(getHeavyArray(shop_arr).length>1){
-				showBox("目前只支持单店铺生成订单");
+				showBox("目前只支持单店铺生成订单","warning");
 			}else{
 				$.ajax({
 					url : __URL(APPMAIN + "/order/ordercreatesession"),
@@ -321,7 +321,7 @@ function settlement() {
 			del_id_array = del_id_array.substring(0, del_id_array.length - 1);
 			del_goods(del_id_array);
 		} else {
-			showBox("请选择要删除的商品");
+			showBox("请选择要删除的商品","warning");
 		}
 	}
 }
@@ -335,13 +335,17 @@ function del_goods(del_id) {
 			"del_id" : del_id
 		},
 		success : function(res) {
-			showBox(res.message);
+			showBox(res.message,"success");
 			count = $("#countlist").val();
 			$("#countlist").val(parseInt(count) - 1);
 			if (parseInt($("#countlist").val()) == 0) {
 				$(".cart-prolist").hide();
 				$("#cart-none").show();
 				$(".fixed.bottom").hide();
+			}
+			if($(".cart-list-li").length == 0){
+				$(".cart-detail").hide();
+				$(".cart-none").show();
 			}
 		}
 	});
@@ -355,12 +359,10 @@ function cart_edit(obj, shop_id) {
 		}
 	})
 	if (count > 0) {
-		showBox("请先完成之前的操作");
+		showBox("请先完成之前的操作","warning");
 	} else {
 		$(obj).hide();
 		$(obj).next().show();
-		$("span[name='succ_num" + shop_id + "']").hide();
-		$("div[name='edit_num" + shop_id + "']").show();
 		$(".checkbox").css("background-image", "url(" + cart1 + ")");
 		$("#select_all").attr("src", cart1);
 		$("#select_all").attr("is_check", "no");
@@ -386,8 +388,6 @@ function cart_succ(obj, shop_id) {
 		var value = $(this).val();
 		$(this).parent().parent().parent().find("span[name='succ_amount']").text(value);// 重新计算数量
 	});
-	$("span[name='succ_num" + shop_id + "']").show();
-	$("div[name='edit_num" + shop_id + "']").hide();
 	$("#select_all").attr("src", cart2);
 	$("#select_all").attr("is_check", "yes");
 	$("#select_all").attr("is_del", "no");
@@ -409,6 +409,7 @@ function updateMoney(flag) {
 			count++;// 没有选择编辑
 		}
 	})
+
 	if (flag && count == 0) {
 		var money = sum_money();//金额
 		var num_count = sum_num();//数量
@@ -422,7 +423,7 @@ function updateMoney(flag) {
 		} else {
 			$(".btn.btn_buy").css("background", "#CCCCCC");
 		}
-	}
+	}	
 }
 
 //计算积分
@@ -536,23 +537,23 @@ var Cart = {
 		num = num + change;
 		if(min_buy != 0 && min_buy>num){
 			num = min_buy;
-			showBox("该商品最少购买"+min_buy+"件");
+			showBox("该商品最少购买"+min_buy+"件","warning");
 			return;
 		}
 		else if (num == 0) {
 			num = 1;
-			showBox("最小数量为1");
+			showBox("最小数量为1","warning");
 			return;
 		}
 
 		if (max_buy != 0 && num > max_buy) {
-			showBox("该商品每人限购" + max_buy + "件");
+			showBox("该商品每人限购" + max_buy + "件","warning");
 			return;
 		}
 
 		if (num > nummax) {
 			num = nummax;
-			showBox("已达到最大库存");
+			showBox("已达到最大库存","warning");
 			return;
 		}
 
@@ -564,13 +565,20 @@ var Cart = {
 				if(call.code == 0){
 					is_allow = false;
 					num = default_num;
-					showBox(call.message);
+					showBox(call.message,"warning");
 				}
 			});
 		}
 
 		txtC.val(num);
+
+		$(obj).parent(".ui-number").next("[name='succ_amount']").text(num);
+
+		calculated_price(num, obj, goods_id);
+
 		if(is_allow) this.changeProductCount(skuId,txtC[0], change);
+
+		updateMoney(true);
 	},
 	changeProductCount : function(cartid,tmpObj, change) {
 		var obj = $(tmpObj);
@@ -583,10 +591,30 @@ var Cart = {
 			},
 			success : function(res) {
 				if(res.code == 0){
-					showBox(res.message);
+					showBox(res.message,"success");
 				}
 			}
 		});
 	}
 
+}
+
+//计算阶梯优惠
+function calculated_price(num, obj, goodsid){
+	var goods_ladder_preferential = $("#goods_ladder_preferential").val();
+	var arr = JSON.parse(goods_ladder_preferential);
+	var price_obj = $(obj).parents(".cart-list-li").find("[name='goods_price']");
+	var price = price_obj.data("price") * 1;
+	if(arr.length > 0){
+		for (var i = 0; i < arr.length; i++) {
+			var item = arr[i];
+			for(var v = 0; v < item.length; v++){
+				if(num >= item[v]['quantity'] && item[v]['goods_id'] == goodsid){
+					price -= item[v]['price'];
+					break;
+				}
+			}
+		}
+	}
+	price_obj.text(price);
 }

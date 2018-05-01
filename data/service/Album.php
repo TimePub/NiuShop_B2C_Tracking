@@ -26,6 +26,7 @@ use data\model\AlbumPictureModel as AlbumPictureModel;
 use data\model\NsGoodsModel;
 use data\service\Goods;
 use data\model\NsGoodsDeletedModel;
+use data\service\Upload\QiNiu;
 
 class Album extends BaseService implements IAlbum
 {
@@ -294,6 +295,15 @@ class Album extends BaseService implements IAlbum
                         removeImageFile($pic_cover_small);
                         $pic_cover_micro = $picture_obj["pic_cover_micro"];
                         removeImageFile($pic_cover_micro);
+                        //判断上传类型是七牛
+                        if($picture_obj["upload_type"] == 2){
+                            $qiniu = new QiNiu();
+                            $qiniu -> deleteQiNiuImage($pic_cover, $picture_obj["domain"]);
+                            $qiniu -> deleteQiNiuImage($pic_cover_big, $picture_obj["domain"]);
+                            $qiniu -> deleteQiNiuImage($pic_cover_mid, $picture_obj["domain"]);
+                            $qiniu -> deleteQiNiuImage($pic_cover_small, $picture_obj["domain"]);
+                            $qiniu -> deleteQiNiuImage($pic_cover_micro, $picture_obj["domain"]);
+                        }
                     }
                     $result = $this->album_picture->destroy($condition);
                     if (! $result > 0) {

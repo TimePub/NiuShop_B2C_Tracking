@@ -5,12 +5,18 @@
 /* footer start */
 .footer{ background-color:#eee; margin-top:80px;}
 .footer .service-list{ overflow:hidden; border-bottom:1px solid #d2d2d2; padding:15px 0; text-align:center; font-size:0;}
-.footer .service-list li{ display:inline-block; margin-right:50px;}
-.footer .service-list .service-tit{ float:left; width:30px; height:30px; line-height:30px; font-size:0; margin-right:12px;}
+.footer .service-list li{display:inline-block; line-height: 39px;
+    overflow: hidden;
+    margin-bottom: 0px;
+    padding: 0px;
+	margin-right:0px;
+width: 20%;}
+.footer .service-list .service-tit{width:30px; height:30px;font-size:0; margin-right:12px;display: inline-block;}
 .footer .service-list .service-tit .iconfont{ font-size:30px;color:#8c8c8c;}
-.footer .service-list .service-txt{ float:left; font-size:16px; line-height:16px; padding-right:50px; border-right:1px solid #d2d2d2; margin:7px 0; color:#0689e1;/*#8c8c8c*/}
+.footer .service-list .service-txt{ font-size:16px; line-height:16px;margin:7px 0; color:#0689e1;/*#8c8c8c*/display: inline-block;}
 .footer .service-list li:last-child,.footer .service-list li.last{ margin-right:0;}
 .footer .service-list li:last-child .service-txt,.footer .service-list li.last .service-txt{ border-right:0;}
+.footer .service-list span:last-child{border-left:0px !important;}
 .footer .dsc-help{ padding:20px 0; overflow:hidden;}
 .footer .help-list{ float:left; width:850px;}
 .footer .help-item{ float:left; width:170px; line-height:25px;}

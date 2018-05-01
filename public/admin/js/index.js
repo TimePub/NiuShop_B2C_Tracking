@@ -366,3 +366,36 @@ function onloadWeiXinFansChart(e) {
 		}
 	});
 }
+
+/**
+ * 打开设置快捷菜单弹框
+ */
+function show_shortcut_menu(){
+	$("#set_shortcut_menu").css("margin-left","-601px").modal('show');
+}
+
+/**
+ * 设置快捷菜单
+ */
+function set_shortcut_menu(){
+	var menu_arr = new Array();
+	$("#set_shortcut_menu input[type='checkbox']:checked").each(function(){
+		menu_arr.push($(this).val());
+	});
+	var menu_ids = menu_arr.toString();
+	$.ajax({
+		url : __URL(ADMINMAIN+"/index/setShortcutMenu"),
+		type : "post",
+		data : {
+			'menu_ids' : menu_ids,
+		},
+		success : function(res) {
+			if(res['code'] > 0){
+				showTip(res['message'],'success');
+				window.location.reload();
+			}else{
+				showTip(res['message'],'error');
+			}
+		}
+	})
+}

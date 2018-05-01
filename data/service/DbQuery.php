@@ -118,10 +118,10 @@ class DbQuery extends BaseService implements IDbQuery
      * @return mixed|multitype:integer string
      */
     public function sqlQuery($sql){
-        $result=$this->sql_execute($sql, true);
-        if($result["status"]==1){
+//         $result=$this->sql_execute($sql, true);
+//         if($result["status"]==1){
             $result=$this->sql_execute($sql, false);
-        }
+//         }
         return $result;
     }
     public function yujjia($sql){

@@ -53,9 +53,10 @@ function LoadingInfo(page_index) {
 		url : "{:__url('ADMIN_MAIN/member/userOperationLogList')}",
 		data : { "page_index" : page_index, "page_size" : $("#showNumber").val(), "search_text":search_text, "start_date":start_date, "end_date":end_date },
 		success : function(data) {
-			var html = '';
 			if (data["data"].length > 0) {
+				$(".table-class tbody").empty();
 				for (var i = 0; i < data["data"].length; i++) {
+					var html = '';
 					html += '<tr align="center">';
 					if(data["data"][i]["user_name"]==null || data["data"][i]["user_name"] == undefined){
 						html += '<td>--</td>';
@@ -67,11 +68,12 @@ function LoadingInfo(page_index) {
 					html += '<td align="center">'+ timeStampTurnTime(data["data"][i]["create_time"]) +'</td>';
 					html += '<td style="text-align:left;">'+ data["data"][i]["ip"] +'</td>';
 					html += '</tr>';
+					$(".table-class tbody").append(html);
 				}
 			} else {
-				html += '<tr align="center"><td colspan="9">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr align="center"><td colspan="9">暂无符合条件的数据记录</td></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}

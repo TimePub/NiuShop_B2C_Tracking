@@ -130,6 +130,7 @@ function getOrderTermsOfPayment(order_id){
 							html += "<option value='" + list[i].type_id + "'>" + list[i].type_name + "</option>";
 						}
 						$("#refund_way_select").html(html);
+						$("#refund_way_select").selectric();
 						checkPayConfigEnabled();
 					}
 				}

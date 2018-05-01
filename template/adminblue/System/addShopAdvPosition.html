@@ -5,14 +5,14 @@
 {block name="main"}
 <div class="set-style">
 	<dl>
-		<dt><span style="color:red;margin-right:10px;">*</span>名称:</dt>
+		<dt><span style="color:red;margin-right:10px;">*</span>名称：</dt>
 		<dd>
 			<p><input name="UserCode" id="ap_name" type="text" class="input-common"></p>
 			<p class="error">请输入广告位名称</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>广告位关键字:</dt>
+		<dt>广告位关键字：</dt>
 		<dd>
 			<p><input name="UserCode" id="ap_keyword" type="text" class="input-common" maxlength="60" onkeyup="value=value.replace(/[^a-zA-Z]/ig,'')" onpaste="return false"></p>
 			<p class="error">该关键字已被使用</p>
@@ -20,13 +20,14 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>简介:</dt>
+		<dt>简介：</dt>
 		<dd>
-			<p><textarea id="editor" class="input-common"></textarea></p>
+			
+			<p><textarea class="textarea-common" id="editor"></textarea></p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>类别:</dt>
+		<dt>类别：</dt>
 		<dd>
 			<p>
 				<select id="ap_class" name="account" class="form-control m-b select-common">
@@ -37,7 +38,7 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>是否启用:</dt>
+		<dt>是否启用：</dt>
 		<dd>
 			<p>
 				<input id="is_use" type="checkbox" class="checkbox" checked="checked">
@@ -45,64 +46,84 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>所在位置类型:</dt>
+		<dt>所在位置类型：</dt>
 		<dd>
 			<p>
-				<label style="display: inline-block;font-weight:normal;"><input type="radio" name="type" id="type1" value="1" checked>PC端</label>
-				<label style="display: inline-block;font-weight:normal;margin-left:70px;"><input type="radio" name="type" id="type2" value="2"> 手机端</label>
+				<label class="radio inline normal">
+					<i class="radio-common selected"><input type="radio" name="type" id="type1" value="1" checked></i>
+					<span>PC端</span>
+				</label>
+				<label class="radio inline normal">
+					<i class="radio-common"><input type="radio" name="type" id="type2" value="2"></i> 
+					<span>手机端</span>
+				</label>
 			</p>
 		</dd>
 	</dl>
 	<div class="data-image">
 	<dl>
-		<dt><span style="color:red;margin-right:10px;">*</span>展示方式:</dt>
+		<dt><span style="color:red;margin-right:10px;">*</span>展示方式：</dt>
 		<dd>
 			<p id="ap_display">
-				<label style="font-weight:normal;"><input type="radio" name="ap_display" id="ap_display0" value="0"> 可以发布多条并幻灯展示</label>
-				<label style="font-weight:normal;"><input type="radio" name="ap_display" id="ap_display1" value="1">  可以发布多条广告并随机展示</label>
-				<label style="font-weight:normal;"><input type="radio" name="ap_display" id="ap_display2" value="2"> 只允许发布并展示一条广告 </label>
+				<label class="radio normal inline">
+					<i class="radio-common selected"><input type="radio" name="ap_display" id="ap_display0" value="0" checked></i>
+					<span>可以发布多条并幻灯展示</span>
+				</label>
+				<label class="radio normal inline">
+					<i class="radio-common"><input type="radio" name="ap_display" id="ap_display1" value="1"></i> 
+					<span>可以发布多条广告并随机展示</span>
+				</label>
+				<label class="radio normal inline">
+					<i class="radio-common"><input type="radio" name="ap_display" id="ap_display2" value="2"></i>
+					<span>只允许发布并展示一条广告</span>
+				</label>
 			</p>
 			<p class="error">请选择展示方式</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span style="color:red;margin-right:10px;">*</span>宽度:</dt>
+		<dt><span style="color:red;margin-right:10px;">*</span>宽度：</dt>
 		<dd>
-			<p><input id="ap_width" type="number" class="input-common"></p>
+			<p><input id="ap_width" type="number" class="input-common harf"><em class="unit">PX</em></p>
 			<p class="error">请输入广告位宽度</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span style="color:red;margin-right:10px;">*</span>高度:</dt>
+		<dt><span style="color:red;margin-right:10px;">*</span>高度：</dt>
 		<dd>
-			<p><input id="ap_height" type="number" class="input-common"></p>
+			<p><input id="ap_height" type="number" class="input-common harf"><em class="unit">PX</em></p>
 			<p class="error">请输入广告位高度</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span style="color:red;margin-right:10px;">*</span>默认图片:</dt>
+		<dt><span style="color:red;margin-right:10px;">*</span>默认图片：</dt>
 		<dd>
-			<div class="class-logo"><p><img id="imgLogo"></p></div>
-			<div class="upload-btn">
-				<span>
-					<input class="input-file" name="file_upload" id="uploadImg" type="file" onchange="imgUpload(this);">
-				</span>
-				<p><i class="fa fa-cloud-upload"></i>上传图片</p>
-				<input type="hidden" id="Logo" /> 
+			<div class="upload-btn-common">
+				<div>
+					<input class="input-file" name="file_upload" id="uploadAdv" type="file" onchange="imgUpload(this);" title="上传">
+					<input type="hidden" id="adv" value="">
+				</div>
+				
+				<input type="text" id="text_adv" class="input-common" readonly="readonly" value="">
+				<em>上传</em>								
+				<img id="preview_adv" src="__STATIC__/blue/img/upload-common-select.png" data-src="" data-html="true" data-container="body" data-placement="top" data-trigger="manual" data-original-title="" title="">
 			</div>
-			<p class="error">请上传一张图片作为默认图片</p>
+			<p class="error">请上传图片</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>默认背景色:</dt>
+		<dt>默认背景色：</dt>
 		<dd>
-			<input id="ap_background_color" type="color" style="width:60px;height:25px;" class="input-common" />
+			<input id="ap_background_color" type="color" style="width:60px;height:25px;" class="input-common-color" />
 		</dd>
 	</dl>
 	</div>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="addShopAdvPositionAjax();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="addShopAdvPositionAjax();">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
 	</dl>
 </div>	
 {/block}
@@ -113,10 +134,12 @@
 function imgUpload(event) {
 	var fileid = $(event).attr("id");
 	var data = { 'file_path' : UPLOADADV };
+	var id = $(event).next().attr("id");
 	uploadFile(fileid,data,function(res){
 		if(res.code){
-			$("#imgLogo").attr("src",__IMG(res.data));
-			$("#Logo").val(res.data);
+			$("#" + id).val(res.data);
+			$("#text_" + id).val(res.data);
+			$("#preview_"+ id).attr("data-src",__IMG(res.data));
 			showTip(res.message,"success");
 		}else{
 			showTip(res.message,"error");
@@ -163,7 +186,7 @@ function addShopAdvPositionAjax() {
 	var ap_display = $("input[type='radio'][name='ap_display']:checked").val();
 	var ap_width = $("#ap_width").val();
 	var ap_height = $("#ap_height").val();
-	var default_content = $("#Logo").val();
+	var default_content = $("#adv").val();
 	var ap_background_color = $("#ap_background_color").val();
 	var type = $("input[type='radio'][name='type']:checked").val();
 	var ap_keyword = $("#ap_keyword").val();
@@ -186,9 +209,10 @@ function addShopAdvPositionAjax() {
 			},
 			success : function(data) {
 				if (data["code"] > 0) {
-					showMessage('success', "添加成功","{:__URL('ADMIN_MAIN/system/shopadvpositionlist')}");
+					showTip("添加成功",'success');
+					location.href = "{:__URL('ADMIN_MAIN/system/shopadvpositionlist')}";
 				}else{
-					showMessage('error', "添加失败");
+					showTip("添加失败",'error');
 				}
 			}
 		});
@@ -230,8 +254,8 @@ function verify(ap_name,ap_display,ap_width,ap_height,ap_class){
 	}else{
 		$(".error").hide();
 	}
-	if($("#Logo").val().length ==0 && ap_class == 0){
-		$("#Logo").parent().next(".error").show();
+	if($("#adv").val().length ==0 && ap_class == 0){
+		$("#adv").parents('dd').find(".error").show();
 		return false;
 	}else{
 		$(".error").hide();

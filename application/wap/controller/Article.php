@@ -21,6 +21,7 @@ use data\service\Config;
 use data\service\Member as Member;
 use data\service\WebSite as WebSite;
 use think\Controller;
+use think\Cookie;
 \think\Loader::addNamespace('data', 'data/');
 
 class Article extends Controller
@@ -49,7 +50,7 @@ class Article extends Controller
         $this->assign("style", "wap/" . $use_wap_template['value']);
         
         $Config = new Config();
-         $seoconfig = $Config->getSeoConfig(0);
+        $seoconfig = $Config->getSeoConfig(0);
         $this->assign("seoconfig", $seoconfig);
         
         if($web_info['wap_status'] == 3 && $web_info['web_status'] == 1){

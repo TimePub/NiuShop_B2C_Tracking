@@ -1,29 +1,33 @@
 {extend name="adminblue/base" /}
-{block name="resources"/}{/block}
+{block name="resources"/}
+<style>
+.ns-main{margin-top:0px;}
+</style>
+{/block}
 {block name="main"}
 <table class="mytable">
 	<tr>
-		<th style="text-align: left;"><button class="btn-common btn-small" onclick="location.href='{:__URL('ADMIN_MAIN/auth/adduser')}';" style="margin:0 !important;">添加用户</button></th>
-		<th>
+		<td style="text-align: left;"><button class="btn-common" onclick="location.href='{:__URL('ADMIN_MAIN/auth/adduser')}';" style="margin:0 !important;">添加用户</button></td>
+		<td>
 			<input type="text" id='search_text' placeholder="请输入用户名" class="input-common" />
 			<input type="button" class="btn-common" onclick="searchData()" value="搜索" />
-		</th>
+		</td>
 	</tr>
 </table>
 <table class="table-class">
 	<colgroup>
-		<col style="width: 5%;">
+		<col style="width: 2%;">
+		<col style="width: 15%;">
 		<col style="width: 15%;">
 		<col style="width: 10%;">
-		<col style="width: 10%;">
-		<col style="width: 10%;">
-		<col style="width: 10%;">
-		<col style="width: 10%;">
-		<col style="width: 30%;">
+		<col style="width: 15%;">
+		<col style="width: 15%;">
+		<col style="width: 13%;">
+		<col style="width: 15%;">
 	</colgroup>
 	<thead>
 		<tr align="center">
-			<th><input type="checkbox"  onclick="CheckAll(this)"></th>
+			<th><i class="checkbox-common"><input type="checkbox"  onclick="CheckAll(this)"></i></th>
 			<th align="left">用户头像</th>
 			<th align="left">登录账号</th>
 			<th>手机号</th>
@@ -33,16 +37,6 @@
 			<th>操作</th>
 		</tr>
 	</thead>
-	<colgroup>
-		<col style="width: 5%;">
-		<col style="width: 10%;">
-		<col style="width: 10%;">
-		<col style="width: 10%;">
-		<col style="width: 10%;">
-		<col style="width: 10%;">
-		<col style="width: 10%;">
-		<col style="width: 20%;">
-	</colgroup>
 	<tbody></tbody>
 </table>
 {/block}
@@ -55,11 +49,12 @@ function LoadingInfo(page_index) {
 		url : "{:__URL('ADMIN_MAIN/auth/userlist')}",
 		data : { "page_index" : page_index, "page_size" : $("#showNumber").val(), "search_text" : search_text },
 		success : function(data) {
-			var html = '';
 			if (data["data"].length > 0) {
+				$(".table-class tbody").empty();
 				for (var i = 0; i < data["data"].length; i++) {
+					var html = '';
 					html += '<tr align="center">';
-					html += '<td><input name="sub" type="checkbox" value="'+ data['data'][i]['uid']+'" ></td>';
+					html += '<td><i class="checkbox-common"><input name="sub" type="checkbox" value="'+ data['data'][i]['uid']+'" ></i></td>';
 					html += '<td align="left">';
 					if(data["data"][i]["user_headimg"] == ""){
 						html += '<img src="__STATIC__/images/default_user_portrait.gif" class="head-portrait" />';
@@ -79,17 +74,20 @@ function LoadingInfo(page_index) {
 					if(data['data'][i]['is_admin'] == 1){
 						html += '<td style="color:#B5B3B3;">管理员用户不可进行操作</td>';
 					}else{
-						html += '<td><a href="'+__URL('ADMIN_MAIN/auth/edituser?uid=' + data["data"][i]["uid"])+'">修改</a>&nbsp;&nbsp; ';
-						html += data["data"][i]["user_status"] == 0 ? '<a href="javascript:void(0);" onclick="unlock('+data["data"][i]["uid"]+', 1)">解锁</a>&nbsp;&nbsp; ' : '<a href="javascript:void(0);" onclick="lock('+data["data"][i]["uid"]+', 0)">锁定</a>&nbsp;&nbsp; ';
-						html += '<a href="javascript:void(0);" onclick="resetPassword(' + data["data"][i]["uid"] + ')">重置密码</a>';
-						html += '&nbsp;&nbsp;<a href="javascript:;" onclick="delectAdminUser(' + data["data"][i]["uid"] + ')">删除</a></td>';
+						html += '<td>';
+							html += '<a href="'+__URL('ADMIN_MAIN/auth/edituser?uid=' + data["data"][i]["uid"])+'">修改</a>';
+							html += data["data"][i]["user_status"] == 0 ? '<a href="javascript:void(0);" onclick="unlock('+data["data"][i]["uid"]+', 1)">解锁</a>' : '<a href="javascript:void(0);" onclick="lock('+data["data"][i]["uid"]+', 0)">锁定</a>';
+							html += '<a href="javascript:;" onclick="delectAdminUser(' + data["data"][i]["uid"] + ')">删除</a>';
+							html += '<br/><a href="javascript:void(0);" onclick="resetPassword(' + data["data"][i]["uid"] + ')">重置密码</a>';
+						html += '</td>';
 					}
 					html += '</tr>';
+					$(".table-class tbody").append(html);
 				}
 			} else {
-				html += '<tr align="center"><td colspan="8">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr align="center"><td colspan="8">暂无符合条件的数据记录</td></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}
@@ -99,7 +97,7 @@ function LoadingInfo(page_index) {
 function resetPassword(uid){
 	$("#dialog").dialog({
 		buttons: {
-			"确定,#e57373": function() {
+			"确定,#0059d6,#fff": function() {
 				$(this).dialog('close');
 				$.ajax({
 					type : "post",
@@ -107,9 +105,10 @@ function resetPassword(uid){
 					data : { "uid" : uid },
 					success : function(data) {
 						if(data["code"] > 0 ){
-							showMessage('success', data["message"],"{:__URL('ADMIN_MAIN/auth/userlist')}");
+							showTip(data["message"],'success');
+							location.href = "{:__URL('ADMIN_MAIN/auth/userlist')}";
 						}else{
-							showMessage('error', data["message"]);
+							showTip(data["message"],'error');
 						}
 					}
 				})
@@ -127,9 +126,10 @@ function lock(uid){
 		data : { "uid" : uid },
 		success : function(data) {
 			if(data["code"] > 0 ){
-				showMessage('success', data["message"],"{:__URL('ADMIN_MAIN/auth/userlist')}");
+				showTip(data["message"],'success');
+				location.href = "{:__URL('ADMIN_MAIN/auth/userlist')}";
 			}else{
-				showMessage('error', data["message"]);
+				showTip(data["message"],'error');
 			}
 		}
 	});
@@ -142,9 +142,10 @@ function unlock(uid){
 		data : { "uid" : uid },
 		success : function(data) {
 			if(data["code"] > 0 ){
-				showMessage('success', data["message"],"{:__URL('ADMIN_MAIN/auth/userlist')}");
+				showTip(data["message"],'success');
+				location.href = "{:__URL('ADMIN_MAIN/auth/userlist')}";
 			}else{
-				showMessage('error', data["message"]);
+				showTip(data["message"],'error');
 			}
 		}
 	});
@@ -162,30 +163,15 @@ function delectAdminUser(uid){
 				dataType : "json",
 				success : function(data) {
 					if(data['code'] > 0){
-						$("#dialog").dialog({
-							buttons: {
-								"确定": function() {
-									$(this).dialog('close');
-								}
-							},
-							time:2,
-							contentText:data['message']
-						})
-						window.location.reload();
+						showTip(data["message"],'success');
+						location.href = "{:__URL('ADMIN_MAIN/auth/userlist')}";
 					}else{
-						$("#dialog").dialog({
-							buttons: {
-								"确定,#e57373": function() {
-									$(this).dialog('close');
-								}
-							},
-							contentText:data['message']
-						})
+						showTip(data["message"],'error');
 					}
 				}
 			});
 		},
-		"取消,#e57373": function() {
+		"取消,#f5f5f5,#666": function() {
 			$(this).dialog('close');
 		}
 	},
@@ -197,6 +183,8 @@ function delectAdminUser(uid){
 function CheckAll(event){
 	var checked = event.checked;
 	$(".table-class tbody input[type = 'checkbox']").prop("checked",checked);
+	if(checked) $(".table-class tbody input[type = 'checkbox']").parent().addClass("selected");
+	else $(".table-class tbody input[type = 'checkbox']").parent().removeClass("selected");
 }
 
 function searchData(){

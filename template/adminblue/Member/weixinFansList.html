@@ -49,27 +49,42 @@
 .btn-common-delete:hover{
 	color: #fff;
 }
+.btn-common-delete {
+    background: #0059d6;
+}
+.mytable th {
+    padding-left: 0px;
+}
 </style>
 {/block}
 {block name="main"}
 <table class="mytable">
 	<tr>
 		<th width="5%">
-			<a class="btn-small btn-common-delete" id="UpdateFansList" href="javascript:;" style="float: left;">
+			<button class="btn-common" id="UpdateFansList" href="javascript:;" style="float: left;">
 				<i class="fa fa-refresh" aria-hidden="true"></i>
 				<span>更新粉丝列表</span>
-			</a>
+			</button>
 		</th>
 		<th width="10%">
 			<input type="text" id='search_text' placeholder="请输入粉丝名称" class="input-common"/>
-			<input type="button" onclick="searchData()" value="搜索" class="btn-common"/>
+			<button onclick="searchData()" value="搜索" class="btn-common">搜索</button>
 		</th>
 	</tr>
 </table>
 <table class="table-class">
+	<colgroup>
+		<col style="width: 2%;">
+		<col style="width: 16%;">
+		<col style="width: 18%;">
+		<col style="width: 16%;">
+		<col style="width: 16%;">
+		<col style="width: 16%;">
+		<col style="width: 16%;">
+	</colgroup>
 	<thead>
 		<tr align="center">
-			<th><input type="checkbox" onclick="CheckAll(this)"></th>
+			<th><i class="checkbox-common"><input type="checkbox" onclick="CheckAll(this)"></i></th>
 			<th align="left">粉丝头像</th>
 			<th align="left">粉丝名称</th>
 			<th align="left">地址</th>
@@ -103,9 +118,10 @@ function LoadingInfo(page_index) {
 			"page_index" : page_index, "page_size" : $("#showNumber").val(), "search_text" : search_text
 		},
 		success : function(data) {
-			var html = '';
 			if (data["data"].length > 0) {
+				$(".table-class tbody").empty();
 				for (var i = 0; i < data["data"].length; i++) {
+					var html = '';
 					var is_subscribe = "";
 					var sex = "";
 					if(data["data"][i]["is_subscribe"] == 1){
@@ -136,7 +152,7 @@ function LoadingInfo(page_index) {
 					}
 					
 					html += '<tr align="center">';
-					html += '<td><input name="sub" type="checkbox" value="'+ data["data"][i]["fans_id"]+'" ></td>';
+					html += '<td><i class="checkbox-common"><input name="sub" type="checkbox" value="'+ data["data"][i]["fans_id"]+'" ></i></td>';
 					html += '<td align="left">';
 					if(data["data"][i]["headimgurl"] ==""){
 						html += '<img src="__STATIC__/images/default_user_portrait.gif" class="head-portrait" />';
@@ -155,11 +171,12 @@ function LoadingInfo(page_index) {
 					html += '<td>' + timeStampTurnTime(data["data"][i]["subscribe_date"]) + '</td>';
 					html += '<td align="left">' + data["data"][i]["memo"] + '</td>';
 					html += '</tr>';
+					$(".table-class tbody").append(html);
 				}
 			} else {
-				html += '<tr align="center"><td colspan="9">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr align="center"><td colspan="9">暂无符合条件的数据记录</td></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}
@@ -169,9 +186,10 @@ function LoadingInfo(page_index) {
 //全选
 function CheckAll(event){
 	var checked = event.checked;
-	$(".table-class tbody input[type = 'checkbox']").prop("checked",checked);
+	$("#productTbody input[type = 'checkbox']").prop("checked",checked);
+	if(checked) $(".table-class tbody input[type = 'checkbox']").parent().addClass("selected");
+	else $(".table-class tbody input[type = 'checkbox']").parent().removeClass("selected");
 }
-
 function searchData(){
 	LoadingInfo(1);
 }
@@ -192,7 +210,7 @@ $("#UpdateFansList").click(function(){
 			}
 			if(data["errcode"] != undefined && data["errcode"] < 0){
 				$(".data-loading-eject-layer").fadeOut();
-				showMessage('error',data['errorMsg']);
+				showTip(data['errorMsg'],'error');
 			}else if(data["errcode"] == 0){
 				if(pageIndex <= page_count){
 					pageIndex = parseInt(pageIndex) + 1;
@@ -204,7 +222,8 @@ $("#UpdateFansList").click(function(){
 					}
 				}else{
 					$(".data-loading-eject-layer").fadeOut();
-					showMessage('success',"更新完成","{:__URL('ADMIN_MAIN/member/weixinfanslist')}");
+					showTip(data['message'],'success');
+					location.href = "{:__URL('ADMIN_MAIN/member/weixinfanslist')}";
 				}
 			}
 		}

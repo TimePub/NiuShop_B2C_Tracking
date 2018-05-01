@@ -55,29 +55,13 @@ class VirtualGoods extends BaseController
             if($use_status != ''){
                 $condition["nvg.use_status"] = $use_status;
             }
-            $order = "";
+            $order = "nvg.virtual_goods_id desc";
             $list = $virtualGoods -> getVirtualGoodsList($page_index, $page_size, $condition, $order);
             return $list;      
         }
         
         $type = request()->get('type', '');
-        $child_menu_list = array();
-        $child_menu_list[0] = array(
-            'url' => "VirtualGoods/virtualGoodsList",
-            'menu_name' => '虚拟商品管理',
-            "active" => 1
-        );
-        $child_menu_list[1] = array(
-            'url' => "Verification/virtualGoodsVerificationList?type=to_reply",
-            'menu_name' => '核销记录',
-            "active" => 2
-        );
-        $child_menu_list[2] = array(
-            'url' => "Verification/index",
-            'menu_name' => '核销人员',
-            "active" => 0
-        );
-        $this->assign('child_menu_list', $child_menu_list);
+        
         return view($this->style. "VirtualGoods/virtualGoodsList");
     }
 }

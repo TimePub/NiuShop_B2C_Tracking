@@ -8,13 +8,14 @@
 	{else /}
 		<title>{$title_name} - {$frist_menu.module_name}管理</title>
 	{/if}
-	<link rel="shortcut  icon" type="image/x-icon" href="ADMIN_IMG/admin_icon.ico" media="screen"/>
+	<link rel="shortcut icon" type="image/x-icon" href="ADMIN_IMG/admin_icon.ico" media="screen"/>
 	<link rel="stylesheet" type="text/css" href="__STATIC__/blue/bootstrap/css/bootstrap.css" />
 	<link rel="stylesheet" type="text/css" href="__STATIC__/blue/css/ns_blue_common.css" />
 	<link rel="stylesheet" type="text/css" href="__STATIC__/font-awesome/css/font-awesome.min.css" />
 	<link rel="stylesheet" type="text/css" href="__STATIC__/simple-switch/css/simple.switch.three.css" />
+	<link rel="stylesheet" type="text/css" href="ADMIN_CSS/selectric.css" />
 	<style>
-	.Switch_FlatRadius.On span.switch-open{background-color: #0072D2;border-color: #0072D2;}
+	.Switch_FlatRadius.On span.switch-open{background-color: #126AE4;border-color: #126AE4;}
 	#copyright_meta a{color:#333;}
 	</style>
 	<script src="__STATIC__/js/jquery-1.8.1.min.js"></script>
@@ -26,9 +27,12 @@
 	<script src="__STATIC__/js/seller.js"></script>
 	<script src="__STATIC__/js/load_task.js"></script>
 	<script src="__STATIC__/js/load_bottom.js" type="text/javascript"></script>
+	<script src="ADMIN_JS/layer/layer.js"></script>
 	<script src="ADMIN_JS/jquery-ui.min.js"></script>
 	<script src="ADMIN_JS/ns_tool.js"></script>
+	<script src="ADMIN_JS/jquery.selectric.js"></script>
 	<link rel="stylesheet" type="text/css" href="__STATIC__/blue/css/ns_table_style.css">
+	
 	{include file="adminblue/controlCommonVariable" }
 	{block name="resources"/}{/block}
 	</head>
@@ -36,26 +40,104 @@
 {include file="adminblue/urlModel"}
 <article class="ns-base-article">
 
-	<aside class="ns-base-aside">
+	<header class="ns-base-header">
 		<div class="ns-logo" onclick="location.href='{:__URL('ADMIN_MAIN')}';"></div>
+		<div class="ns-search">
+			<div class="nav-menu js-nav">
+				<img src="__STATIC__/blue/img/nav_menu.png" title="导航管理" />
+			</div>
+			<div class="ns-navigation-management">
+				<div class="ns-navigation-title">
+					<h4>导航管理</h4>
+					<span>x</span>
+				</div>
+				<div style="height:40px;"></div>
+				{foreach name="nav_list" item="nav"}
+				<dl>
+					<dt>{$nav.data.module_name}</dt>
+					{foreach name="nav['sub_menu']" item="nav_sub"}
+					<dd>
+						<a href="{:__URL('ADMIN_MAIN/'.$nav_sub['url'])}">{$nav_sub.module_name}</a>
+					</dd>
+					{/foreach}
+				</dl>
+				{/foreach}
+			</div>
+			<div class="ns-search-block">
+				<i class="fa fa-search" title="搜索"></i>
+				<span>搜索</span>
+				<div class="mask-layer-search">
+					<input type="text" id="search_goods" placeholder="搜索" />
+					<a href="javascript:search();"><img src="__STATIC__/blue/img/enter.png"/></a>
+				</div>
+			</div>
+		</div>
+		<nav>
+			<ul>
+				{foreach name="headlist" item="per"}
+				{if condition="strtoupper($per['module_id']) eq $headid"}
+				<li class="selected" onclick="location.href='{:__URL('ADMIN_MAIN/'.$per['url'])}';">
+					<span>{$per.module_name}</span>
+					{if condition="$per['module_id'] eq 10000"}
+						<span class="is-upgrade"></span>
+					{/if}
+				</li>
+				
+				{else/}
+				<li onclick="location.href='{:__URL('ADMIN_MAIN/'.$per['url'])}';">
+					<span>{$per.module_name}</span>
+					{if condition="$per['module_id'] eq 10000"}
+						<span class="is-upgrade"></span>
+					{/if}
+				</li>
+				{/if}
+				{/foreach}
+			</ul>
+		</nav>
+		<div class="ns-base-tool">
+			<i class="i-home"  title="前台首页"><a href="{:__URL('SHOP_MAIN')}" target="_blank"></a></i>
+			<i class="i-close" title="退出登录"><a href="{:__URL('ADMIN_MAIN/login/logout')}"></a></i>
+			<i class="ns-vertical-bar"></i>
+			<div class="ns-help">
+				<div class="logo">
+				{if condition="$user_headimg neq ''"}
+				<img src="{:__IMG($user_headimg)}"/>
+				{else /}
+				<img src="__STATIC__/blue/img/user_admin_blue.png" width="30" >
+				{/if}
+				</div>
+				<span>{$user_name}</span>
+				<i class="fa fa-angle-down"></i>
+				<ul>
+					<li>
+						<img src="__STATIC__/blue/img/add_favorites.png" />
+						<a href="#edit-password" data-toggle="modal" title="修改密码">修改密码</a>
+					</li>
+					<li title="清理缓存" onclick="delcache()">
+						<img src="__STATIC__/blue/img/clear_the_cache.png"/>
+						<a href="javascript:;">清理缓存</a>
+					</li>
+					<li title="加入收藏" onclick="addFavorite()">
+						<img src="__STATIC__/blue/img/add_favorites.png" />
+						<a href="javascript:;">加入收藏</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</header>
+	
+	<aside class="ns-base-aside">
 		<div class="ns-main-block">
-			<header>
-				<article class="ns-base-user">
-					<div class="ns-head-portrait">
-						{if condition="$user_headimg neq ''"}
-						<img src="{:__IMG($user_headimg)}"/>
-						{else /}
-						<img src="__STATIC__/blue/img/head_portrait_default.png"/>
-						{/if}
-					</div>
-					<div class="ns-base-info">
-						<span>欢迎您：{$user_name}</span>
-						<span>角色：{$group_name}</span>
-					</div>
-				</article>
-				<a href="#edit-password" data-toggle="modal" title="修改密码">修改密码</a>
-				<a href="{:__URL('ADMIN_MAIN/login/logout')}" title="安全退出">安全退出</a>
-			</header>
+			
+			<h3 style="margin-top:50px;">
+				{foreach name="headlist" item="per"}
+				{if condition="strtoupper($per['module_id']) eq $headid"}
+					<span class="{$per.module_name}">{$per.module_name}</span>
+					<i class="fa fa-caret-down"></i>
+				{/if}
+				{/foreach}
+			</h3>
+			
 			<nav>
 				<ul>
 					{foreach name="leftlist" item="leftitem"}
@@ -65,100 +147,40 @@
 					<li onclick="location.href='{:__URL('ADMIN_MAIN/'.$leftitem['url'])}';" title="{$leftitem.module_name}">{$leftitem.module_name}</li>
 					{/if}
 					{/foreach}
+					<!-- 快捷菜单列表 -->
+					{if condition="$is_show_shortcut_menu eq 1"}
+					{volist name="shortcut_menu_list" id="menu"}
+					<li onclick="location.href='{:__URL('ADMIN_MAIN/'.$menu['url'])}';" title="{$menu.module_name}">{$menu.module_name}</li>
+					{/volist}
+					{/if}
 				</ul>
+				<!-- 快捷菜单设置按钮 -->
+				{if condition="$is_show_shortcut_menu eq 1"}
+				<div class="shortcut-menu" onclick="show_shortcut_menu()">
+					<span></span>
+					常用功能
+				</div>
+				{/if}
 			</nav>
+			
 			<div style="height:50px;"></div>
+			
 			<div id="bottom_copyright">
 				<footer>
 					<img id="copyright_logo"/>
-					<p>
-						<span id="copyright_desc"></span>
-						<br/>
-						<a id="copyright_companyname" style="color: #333" target="_blank"></a>
-						<br/>
-						<span id="copyright_meta"></span>
-					</p>
+<!-- 					<p> -->
+<!-- 						<span id="copyright_desc"></span> -->
+<!-- 						<br/> -->
+<!-- 						<a id="copyright_companyname" style="color: #333" target="_blank"></a> -->
+<!-- 						<br/> -->
+<!-- 						<span id="copyright_meta"></span> -->
+<!-- 					</p> -->
 				</footer>
 			</div>
 		</div>
 	</aside>
 	
 	<section class="ns-base-section">
-		<header class="ns-base-header">
-			<div class="ns-search">
-				<img src="__STATIC__/blue/img/nav_menu.png" title="导航管理" class="nav-menu js-nav" />
-				<div class="ns-navigation-management">
-					<div class="ns-navigation-title">
-						<h4>导航管理</h4>
-						<span>x</span>
-					</div>
-					<div style="height:40px;"></div>
-					{foreach name="nav_list" item="nav"}
-					<dl>
-						<dt>{$nav.data.module_name}</dt>
-						{foreach name="nav['sub_menu']" item="nav_sub"}
-						<dd onclick="location.href='{:__URL('ADMIN_MAIN/'.$nav_sub['url'])}';">{$nav_sub.module_name}</dd>
-						{/foreach}
-					</dl>
-					{/foreach}
-				</div>
-				<i class="ns-vertical-bar"></i>
-				<div class="ns-search-block">
-					<i class="fa fa-search" title="搜索"></i>
-					<span>搜索</span>
-					<div class="mask-layer-search">
-						<input type="text" id="search_goods" placeholder="搜索" />
-						<a href="javascript:search();"><img src="__STATIC__/blue/img/enter.png"/></a>
-					</div>
-				</div>
-			</div>
-			<nav>
-				<ul>
-					{foreach name="headlist" item="per"}
-					{if condition="strtoupper($per['module_id']) eq $headid"}
-					<li class="selected" onclick="location.href='{:__URL('ADMIN_MAIN/'.$per['url'])}';">
-						<span>{$per.module_name}</span>
-						{if condition="$per['module_id'] eq 10000"}
-							<span class="is-upgrade"></span>
-						{/if}
-					</li>
-					
-					{else/}
-					<li onclick="location.href='{:__URL('ADMIN_MAIN/'.$per['url'])}';">
-						<span>{$per.module_name}</span>
-						{if condition="$per['module_id'] eq 10000"}
-							<span class="is-upgrade"></span>
-						{/if}
-					</li>
-					{/if}
-					{/foreach}
-				</ul>
-			</nav>
-			<div class="ns-base-tool">
-				<div class="ns-help">
-					<img src="__STATIC__/blue/img/user_admin_blue.png" width="30" >
-					<!-- <i class="fa fa-question-circle-o"></i> -->
-					<ul>
-						<li title="前台首页" onclick="window.open('{:__URL('SHOP_MAIN')}')">
-							<img src="__STATIC__/blue/img/home_pc.png"/>
-							<a href="javascript:;">前台首页</a>
-						</li>
-						<li title="加入收藏" onclick="addFavorite()">
-							<img src="__STATIC__/blue/img/add_favorites.png" />
-							<a href="javascript:;">加入收藏</a>
-						</li>
-						<li title="清理缓存" onclick="delcache()">
-							<img src="__STATIC__/blue/img/clear_the_cache.png"/>
-							<a href="javascript:;">清理缓存</a>
-						</li>
-						<li title="退出登录" onclick="window.location.href='{:__URL('ADMIN_MAIN/login/logout')}'">
-							<img src="__STATIC__/blue/img/loout.png"/>
-							<a href="javascript:;">退出登录</a>
-						</li>
-					</ul>
-				</div>
-			</div>
-		</header>
 		
 		{block name="ns_notice"}{/block}
 		
@@ -168,13 +190,13 @@
 			<div class="breadcrumb-nav">
 				<a href="{:__URL('ADMIN_MAIN')}">{$title_name}</a>
 				{if condition="$frist_menu.module_name != ''"}
-					<span class="sep">&gt;</span>
+					<i class="fa fa-angle-right"></i>
 					<a href="{:__URL('ADMIN_MAIN/'.$frist_menu['url'])}">{$frist_menu.module_name}</a>
 				{/if}
 				{if condition="$secend_menu.module_name != ''"}
-					<span class="sep">&gt;</span>
+					<i class="fa fa-angle-right"></i>
 					<!-- 需要加跳转链接用这个：ADMIN_MAIN/{$secend_menu.url} -->
-					<a href="javascript:;">{$secend_menu.module_name}</a>
+					<a href="javascript:;" style="color:#999;">{$secend_menu.module_name}</a>
 				{/if}
 			</div>
 			{/if}
@@ -190,51 +212,70 @@
 							<li onclick="location.href='{:__URL('ADMIN_MAIN/'.$child_menu['url'])}';">{$child_menu.menu_name}</li>
 						{/eq}
 					{/foreach}
-					<!-- {if count($child_menu_list) > 10}
-					<button class="btn-common btn-more">更多</button>
-					{/if} -->
 					</ul>
 				</nav>
 				{/if}
 			{/block}
-			
 			<div class="right-side-operation">
 				<ul>
 					{block name="right_tab"}{/block}
 					{block name="right_tab_tip"}
-					<li {if condition="$warm_prompt_is_show == 'show'"}style="display:none;"{/if}><a class="js-open-warmp-prompt"><i class="fa fa-info-circle"></i>&nbsp;提示</a></li>
+<!-- 					{if condition="$warm_prompt_is_show == 'show'"}style="display:none;"{/if} style="display:block;" -->
+					<li>
+						<a class="js-open-warmp-prompt" href="javascript:;" data-menu-desc=''><i class="fa fa-question-circle"></i>&nbsp;提示</a>
+						<div class="popover">
+							<div class="arrow"></div>
+							<div class="popover-content">
+								<div>
+									{if condition="$secend_menu.desc"}
+									<h4>操作提示</h4>
+									<p>{$secend_menu.desc}</p>
+									<hr/>
+									{/if}
+									<h4>功能提示</h4>
+									<p class="function-prompts">{block name="alert_info"}{/block}</p>
+								</div>
+							</div>
+						</div>
+					</li>
 					{/block}
 				</ul>
 			</div>
 		</div>
+		
 		<!-- 操作提示 -->
 		{block name="warm_prompt"}
-		<div class="ns-warm-prompt" {if condition="$warm_prompt_is_show == 'hidden'"}style="display:none;"{/if}>
+<!-- 		{if condition="$warm_prompt_is_show == 'hidden'"}style="display:none;"{/if} -->
+		<div class="ns-warm-prompt" style="display:none;">
 			<div class="alert alert-info">
 				<button type="button" class="close">&times;</button>
 				<h4>
-					{block name="alert_info"}
-					<i class="fa fa-info-circle"></i>
-					<span class="operating-hints">操作提示</span>
-						{if condition="$secend_menu.desc"}
-						<span>{$secend_menu.desc}</span>
-						{/if}
-					{/block}
+<!-- 					{1block name="alert_info"} -->
+<!-- 					<i class="fa fa-info-circle"></i> -->
+<!-- 					<span class="operating-hints">操作提示</span> -->
+<!-- 						{if condition="$secend_menu.desc"} -->
+<!-- 						<span>{$secend_menu.desc}</span> -->
+<!-- 						{/if} -->
+<!-- 					{1/block} -->
 				</h4>
 			</div>
 		</div>
 		{/block}
+		
 		<div class="ns-main">
 			{block name="main"}{/block}
 			{include file="adminblue/pageCommon"}
 		</div>
 		
 	</section>
+	
 </article>
 
 <!-- 公共的操作提示弹出框 common-success：成功，common-warning：警告，common-error：错误，-->
 <div class="common-tip-message js-common-tip">
-	<div class="inner"></div>
+	<div class="tip-container">
+		<span class="inner"></span>
+	</div>
 </div>
 
 <!--修改密码弹出框 -->
@@ -270,15 +311,20 @@
 		</form>
 	</div>
 	<div class="modal-footer">
-		<button class="btn btn-primary" onclick="submitPassword()" style="display:inline-block;">保存</button>
-		<button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+		<button class="btn-common btn-big" onclick="submitPassword()" style="display:inline-block;">保存</button>
+		<button class="btn-common-cancle btn-big" data-dismiss="modal" aria-hidden="true">关闭</button>
 	</div>
 </div>
+
 {include file="adminblue/openDialog" /}
 <script src="ADMIN_JS/ns_common_base.js"></script>
 <script src="__STATIC__/blue/js/ns_common_blue.js"></script>
 <script>
+	window.onload = function(){
+
+	}
 $(function(){
+	
 	$(".ns-third-menu ul .btn-more").toggle(
 		function(){
 			$(".ns-third-menu ul").animate({height:"84px"},300);
@@ -286,7 +332,54 @@ $(function(){
 		function(){
 			$(".ns-third-menu ul").animate({height:"42px"},300);
 		}
-	)
+	);
+	
+	//公共下拉框
+	$('.select-common').selectric();
+	
+	//公共复选框点击切换样式
+	$(".checkbox-common").live("click",function(){
+		var checkbox = $(this).children("input");
+		if(checkbox.is(":checked")) $(this).addClass("selected");
+		else $(this).removeClass("selected");
+	});
+	
+	//鼠标浮上查看预览上传的图片
+	$(".upload-btn-common>img,#preview_adv").live("mouseover",function(){
+		var curr = $(this);
+		var src = curr.attr("data-src");
+		if(src){
+			//alert(src);
+			var contents = '<img src="'+src+'" style="width: 100px;height: auto;display:block;margin:0 auto;">';
+			//鼠标每次浮上图片时，要销毁之前的事件绑定
+			curr.popover("destroy");
+			
+			//重新配置弹出框内容
+			curr.popover({ content : contents });
+
+			//显示
+			curr.popover("show");
+		}
+	});
+	
+	//鼠标离开隐藏预览上传的图片
+	$(".upload-btn-common>img,#preview_adv").live("mouseout",function(){
+		var curr = $(this);
+		//隐藏
+		if($(".popover.top").is(":visible") && curr.attr("data-src")) curr.popover("hide");
+	});
+
+	//公共单选框点击切换样式
+	$(".radio-common").live("click",function(){
+		var radio = $(this).children("input");
+		var name = radio.attr("name");
+		if(radio.is(":checked")){
+			$(".radio-common>input[type='radio'][name='" + name + "']").parent().removeClass("selected");
+			$(this).addClass("selected");
+		}else{
+			$(this).removeClass("selected");
+		}
+	});
 
 	//顶部导航管理显示隐藏
 	$(".ns-navigation-title>span").click(function(){
@@ -335,6 +428,7 @@ function addFavorite() {
 		alert('您的浏览器不支持,请按 Ctrl+D 手动收藏!');
 	}
 }
+
 </script>
 {block name="script"}{/block}
 </body>

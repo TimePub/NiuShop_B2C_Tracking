@@ -19,7 +19,7 @@
 <table class="table-class">
 	<thead>
 		<tr align="center">
-<!-- 			<th><input type="checkbox" onclick="CheckAll(this)"></th> -->
+			<th width="3%"><input type="checkbox" onclick="CheckAll(this)"></th>
 			<th>会员昵称</th>
 			<th>类别</th>
 			<th>数量</th>
@@ -45,11 +45,12 @@ function LoadingInfo(page_index) {
 			"page_index" : page_index, "page_size" : $("#showNumber").val(), "member_id":member_id, "search_text":search_text, "start_date":start_date, "end_date":end_date
 		},
 		success : function(data) {
-			var html = '';
 			if (data["data"].length > 0) {
+				$(".table-class tbody").empty();
 				for (var i = 0; i < data["data"].length; i++) {
+					var html = '';
 					html += '<tr align="center">';
-// 					html += '<td><input name="sub" type="checkbox" value="'+ data["data"][i]["id"] +'" ></td>';
+					html += '<td><input name="sub" type="checkbox" value="'+ data["data"][i]["id"] +'" ></td>';
 					html += '<td>'+data["data"][i]["nick_name"]+'</td>'
 					html += '<td align="center">'+data["data"][i]["type_name"]+'</td>';
 					html += '<td align="center">'+ data["data"][i]["number"] +'</td>';
@@ -58,11 +59,12 @@ function LoadingInfo(page_index) {
 					
 					html += '</tr>';
 					html += '<input type="hidden" id="member_id" value="{$member_id}"/>'
+					$(".table-class tbody").append(html);
 				}
 			} else {
-				html += '<tr align="center"><td colspan="9">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr align="center"><td colspan="9">暂无符合条件的数据记录</td></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}

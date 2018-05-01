@@ -27,6 +27,7 @@ use data\model\DistrictModel as District;
 use data\model\NsOffpayAreaModel;
 use data\model\ProvinceModel as Province;
 use data\service\BaseService as BaseService;
+use think\Cache;
 
 class Address extends BaseService implements IAddress
 {
@@ -37,9 +38,17 @@ class Address extends BaseService implements IAddress
      */
     public function getAreaList()
     {
-        $area = new Area();
-        $list = $area->getQuery('', 'area_id,area_name', '');
-        return $list;
+        $cache = Cache::tag("address")->get("getAreaList");
+        if(empty($cache))
+        {
+            $area = new Area();
+            $list = $area->getQuery('', 'area_id,area_name', '');
+            Cache::tag("address")->set("getAreaList", $list);
+            return $list;
+        }else{
+           return $cache; 
+        }
+        
         // TODO Auto-generated method stub
     }
 
@@ -49,17 +58,25 @@ class Address extends BaseService implements IAddress
      */
     public function getProvinceList($area_id = 0)
     {
-        $province = new Province();
-        if ($area_id == - 1) {
-            $list = array();
-        } elseif ($area_id == 0) {
-            $list = $province->getQuery('', 'province_id,area_id,province_name,sort', 'sort asc');
-        } else {
-            $list = $province->getQuery([
-                'area_id' => $area_id
-            ], 'province_id,area_id,province_name,sort', 'sort asc');
+        $cache = Cache::tag("address")->get("getProvinceList".$area_id);
+        if(empty($cache))
+        {
+            $province = new Province();
+            if ($area_id == - 1) {
+                $list = array();
+            } elseif ($area_id == 0) {
+                $list = $province->getQuery('', 'province_id,area_id,province_name,sort', 'sort asc');
+            } else {
+                $list = $province->getQuery([
+                    'area_id' => $area_id
+                ], 'province_id,area_id,province_name,sort', 'sort asc');
+            }
+            Cache::tag("address")->set("getProvinceList".$area_id, $list);
+            return $list;
+        }else{
+            return $cache;
         }
-        return $list;
+      
     }
 
     /**
@@ -70,49 +87,64 @@ class Address extends BaseService implements IAddress
      */
     public function getProvinceListById($province_id)
     {
-        $province = new Province();
+        $cache = Cache::tag("address")->get("getProvinceListById".$province_id);
+        if(empty($cache))
+        {
+            $province = new Province();
+            
+            $condition = array(
+                'province_id' => array(
+                    'in',
+                    $province_id
+                )
+            );
+            $list = $province->getQuery($condition, 'province_id,area_id,province_name,sort', 'sort asc');
+            Cache::tag("address")->set("getProvinceListById".$province_id, $list);
+            return $list;
+        }else{
+            return $cache;
+        }
         
-        $condition = array(
-            'province_id' => array(
-                'in',
-                $province_id
-            )
-        );
-        $list = $province->getQuery($condition, 'province_id,area_id,province_name,sort', 'sort asc');
-        return $list;
     }
 
     public function getAddressListById($province_id_arr, $city_id_arr)
     {
-        $province = new Province();
-        $city = new City();
-        
-        $province_condition = array(
-            'province_id' => array(
-                'in',
-                $province_id_arr
-            )
-        );
-        $city_condition = array(
-            'city_id' => array(
-                'in',
-                $city_id_arr
-            )
-        );
-        $province_list = $province->getQuery($province_condition, 'province_id,province_name', 'sort asc');
-        $city_list = $city->getQuery($city_condition, 'province_id,city_name,city_id', 'sort asc');
-        foreach ($province_list as $k => $v) {
-            $list['province_list'][$k] = $v;
-            $children_list = array();
-            foreach ($city_list as $city_k => $city_v) {
-                if ($v['province_id'] == $city_v['province_id']) {
-                    $children_list[$city_k] = $city_v;
+        $cache = Cache::tag("address")->get("getAddressListById".$province_id_arr.'_'.$city_id_arr);
+        if(empty($cache))
+        {
+            $province = new Province();
+            $city = new City();
+            
+            $province_condition = array(
+                'province_id' => array(
+                    'in',
+                    $province_id_arr
+                )
+            );
+            $city_condition = array(
+                'city_id' => array(
+                    'in',
+                    $city_id_arr
+                )
+            );
+            $province_list = $province->getQuery($province_condition, 'province_id,province_name', 'sort asc');
+            $city_list = $city->getQuery($city_condition, 'province_id,city_name,city_id', 'sort asc');
+            foreach ($province_list as $k => $v) {
+                $list['province_list'][$k] = $v;
+                $children_list = array();
+                foreach ($city_list as $city_k => $city_v) {
+                    if ($v['province_id'] == $city_v['province_id']) {
+                        $children_list[$city_k] = $city_v;
+                    }
                 }
+                $list['province_list'][$k]['city_list'] = $children_list;
             }
-            $list['province_list'][$k]['city_list'] = $children_list;
+            Cache::tag("address")->set("getAddressListById".$province_id_arr.'_'.$city_id_arr, $list);
+            return $list;
+        }else{
+            return $cache;
         }
         
-        return $list;
     }
 
     /*
@@ -121,15 +153,22 @@ class Address extends BaseService implements IAddress
      */
     public function getCityList($province_id = 0)
     {
-        $city = new City();
-        if ($province_id == 0) {
-            $list = $city->getQuery('', 'city_id,province_id,city_name,zipcode,sort', 'sort asc');
-        } else {
-            $list = $city->getQuery([
-                'province_id' => $province_id
-            ], 'city_id,province_id,city_name,zipcode,sort', 'sort asc');
+        $cache = Cache::tag("address")->get("getCityList".$province_id);
+        if(empty($cache))
+        {
+            $city = new City();
+            if ($province_id == 0) {
+                $list = $city->getQuery('', 'city_id,province_id,city_name,zipcode,sort', 'sort asc');
+            } else {
+                $list = $city->getQuery([
+                    'province_id' => $province_id
+                ], 'city_id,province_id,city_name,zipcode,sort', 'sort asc');
+            }
+            Cache::tag("address")->set("getCityList".$province_id, $list);
+            return $list;
+        }else{
+            return $cache;
         }
-        return $list;
         // TODO Auto-generated method stub
     }
 
@@ -139,15 +178,22 @@ class Address extends BaseService implements IAddress
      */
     public function getDistrictList($city_id = 0)
     {
-        $district = new District();
-        if ($city_id == 0) {
-            $list = $district->getQuery('', 'district_id,city_id,district_name,sort', 'sort asc');
-        } else {
-            $list = $district->getQuery([
-                'city_id' => $city_id
-            ], 'district_id,city_id,district_name,sort', 'sort asc');
+        $cache = Cache::tag("address")->get("getDistrictList".$city_id);
+        if(empty($cache))
+        {
+            $district = new District();
+            if ($city_id == 0) {
+                $list = $district->getQuery('', 'district_id,city_id,district_name,sort', 'sort asc');
+            } else {
+                $list = $district->getQuery([
+                    'city_id' => $city_id
+                ], 'district_id,city_id,district_name,sort', 'sort asc');
+            }
+            Cache::tag("address")->set("getDistrictList".$city_id, $list);
+            return $list;
+        }else{
+            return $cache;
         }
-        return $list;
         // TODO Auto-generated method stub
     }
 
@@ -157,25 +203,33 @@ class Address extends BaseService implements IAddress
      */
     public function getProvinceName($province_id)
     {
-        $province = new Province();
-        
-        if (! empty($province_id)) {
-            $condition = array(
-                'province_id' => array(
-                    'in',
-                    $province_id
-                )
-            );
-            $list = $province->getQuery($condition, 'province_name', '');
-        }
-        $name = '';
-        if (! empty($list)) {
-            foreach ($list as $k => $v) {
-                $name .= $v['province_name'] . ',';
+        $cache = Cache::tag("address")->get("getProvinceName".$province_id);
+        if(empty($cache))
+        {
+            $province = new Province();
+            
+            if (! empty($province_id)) {
+                $condition = array(
+                    'province_id' => array(
+                        'in',
+                        $province_id
+                    )
+                );
+                $list = $province->getQuery($condition, 'province_name', '');
             }
-            $name = substr($name, 0, strlen($name) - 1);
+            $name = '';
+            if (! empty($list)) {
+                foreach ($list as $k => $v) {
+                    $name .= $v['province_name'] . ',';
+                }
+                $name = substr($name, 0, strlen($name) - 1);
+            }
+            Cache::tag("address")->set("getProvinceName".$province_id, $name);
+            return $name;
+        }else{
+            return $cache;
         }
-        return $name;
+        
         
         // TODO Auto-generated method stub
     }
@@ -186,25 +240,33 @@ class Address extends BaseService implements IAddress
      */
     public function getCityName($city_id)
     {
-        $city = new City();
-        if (! empty($city_id)) {
-            $condition = array(
-                'city_id' => array(
-                    'in',
-                    $city_id
-                )
-            );
-            $list = $city->getQuery($condition, 'city_name', '');
+        $cache = Cache::tag("address")->get("getCityName".$city_id);
+        if(empty($cache))
+        {
+            $city = new City();
+            if (! empty($city_id)) {
+                $condition = array(
+                    'city_id' => array(
+                        'in',
+                        $city_id
+                    )
+                );
+                $list = $city->getQuery($condition, 'city_name', '');
+            }
+            
+            $name = '';
+            if (! empty($list)) {
+                foreach ($list as $k => $v) {
+                    $name .= $v['city_name'] . ',';
+                }
+                $name = substr($name, 0, strlen($name) - 1);
+            }
+            Cache::tag("address")->set("getCityName".$city_id, $name);
+            return $name;
+        }else{
+            return $cache;
         }
         
-        $name = '';
-        if (! empty($list)) {
-            foreach ($list as $k => $v) {
-                $name .= $v['city_name'] . ',';
-            }
-            $name = substr($name, 0, strlen($name) - 1);
-        }
-        return $name;
         // TODO Auto-generated method stub
     }
 
@@ -214,26 +276,34 @@ class Address extends BaseService implements IAddress
      */
     public function getDistrictName($district_id)
     {
-        $dictrict = new DistrictModel();
-        
-        if (! empty($district_id)) {
-            $condition = array(
-                'district_id' => array(
-                    'in',
-                    $district_id
-                )
-            );
-            $list = $dictrict->getQuery($condition, 'district_name', '');
-        }
-        
-        $name = '';
-        if (! empty($list)) {
-            foreach ($list as $k => $v) {
-                $name .= $v['district_name'] . ',';
+        $cache = Cache::tag("address")->get("getDistrictName".$district_id);
+        if(empty($cache))
+        {
+            $dictrict = new DistrictModel();
+            
+            if (! empty($district_id)) {
+                $condition = array(
+                    'district_id' => array(
+                        'in',
+                        $district_id
+                    )
+                );
+                $list = $dictrict->getQuery($condition, 'district_name', '');
             }
-            $name = substr($name, 0, strlen($name) - 1);
+            
+            $name = '';
+            if (! empty($list)) {
+                foreach ($list as $k => $v) {
+                    $name .= $v['district_name'] . ',';
+                }
+                $name = substr($name, 0, strlen($name) - 1);
+            }
+            Cache::tag("address")->set("getDistrictName".$district_id, $name);
+            return $name;
+        }else{
+            return $cache;
         }
-        return $name;
+       
     }
 
     /**
@@ -244,79 +314,87 @@ class Address extends BaseService implements IAddress
      */
     public function getAreaTree($existing_address_list)
     {
-        $list = array();
-        $area_list = $this->getAreaList();
-        $list = $area_list;
-        // 地区
-        foreach ($area_list as $k_area => $v_area) {
+        $cache = Cache::tag("address")->get("getAreaTree".$existing_address_list);
+        if(empty($cache))
+        {
+            $list = array();
+            $area_list = $this->getAreaList();
+            $list = $area_list;
+            // 地区
+            foreach ($area_list as $k_area => $v_area) {
             
-            // 省
-            $province_list = $this->getProvinceList($v_area['area_id'] == 0 ? - 1 : $v_area['area_id']);
-            foreach ($province_list as $key_province => $v_province) {
-                
-                $province_list[$key_province]['is_disabled'] = 0; // 是否可用，0：可用，1：不可用
-                
-                if (! empty($existing_address_list) && count($existing_address_list['province_id_array'])) {
-                    foreach ($existing_address_list['province_id_array'] as $province_id) {
-                        if ($province_id == $v_province['province_id']) {
-                            $province_list[$key_province]['is_disabled'] = 1;
-                        }
-                    }
-                }
-                
-                $city_disabled_count = 0; // 市禁用的数量
-                $city_list = $this->getCityList($v_province['province_id']); // 市地区的禁用条件是，区县地区都禁用了，市才禁用
-                foreach ($city_list as $k_city => $city) {
-                    
-                    $city_list[$k_city]['is_disabled'] = 0; // 是否可用，0：可用，1：不可用
-                    $city_list[$k_city]['district_list_count'] = 0;
-                    
-                    if (! empty($existing_address_list) && count($existing_address_list['city_id_array'])) {
-                        
-                        foreach ($existing_address_list['city_id_array'] as $city_id) {
-                            if ($city_id == $city['city_id']) {
-                                $city_list[$k_city]['is_disabled'] = 1;
-                                $city_disabled_count ++;
+                // 省
+                $province_list = $this->getProvinceList($v_area['area_id'] == 0 ? - 1 : $v_area['area_id']);
+                foreach ($province_list as $key_province => $v_province) {
+            
+                    $province_list[$key_province]['is_disabled'] = 0; // 是否可用，0：可用，1：不可用
+            
+                    if (! empty($existing_address_list) && count($existing_address_list['province_id_array'])) {
+                        foreach ($existing_address_list['province_id_array'] as $province_id) {
+                            if ($province_id == $v_province['province_id']) {
+                                $province_list[$key_province]['is_disabled'] = 1;
                             }
                         }
                     }
-                    
-                    // 这个判断主要考虑到“满意包邮”功能不使用区县加的。可以提高速度
-                    if (! empty($existing_address_list['district_id_array'])) {
-                        $district_disabled_count = 0; // 区县禁用的数量
-                        $district_list = $this->getDistrictList($city['city_id']);
-                        foreach ($district_list as $k_district => $district) {
-                            $district_list[$k_district]['is_disabled'] = 0; // 是否可用，0：可用，1：不可用
-                            if (! empty($existing_address_list) && count($existing_address_list['district_id_array'])) {
-                                foreach ($existing_address_list['district_id_array'] as $district_id) {
-                                    if ($district_id == $district['district_id']) {
-                                        $district_list[$k_district]['is_disabled'] = 1;
-                                        $district_disabled_count ++;
-                                    }
+            
+                    $city_disabled_count = 0; // 市禁用的数量
+                    $city_list = $this->getCityList($v_province['province_id']); // 市地区的禁用条件是，区县地区都禁用了，市才禁用
+                    foreach ($city_list as $k_city => $city) {
+            
+                        $city_list[$k_city]['is_disabled'] = 0; // 是否可用，0：可用，1：不可用
+                        $city_list[$k_city]['district_list_count'] = 0;
+            
+                        if (! empty($existing_address_list) && count($existing_address_list['city_id_array'])) {
+            
+                            foreach ($existing_address_list['city_id_array'] as $city_id) {
+                                if ($city_id == $city['city_id']) {
+                                    $city_list[$k_city]['is_disabled'] = 1;
+                                    $city_disabled_count ++;
                                 }
                             }
                         }
-                        
-                        // 判断区县有没有全部禁用，有的话将父亲(省市)设置为不禁用
-                        if (! empty($existing_address_list['district_id_array']) && count($district_list) != $district_disabled_count && $city_list[$k_city]['is_disabled'] == 1) {
-                            $city_list[$k_city]['is_disabled'] = 0;
-                            $province_list[$key_province]['is_disabled'] = 0;
-                        }
-                        // $city_list[$k_city]['district_disabled_count'] = $district_disabled_count;
-                        $city_list[$k_city]['district_list'] = $district_list;
-                        $city_list[$k_city]['district_list_count'] = count($district_list);
-                    }
-                }
-                
-                $province_list[$key_province]['city_disabled_count'] = $city_disabled_count;
-                $province_list[$key_province]['city_list'] = $city_list;
-                $province_list[$key_province]["city_count"] = count($city_list);
-            }
             
-            $list[$k_area]['province_list'] = $province_list;
-            $list[$k_area]['province_list_count'] = count($province_list);
+                        // 这个判断主要考虑到“满意包邮”功能不使用区县加的。可以提高速度
+                        if (! empty($existing_address_list['district_id_array'])) {
+                            $district_disabled_count = 0; // 区县禁用的数量
+                            $district_list = $this->getDistrictList($city['city_id']);
+                            foreach ($district_list as $k_district => $district) {
+                                $district_list[$k_district]['is_disabled'] = 0; // 是否可用，0：可用，1：不可用
+                                if (! empty($existing_address_list) && count($existing_address_list['district_id_array'])) {
+                                    foreach ($existing_address_list['district_id_array'] as $district_id) {
+                                        if ($district_id == $district['district_id']) {
+                                            $district_list[$k_district]['is_disabled'] = 1;
+                                            $district_disabled_count ++;
+                                        }
+                                    }
+                                }
+                            }
+            
+                            // 判断区县有没有全部禁用，有的话将父亲(省市)设置为不禁用
+                            if (! empty($existing_address_list['district_id_array']) && count($district_list) != $district_disabled_count && $city_list[$k_city]['is_disabled'] == 1) {
+                                $city_list[$k_city]['is_disabled'] = 0;
+                                $province_list[$key_province]['is_disabled'] = 0;
+                            }
+                            // $city_list[$k_city]['district_disabled_count'] = $district_disabled_count;
+                            $city_list[$k_city]['district_list'] = $district_list;
+                            $city_list[$k_city]['district_list_count'] = count($district_list);
+                        }
+                    }
+            
+                    $province_list[$key_province]['city_disabled_count'] = $city_disabled_count;
+                    $province_list[$key_province]['city_list'] = $city_list;
+                    $province_list[$key_province]["city_count"] = count($city_list);
+                }
+            
+                $list[$k_area]['province_list'] = $province_list;
+                $list[$k_area]['province_list_count'] = count($province_list);
+            }
+            Cache::tag("address")->set("getAreaTree".$existing_address_list, $list);
+            return $list;
+        }else{
+            return $cache;
         }
-        return $list;
+        
     }
     /**
      * 运费模板的数据整理
@@ -324,62 +402,70 @@ class Address extends BaseService implements IAddress
      */
     public function getAreaTree_ext($existing_address_list)
     {
-        $list = array();
-        $select_district_id_array=[];
-        if(!empty($existing_address_list)){
-            $select_district_id_array=$existing_address_list["district_id_array"];
-        }
-        //查询所有的地区信息
-        $area_list = $this->getAreaList();
-        //查询所有的省信息
-        $province_list = $this->getProvinceList();
-        //查询所有的市信息
-        $city_list = $this->getCityList();
-        //查询所有的区县的信息
-        $district_list = $this->getDistrictList();
-        
-        $district_id_deal_array=[];
-        //先整理所有区县的是否禁用的整理
-        foreach ($district_list as $k_district=>$v_district){
-            $is_set=false;
-            $is_disabled=0;
-            $district_id=$v_district["district_id"];
-            $district_id_deal_array[$district_id]=$k_district;
-            $is_set=in_array($district_id, $select_district_id_array);
-            if($is_set){
-                $is_disabled=1;
+        $cache = Cache::tag("address")->get("getAreaTree_ext".$existing_address_list);
+        if(empty($cache))
+        {
+            $list = array();
+            $select_district_id_array=[];
+            if(!empty($existing_address_list)){
+                $select_district_id_array=$existing_address_list["district_id_array"];
             }
-            $district_list[$k_district]["is_disabled"]=$is_disabled;
+            //查询所有的地区信息
+            $area_list = $this->getAreaList();
+            //查询所有的省信息
+            $province_list = $this->getProvinceList();
+            //查询所有的市信息
+            $city_list = $this->getCityList();
+            //查询所有的区县的信息
+            $district_list = $this->getDistrictList();
+            
+            $district_id_deal_array=[];
+            //先整理所有区县的是否禁用的整理
+            foreach ($district_list as $k_district=>$v_district){
+                $is_set=false;
+                $is_disabled=0;
+                $district_id=$v_district["district_id"];
+                $district_id_deal_array[$district_id]=$k_district;
+                $is_set=in_array($district_id, $select_district_id_array);
+                if($is_set){
+                    $is_disabled=1;
+                }
+                $district_list[$k_district]["is_disabled"]=$is_disabled;
+            }
+            //整理市的集合
+            foreach ($city_list as $k_city=>$v_city){
+                $deal_array=$this->dealCityDistrictData($v_city["city_id"], $district_list, $district_id_deal_array, $existing_address_list["city_id_array"]);
+                $child_district_array=$deal_array["child_district"];
+                $is_disabled=$deal_array["is_disabled"];
+                $city_list[$k_city]["district_list"]=$child_district_array;
+                $city_list[$k_city]["is_disabled"]=$is_disabled;
+                $city_list[$k_city]["district_list_count"]=count($child_district_array);
+            }
+            //整理省的集合
+            foreach ($province_list as $k_province=>$v_province){
+                $deal_array=$this->dealProvinceCityData($v_province["province_id"], $city_list, $existing_address_list["province_id_array"]);
+                $child_city_array=$deal_array["child_city"];
+                $is_disabled=$deal_array["is_disabled"];
+                $province_list[$k_province]["city_list"]=$child_city_array;
+                $province_list[$k_province]["is_disabled"]=$is_disabled;
+                $province_list[$k_province]["city_count"]=count($child_city_array);
+                $province_list[$k_province]["city_disabled_count"]=0;
+            }
+            //整理地区的集合
+            foreach ($area_list as $k_area => $v_area){
+                $deal_array=$this->dealAreaProvinceData($v_area["area_id"], $province_list);
+                $child_province_array=$deal_array["child_province"];
+                $is_disabled=$deal_array["is_disabled"];
+                $area_list[$k_area]["province_list"]=$child_province_array;
+                $area_list[$k_area]["is_disabled"]=$is_disabled;
+                $area_list[$k_area]["province_list_count"]=count($child_province_array);
+            }
+            Cache::tag("address")->set("getAreaTree_ext".$existing_address_list, $area_list);
+            return $area_list;
+        }else{
+            return $cache;
         }
-        //整理市的集合
-        foreach ($city_list as $k_city=>$v_city){
-            $deal_array=$this->dealCityDistrictData($v_city["city_id"], $district_list, $district_id_deal_array, $existing_address_list["city_id_array"]);
-            $child_district_array=$deal_array["child_district"];
-            $is_disabled=$deal_array["is_disabled"];
-            $city_list[$k_city]["district_list"]=$child_district_array;
-            $city_list[$k_city]["is_disabled"]=$is_disabled;
-            $city_list[$k_city]["district_list_count"]=count($child_district_array);
-        }
-        //整理省的集合
-        foreach ($province_list as $k_province=>$v_province){
-            $deal_array=$this->dealProvinceCityData($v_province["province_id"], $city_list, $existing_address_list["province_id_array"]);
-            $child_city_array=$deal_array["child_city"];
-            $is_disabled=$deal_array["is_disabled"];
-            $province_list[$k_province]["city_list"]=$child_city_array;
-            $province_list[$k_province]["is_disabled"]=$is_disabled;
-            $province_list[$k_province]["city_count"]=count($child_city_array);
-            $province_list[$k_province]["city_disabled_count"]=0;
-        }
-        //整理地区的集合
-        foreach ($area_list as $k_area => $v_area){
-            $deal_array=$this->dealAreaProvinceData($v_area["area_id"], $province_list);
-            $child_province_array=$deal_array["child_province"];
-            $is_disabled=$deal_array["is_disabled"];
-            $area_list[$k_area]["province_list"]=$child_province_array;
-            $area_list[$k_area]["is_disabled"]=$is_disabled;
-            $area_list[$k_area]["province_list_count"]=count($child_province_array);
-        }
-        return $area_list;
+        
         
     }
     /**
@@ -469,14 +555,50 @@ class Address extends BaseService implements IAddress
      */
     public function getAddress($province_id, $city_id, $district_id)
     {
-        $province = new Province();
-        $city = new City();
-        $district = new District();
-        $province_name = $province->getInfo('province_id = ' . $province_id, 'province_name');
-        $city_name = $city->getInfo('city_id = ' . $city_id, 'city_name');
-        $district_name = $district->getInfo('district_id = ' . $district_id, 'district_name');
-        $address = $province_name['province_name'] . '&nbsp;' . $city_name['city_name'] . '&nbsp;' . $district_name['district_name'];
-        return $address;
+        $cache = Cache::tag("address")->get("getAddress".$province_id.'_'.$city_id.'_'.$district_id);
+        if(empty($cache))
+        {
+            $province = new Province();
+            $city = new City();
+            $district = new District();
+            $province_name = $province->getInfo('province_id = ' . $province_id, 'province_name');
+            $city_name = $city->getInfo('city_id = ' . $city_id, 'city_name');
+            $district_name = $district->getInfo('district_id = ' . $district_id, 'district_name');
+            $address = $province_name['province_name'] . '&nbsp;' . $city_name['city_name'] . '&nbsp;' . $district_name['district_name'];
+            Cache::tag("address")->set("getAddress".$province_id.'_'.$city_id.'_'.$district_id, $address);
+            return $address;
+        }else{
+            return $cache;
+        }
+    }
+    
+    /**
+     * 获取地址 返回数组形式
+     */
+    public function getAddressArray($province_id, $city_id, $district_id){
+        $cache = Cache::tag("address")->get("getAddressArray".$province_id.'_'.$city_id.'_'.$district_id);
+        if(empty($cache))
+        {
+            $addressArr = array(
+                "province_name" => "",
+                "city_name" => "",
+                "district_name" => ""
+            );
+            $province = new Province();
+            $city = new City();
+            $district = new District();
+            $province_name = $province->getInfo('province_id = ' . $province_id, 'province_name');
+            $city_name = $city->getInfo('city_id = ' . $city_id, 'city_name');
+            $district_name = $district->getInfo('district_id = ' . $district_id, 'district_name');
+            if(!empty($province_name['province_name'])) $addressArr["province_name"] = $province_name['province_name'];
+            if(!empty($city_name['city_name'])) $addressArr["city_name"] = $city_name['city_name'];
+            if(!empty($district_name['district_name'])) $addressArr["district_name"] = $district_name['district_name'];
+            
+            Cache::tag("address")->set("getAddressArray".$province_id.'_'.$city_id.'_'.$district_id, $addressArr);
+            return $addressArr;
+        }else{
+            return $cache;
+        }
     }
 
     /**
@@ -513,6 +635,7 @@ class Address extends BaseService implements IAddress
 
     public function addOrupdateCity($city_id, $province_id, $city_name, $zipcode = '', $sort = '')
     {
+        Cache::tag("address")->clear();
         $city = new City();
         $data = array(
             "province_id" => $province_id,
@@ -533,6 +656,7 @@ class Address extends BaseService implements IAddress
 
     public function addOrupdateDistrict($district_id, $city_id, $district_name, $sort = '')
     {
+        Cache::tag("address")->clear();
         $district = new District();
         $data = array(
             "city_id" => $city_id,
@@ -551,6 +675,7 @@ class Address extends BaseService implements IAddress
 
     public function updateProvince($province_id, $province_name, $sort, $area_id)
     {
+        Cache::tag("address")->clear();
         $province = new Province();
         $data = array(
             "province_name" => $province_name,
@@ -569,6 +694,7 @@ class Address extends BaseService implements IAddress
      */
     public function addProvince($province_name, $sort, $area_id)
     {
+        Cache::tag("address")->clear();
         $province = new Province();
         $data = array(
             "province_name" => $province_name,
@@ -586,6 +712,7 @@ class Address extends BaseService implements IAddress
      */
     public function deleteProvince($province_id)
     {
+        Cache::tag("address")->clear();
         $province = new Province();
         $city = new City();
         $province->startTrans();
@@ -612,6 +739,7 @@ class Address extends BaseService implements IAddress
      */
     public function deleteCity($city_id)
     {
+        Cache::tag("address")->clear();
         $city = new City();
         $district = new District();
         $city->startTrans();
@@ -635,6 +763,7 @@ class Address extends BaseService implements IAddress
      */
     public function deleteDistrict($district_id)
     {
+        Cache::tag("address")->clear();
         $district = new District();
         return $district->destroy($district_id);
     }
@@ -645,6 +774,7 @@ class Address extends BaseService implements IAddress
      */
     public function updateRegionNameAndRegionSort($upType, $regionType, $regionName, $regionSort, $regionId)
     {
+        Cache::tag("address")->clear();
         if ($regionType == 1) {
             $province = new Province();
             if ($upType == 1) {
@@ -740,6 +870,7 @@ class Address extends BaseService implements IAddress
      */
     public function addOrUpdateDistributionArea($shop_id, $province_id, $city_id, $district_id)
     {
+        Cache::tag("address")->clear();
         $offpayArea = new NsOffpayAreaModel();
         $res = $this->getDistributionAreaInfo($shop_id);
         if ($res == '') {

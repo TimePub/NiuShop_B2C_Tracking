@@ -5,9 +5,7 @@ td{padding:10px;border: 1px Black; width:46px;}
 table{background-color:#eeeeee;border:0;width:100%;}
 .integral_title{display:block;font-size:18px;text-align:center;padding:20px;}
 .member-main .tabmenu .tab li {border-bottom: 2px #ff6600 solid;} 
-.modal-content{
-	width: 52%;left: 302px;
-}
+.modal-content{width: 52%;left: 302px;}
 </style>
 {/block}
 {block name="main"}
@@ -48,15 +46,19 @@ table{background-color:#eeeeee;border:0;width:100%;}
 					<tr align="center">
 						<td>{$balance.withdraw_no}</td>
 						<td>{$balance.bank_name}</td>
+						{if condition="$balance.account_number"}
 						<td>{$balance.account_number}</td>
+						{else/}
+						<td>-</td>
+						{/if}
 						<td>{$balance.mobile}</td>
 						<td>{$balance.cash}</td>
 						<td>{$balance.ask_for_date | getTimeStampTurnTime}</td>
 						<td>{$balance.status}
 						{notempty name="$balance['memo']"}
-			              	<a href="javascript:;" class="Remarks" data-tip-content="{$balance.memo}">备注</a>
-		              	{/notempty}
-		              	</td>
+							<a href="javascript:;" class="Remarks" data-tip-content="{$balance.memo}">备注</a>
+						{/notempty}
+						</td>
 					</tr>
 					{/foreach}
 				</tbody>
@@ -74,11 +76,11 @@ table{background-color:#eeeeee;border:0;width:100%;}
 <script src="__TEMP__/{$style}/public/js/layer.js"></script>
 <script>
 $(".Remarks").mouseover(function(){
-    var content = $(this).attr("data-tip-content");
-    layer.tips(content, $(this),{
-        tips: [1, '#0689e1'],
-        time : 2000
-    });
+	var content = $(this).attr("data-tip-content");
+	layer.tips(content, $(this),{
+		tips: [1, '#0689e1'],
+		time : 2000
+	});
 })
 </script>
 {/block}

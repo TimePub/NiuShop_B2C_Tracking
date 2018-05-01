@@ -110,7 +110,7 @@ class DefaultProfile implements IClientProfile
 	{
 		$regionIds = array($regionId);
 		$productsDomains = array(new ProductDomain($product, $domain));
-		$endpoint = new Endpoint($endpointName, $regionIds, $productDomains);
+		$endpoint = new Endpoint($endpointName, $regionIds, $productsDomains);
 		array_push(self::$endpoints, $endpoint);
 	}
 	

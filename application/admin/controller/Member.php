@@ -20,6 +20,10 @@ use data\service\User;
 use data\service\Weixin;
 use data\service\Supplier;
 use data\service\Config as WebConfig;
+use data\service\Goods as GoodsService;
+use data\service\Member\MemberAccount;
+
+
 /**
  * 会员管理
  *
@@ -47,6 +51,10 @@ class Member extends BaseController
             $page_size = request()->post('page_size', PAGESIZE);
             $search_text = request()->post('search_text', '');
             $level_id = request()->post('levelid', - 1);
+
+            $start_date = request()->post('start_date') == "" ? 0 : getTimeTurnTimeStamp(request()->post('start_date'));
+            $end_date = request()->post('end_date') == "" ? 0 : getTimeTurnTimeStamp(request()->post('end_date'));
+            $status = request()->post('status', -1);
             $condition = [
                 'su.is_member' => 1,
                 'su.nick_name|su.user_tel|su.user_email' => array(
@@ -56,8 +64,37 @@ class Member extends BaseController
                 
                 'su.is_system' => 0
             ];
+            if ($start_date != 0 && $end_date != 0) {
+                $condition["su.reg_time"] = [
+                    [
+                        ">",
+                        $start_date
+                    ],
+                    [
+                        "<",
+                        $end_date
+                    ]
+                ];
+            } elseif ($start_date != 0 && $end_date == 0) {
+                $condition["su.reg_time"] = [
+                    [
+                        ">",
+                        $start_date
+                    ]
+                ];
+            } elseif ($start_date == 0 && $end_date != 0) {
+                $condition["su.reg_time"] = [
+                    [
+                        "<",
+                        $end_date
+                    ]
+                ];
+            }
             if ($level_id != - 1) {
                 $condition['nml.level_id'] = $level_id;
+            }
+            if ($status != - 1) {
+                $condition['su.user_status'] = $status;
             }
             $list = $member->getMemberList($page_index, $page_size, $condition, 'su.reg_time desc');
             
@@ -240,7 +277,154 @@ class Member extends BaseController
         $this->assign('member_id', $member_id);
         return view($this->style . 'Member/pointDetailList');
     }
-
+    
+    /**
+     * 会员余额明细
+     */
+    public function balanceDetail()
+    {
+        $member = new MemberService();
+        if (request()->isAjax()) {
+    
+            $page_index = request()->post("page_index", 1);
+            $page_size = request()->post('page_size', PAGESIZE);
+            $member_id = request()->post('member_id');
+            $search_text = request()->post('search_text');
+            $start_date = request()->post('start_date') == "" ? 0 : request()->post('start_date');
+            $end_date = request()->post('end_date') == "" ? 0 : request()->post('end_date');
+            $from_type = request()->post('from_type');
+    
+            $condition['nmar.uid'] = $member_id;
+            $condition['nmar.account_type'] = 2;
+    
+            if($start_date != 0 && $end_date != 0){
+                $condition["nmar.create_time"] = [
+                    [
+                        ">",
+                        getTimeTurnTimeStamp($start_date)
+                    ],
+                    [
+                        "<",
+                        getTimeTurnTimeStamp($end_date)
+                    ]
+                ];
+            }elseif($start_date != 0 && $end_date == 0){
+                $condition["nmar.create_time"] = [
+                    [
+                        ">",
+                        getTimeTurnTimeStamp($start_date)
+                    ]
+                ];
+            }elseif($start_date == 0 && $end_date != 0){
+                $condition["nmar.create_time"] = [
+                    [
+                        "<",
+                        getTimeTurnTimeStamp($end_date)
+                    ]
+                ];
+            }
+            $condition['nmar.text'] = [
+                'like',
+                '%' . $search_text . '%'
+            ];
+    
+            if($from_type != ""){
+                $condition["nmar.from_type"] = $from_type;
+            }
+    
+            $list = $member->getAccountList($page_index, $page_size, $condition, $order = '', $field = '*');
+            return $list;
+        }
+        $member_id = request()->get('member_id','');
+        $this->assign('member_id', $member_id);
+    
+        // 查询会员详情
+        $member_detail = $member->getMemberDetail('', $member_id);
+        $this->assign('member_detail', $member_detail);
+    
+        //会员账户的账户类型列表和来源方式列表
+        $from_type_list = MemberAccount::getMemberAccountRecordsNameList();
+        $this->assign('from_type_list',$from_type_list);
+    
+        return view($this->style . 'Member/balanceDetailList');
+    }
+    
+    /**
+     * 会员账户明细
+     */
+    public function accountdetail()
+    {
+        $member = new MemberService();
+        if (request()->isAjax()) {
+    
+            $page_index = request()->post("page_index", 1);
+            $page_size = request()->post('page_size', PAGESIZE);
+            $member_id = request()->post('member_id');
+            $search_text = request()->post('search_text');
+            $start_date = request()->post('start_date') == "" ? 0 : request()->post('start_date');
+            $end_date = request()->post('end_date') == "" ? 0 : request()->post('end_date');
+            $account_type = request()->post('account_type');
+            $from_type = request()->post('from_type');
+    
+            $condition['nmar.uid'] = $member_id;
+    
+            if($start_date != 0 && $end_date != 0){
+                $condition["nmar.create_time"] = [
+                    [
+                        ">",
+                        getTimeTurnTimeStamp($start_date)
+                    ],
+                    [
+                        "<",
+                        getTimeTurnTimeStamp($end_date)
+                    ]
+                ];
+            }elseif($start_date != 0 && $end_date == 0){
+                $condition["nmar.create_time"] = [
+                    [
+                        ">",
+                        getTimeTurnTimeStamp($start_date)
+                    ]
+                ];
+            }elseif($start_date == 0 && $end_date != 0){
+                $condition["nmar.create_time"] = [
+                    [
+                        "<",
+                        getTimeTurnTimeStamp($end_date)
+                    ]
+                ];
+            }
+            $condition['nmar.text'] = [
+                'like',
+                '%' . $search_text . '%'
+            ];
+    
+            if($account_type != ""){
+                $condition["nmar.account_type"] = $account_type;
+            }
+    
+            if($from_type != ""){
+                $condition["nmar.from_type"] = $from_type;
+            }
+    
+            $list = $member->getAccountList($page_index, $page_size, $condition, $order = '', $field = '*');
+            return $list;
+        }
+        $member_id = request()->get('member_id','');
+        $this->assign('member_id', $member_id);
+    
+        // 查询会员详情
+        $member_detail = $member->getMemberDetail('', $member_id);
+        $this->assign('member_detail', $member_detail);
+    
+        //会员账户的账户类型列表和来源方式列表
+        $account_type_list = MemberAccount::getMemberAccountRecordsTypeNameList();
+        $from_type_list = MemberAccount::getMemberAccountRecordsNameList();
+        $this->assign('account_type_list',$account_type_list);
+        $this->assign('from_type_list',$from_type_list);
+    
+        return view($this->style . 'Member/accountDetailList');
+    }
     /**
      * 会员积分管理
      */
@@ -291,63 +475,15 @@ class Member extends BaseController
             $member = new MemberService();
             $list = $member->getPointList($page_index, $page_size, $condition, $order = '', $field = '*');
             return $list;
-        }
-        return view($this->style . 'Member/pointList');
+        }else{
+            //会员账户的账户类型列表和来源方式列表
+            $from_type_list = MemberAccount::getMemberAccountRecordsNameList();
+            $this->assign('from_type_list',$from_type_list);
+            return view($this->style . 'Member/pointList');
+        }   
     }
 
-    /**
-     * 会员余额明细
-     */
-    public function accountdetail()
-    {
-        if (request()->isAjax()) {
-            $member = new MemberService();
-            $page_index = request()->post("page_index", 1);
-            $page_size = request()->post('page_size', PAGESIZE);
-            $member_id = request()->post('member_id');
-            $search_text = request()->post('search_text');
-            $start_date = request()->post('start_date') == "" ? 0 : request()->post('start_date');
-            $end_date = request()->post('end_date') == "" ? 0 : request()->post('end_date');
-            $condition['nmar.uid'] = $member_id;
-            $condition['nmar.account_type'] = 2;
-            if($start_date != 0 && $end_date != 0){
-                $condition["nmar.create_time"] = [
-                    [
-                        ">",
-                        getTimeTurnTimeStamp($start_date)
-                    ],
-                    [
-                        "<",
-                        getTimeTurnTimeStamp($end_date)
-                    ]
-                ];
-            }elseif($start_date != 0 && $end_date == 0){
-                $condition["nmar.create_time"] = [
-                    [
-                        ">",
-                        getTimeTurnTimeStamp($start_date)
-                    ]
-                ];
-            }elseif($start_date == 0 && $end_date != 0){
-                $condition["nmar.create_time"] = [
-                    [
-                        "<",
-                        getTimeTurnTimeStamp($end_date)
-                    ]
-                ];
-            }
-            $condition['su.nick_name'] = [
-                'like',
-                '%' . $search_text . '%'
-            ];
-            
-            $list = $member->getAccountList($page_index, $page_size, $condition, $order = '', $field = '*');
-            return $list;
-        }
-        $member_id = request()->get('member_id','');
-        $this->assign('member_id', $member_id);
-        return view($this->style . 'Member/accountDetailList');
-    }
+    
 
     /**
      * 会员余额管理
@@ -399,9 +535,12 @@ class Member extends BaseController
             }
             $list = $member->getAccountList($page_index, $page_size, $condition, $order = '', $field = '*');
             return $list;
-        }
-        
-        return view($this->style . 'Member/accountList');
+        }else{
+            //会员账户的账户类型列表和来源方式列表
+            $from_type_list = MemberAccount::getMemberAccountRecordsNameList();
+            $this->assign('from_type_list',$from_type_list);
+            return view($this->style . 'Member/accountList');
+        } 
     }
 
     /**
@@ -570,18 +709,17 @@ class Member extends BaseController
             $member = new MemberService();
             $pageindex = request()->post('pageIndex','');
             $user_phone = request()->post('user_phone','');
-            if ($user_phone != "") {
-                $condition["mobile"] = array(
-                    "like",
-                    "" . $user_phone . "%"
-                );
-            }
+            $user_name = request()->post('user_name','');
+            $start_date = request()->post('start_date') == "" ? 0 : getTimeTurnTimeStamp(request()->post('start_date'));
+            $end_date = request()->post('end_date') == "" ? 0 : getTimeTurnTimeStamp(request()->post('end_date'));
+            
+            //通过会员昵称获取会员id 组装id条件
             $uid_string = "";
             $where = array();
-            if ($user_phone != "") {
+            if ($user_name != "") {
                 $where["nick_name"] = array(
                     "like",
-                    "%" . $user_phone . "%"
+                    "%" . $user_name . "%"
                 );
             }
             if (! empty($where)) {
@@ -595,10 +733,59 @@ class Member extends BaseController
                     $condition["uid"] = 0;
                 }
             }
+            
+            //手机号搜索条件
+            if ($user_phone != "") {
+                $condition["mobile"] = array(
+                    "like",
+                    "" . $user_phone . "%"
+                );
+            }
+            
+            //时间搜索条件
+            if ($start_date != 0 && $end_date != 0) {
+                $condition["ask_for_date"] = [
+                    [
+                        ">",
+                        $start_date
+                    ],
+                    [
+                        "<",
+                        $end_date
+                    ]
+                ];
+            } elseif ($start_date != 0 && $end_date == 0) {
+                $condition["ask_for_date"] = [
+                    [
+                        ">",
+                        $start_date
+                    ]
+                ];
+            } elseif ($start_date == 0 && $end_date != 0) {
+                $condition["ask_for_date"] = [
+                    [
+                        "<",
+                        $end_date
+                    ]
+                ];
+            }
+            
             $condition["shop_id"] = $this->instance_id;
             $list = $member->getMemberBalanceWithdraw($pageindex, PAGESIZE, $condition, 'ask_for_date desc');
             return $list;
-        } else {            
+        } else {
+            $config_service = new WebConfig();
+            $data1 = $config_service->getTransferAccountsSetting($this->instance_id, 'wechat');
+            $data2 = $config_service->getTransferAccountsSetting($this->instance_id, 'alipay');
+            if (! empty($data1)) {
+                $wechat = json_decode($data1['value'], true);
+            }
+            if (! empty($data2)) {
+                $alipay = json_decode($data2['value'], true);
+            }
+            $this->assign("wechat", $wechat);
+            $this->assign("alipay", $alipay);
+            
             $child_menu_list = array(
                 array(
                     'url' => "Member/userCommissionWithdrawList",
@@ -625,9 +812,16 @@ class Member extends BaseController
     {
         $id = request()->post('id','');
         $status = request()->post('status','');
+        $transfer_type = request()->post('transfer_type','');
+        $transfer_name = request()->post('transfer_name','');
+        $transfer_money = request()->post('transfer_money','');
+        $transfer_remark = request()->post('transfer_remark','');
+        $transfer_no = request()->post('transfer_no','');
+        $transfer_account_no = request()->post('transfer_account_no','');
+        $type_id = request()->post('type_id','');
         $member = new MemberService();
-        $retval = $member->MemberBalanceWithdrawAudit($this->instance_id, $id, $status);
-        return AjaxReturn($retval);
+        $retval = $member->MemberBalanceWithdrawAudit($this->instance_id, $id, $status, $transfer_type, $transfer_name, $transfer_money, $transfer_remark, $transfer_no, $transfer_account_no, $type_id);
+        return $retval;
     }
 
     /**
@@ -892,4 +1086,39 @@ class Member extends BaseController
         }
         return view($this->style. "Member/userOperationLogList");
     }
+    
+    /**
+     * 查看足迹
+     */    
+    public function newPath()
+    {
+        $uid = request()->get('member_id','');
+
+        if (request()->post()) {
+            $good = new GoodsService();
+            $page_index = request()->post("page_index", 1);
+            $page_size = request()->post('page_size', PAGESIZE);
+            
+            $data = request()->post();
+            $condition = [];
+            $condition["uid"] = $data['uid'];
+            if (! empty($data['category_id']))
+                $condition['category_id'] = $data['category_id'];
+            
+            $order = 'create_time desc';
+
+            $list = $good->getGoodsBrowseList($page_index, $page_size, $condition, $order, $field = "*");
+            foreach ($list['data'] as $key => $val) {
+                $month = ltrim(date('m', $val['create_time']), '0');
+                $day = ltrim(date('d', $val['create_time']), '0');
+                $val['month'] = $month;
+                $val['day'] = $day;
+            }
+            return $list;
+        }
+        $this->assign('uid', $uid);
+        return view($this->style . "Member/newPath");
+    }
+    
+    
 }

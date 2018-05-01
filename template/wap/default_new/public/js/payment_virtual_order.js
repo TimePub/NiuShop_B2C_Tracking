@@ -33,7 +33,7 @@ $(function() {
 			$(".mask-layer").fadeIn(300);
 			$(".mask-layer-control[data-flag='"+flag+"']").slideDown(300);
 			if(getCurrMaskLayer() != null){
-				getCurrMaskLayer().find("li").click(function(){
+				getCurrMaskLayer().find("li").one("click",function(){
 					var curr_li = $(this);
 					getCurrMaskLayer().find("li").removeClass("active");
 					curr_li.addClass("active");
@@ -83,6 +83,19 @@ $(function() {
 			calculateTotalAmount();
 		}
 	});
+
+	/**
+	 * 用户输入积分，进行验证并矫正，同时更新总优惠、应付金额等数据
+	 * 规则：
+	 * 1、可用积分，不可超过订单最大可使用积分
+	 * 2、不可超过用户最大可用积分
+	 * 3、只能输入正整数
+	 */
+	$("#use_point").keyup(function(){
+		if(validationMemberPoint()){
+			calculateTotalAmount();
+		}
+	});
 	
 	/**
 	 * 关闭弹出框（包括点击遮罩层、确定按钮、右上角X按钮）
@@ -97,7 +110,7 @@ $(function() {
 	 * 验证手机号码
 	 * 2017年11月23日 10:27:38 王永杰
 	 */
-	$("#user_telephone").keyup(function(){
+	$("#user_telephone").blur(function(){
 		validationTelephone();
 	});
 
@@ -125,6 +138,17 @@ function init(){
 	var init_total_money = parseFloat($("#hidden_count_money").val());//商品金额
 	$("#realprice").attr("data-old-total-money",init_total_money.toFixed(2));//原合计（不包含优惠）
 	$("#realprice").attr("data-old-keep-total-money",init_total_money.toFixed(2));//保持原合计
+
+	var curr_options = $(".item-options[data-flag='use-coupon']");//当前点击的项
+	var curr_li = $(".mask-layer-control[data-flag='use-coupon'] li.active");
+	var msg = curr_li.children("div:last").text();//内容
+	updateUseCoupon(curr_li,curr_options);
+	msg = "不使用优惠券";
+	var money = 0;
+	if(curr_li.attr("data-id") != undefined && curr_li.attr("data-money") != undefined){
+		msg = "￥"+parseFloat(curr_li.attr("data-money")).toFixed(2);
+	}
+	curr_options.children("span").text(msg);
 
 	calculateTotalAmount();
 }
@@ -219,7 +243,7 @@ function getInvoiceContent(){
 function validationMemberBalance(){
 	if($("#account_balance").val() != undefined){
 		if(isNaN($("#account_balance").val())){
-			showBox("余额输入错误");
+			showBox("余额输入错误","warning");
 			$("#account_balance").val("");
 			calculateTotalAmount();
 			return true;
@@ -228,14 +252,14 @@ function validationMemberBalance(){
 		var account_balance = $("#account_balance").val() == "" ? 0 : parseFloat($("#account_balance").val());//可用余额
 		var max_total = parseFloat($("#realprice").attr("data-old-total-money")).toFixed(2);//总计
 		if(!r.test(account_balance)){
-			showBox("余额输入错误");
+			showBox("余额输入错误","warning");
 			$("#account_balance").val(account_balance.toString().substr(0,account_balance.toString().length-1));
 			return true;
 		}
 		
 		var user_money = $("#account_balance").attr("data-max");// 最大可用余额
 		if (account_balance > user_money) {
-			showBox("不能超过可用余额！");
+			showBox("不能超过可用余额！","warning");
 			$("#account_balance").val($("#account_balance").attr("data-max"));
 			calculateTotalAmount();
 			return true;
@@ -253,15 +277,37 @@ function validationMemberBalance(){
 	return false;
 }
 
+/**
+ *验证输入的积分
+ */
+function validationMemberPoint(){
+	//最大可用积分
+	var member_account_point = parseInt($(".account_point").text());
+	var max_use_point = $("#max_use_point").val(); 
+	//使用积分
+	var use_point = parseInt($("#use_point").val());
+
+	if(use_point < 0 || use_point == NaN) $("#use_point").val(0);
+
+	if(use_point > max_use_point){
+		if(member_account_point > max_use_point){
+			$("#use_point").val(max_use_point); 
+		}else{
+			$("#use_point").val(member_account_point); 
+		}
+	}
+	return true;
+}
+
 function validationTelephone(){
 	var reg = /^1[34578]\d{9}$/;
 	if($("#user_telephone").val().length == 0){
-		showBox("请填写手机号");
+		showBox("请填写手机号","warning");
 		$("#user_telephone").focus();
 		return true;
 	}
 	if(!reg.test($("#user_telephone").val())){
-		showBox("手机号格式错误");
+		showBox("手机号格式错误","warning");
 		$("#user_telephone").focus();
 		return true;
 	}
@@ -283,13 +329,13 @@ function validationOrder(){
 	if(parseInt($(".item-options[data-flag='invoice']").attr("data-select")) == 1){
 		//如果选择需要发票，则发票抬头必填、发票内容必选
 		if($("#invoice-title").val().length == 0){
-			showBox("请输入个人或公司发票抬头");
+			showBox("请输入个人或公司发票抬头","warning");
 			$("#invoice-title").focus();
 			return false;
 		}
 		
 		if($(".item-options[data-flag='invoice-content']").children("span").text().length == 0){
-			showBox("请选择发票内容");
+			showBox("请选择发票内容","warning");
 			return false;
 		}
 	}
@@ -344,6 +390,25 @@ function calculateTotalAmount(){
 			money -= account_balance;
 		}
 	}
+
+	//是否开启积分抵现
+	var integral_balance_is_open = $("#integral_balance_is_open").val();
+	if(integral_balance_is_open == 1){
+		var use_point = $("#use_point").val();
+		var point_convert_rate = $("#point_convert_rate").val();
+		var point_money = use_point * point_convert_rate;
+		$("#point_money").text(parseFloat(point_money).toFixed(2));
+		money = parseFloat((money - point_money).toFixed(2));
+		if(money < 0){
+			var overflow_money = 0 - money;
+				use_point = use_point - parseInt((overflow_money / point_convert_rate));
+				point_money = use_point * point_convert_rate;
+				$("#point_money").text(parseFloat(point_money).toFixed(2));
+				$("#use_point").val(use_point);	
+			money = 0;
+		}
+		old_total_money -= point_money;
+	}
 	
 	//应付金额
 	if(money<0){
@@ -389,7 +454,8 @@ function submitOrder() {
 		if($("#account_balance").val() != undefined){
 			account_balance = $("#account_balance").val() == "" ? 0 : $("#account_balance").val();
 		}
-		var integral = $("#hidden_count_point_exchange").val() == "" ? 0 : $("#hidden_count_point_exchange").val();//积分
+		// var integral = $("#hidden_count_point_exchange").val() == "" ? 0 : $("#hidden_count_point_exchange").val();//积分
+		var integral = $("#use_point").val();
 		var pay_type = 0;//支付方式 0：在线支付，4：货到付款
 		var buyer_invoice = getInvoiceContent();//发票
 		$.ajax({
@@ -414,7 +480,7 @@ function submitOrder() {
 						location.href = __URL(APPMAIN + '/pay/getpayvalue?out_trade_no=' + res.code);
 					}
 				} else {
-					showBox(res.message);
+					showBox(res.message,"error");
 					flag = false;
 				}
 			}

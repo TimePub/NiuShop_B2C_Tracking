@@ -234,7 +234,7 @@ function time() {
 			<div class="reg-con">
 				{include file='shop/blue/loginTopNav'/}
 				<div class="reg-wrap">
-					<div class="reg-wrap-con" style="background: url(__TEMP__/{$style}/public/images/register_bg_image.png) no-repeat right 70px;">
+					<div class="reg-wrap-con" style="background: {$register_adv['background']} url({:__IMG($register_adv['adv_image'])}) no-repeat right 60px;background-size: 420px 220px">
 						<form id="EmailRegisterModel" class="form-horizontal" name="EmailRegisterModel" action="{:__URL('SHOP_MAIN/login/email')}" method="post">
 							<input type="hidden" name="_csrf" value="Q2dXM2NPVXYbFDZYMT0TNycsLkklHQ1HAQsGAA5/OjAaHxtUG3s7Dg==" />
 							<!-- 邮箱 -->

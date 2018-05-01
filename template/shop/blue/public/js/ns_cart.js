@@ -247,8 +247,8 @@
 				if(validationInfo(id,options.tag)){//shopping_cart.js中的函数
 
 					//立即购买
-					if(options.tag == "buy_now"){
-
+					if(options.tag == "buy_now" || options.tag == "group_buy" || options.tag == "js_point_exchange" || options.tag == "presell_buy"  ){
+						
 						if($("#hidden_uid").val() == undefined || $("#hidden_uid").val() == ""){
 							$("#verify_img").attr("src",$("#hidden_captcha_src").val()+"&send='"+Math.random());
 							$('#mask-layer-login').attr("data-tag",options.tag).show();
@@ -267,12 +267,11 @@
 							if(sku_id == null || sku_id == "") sku_id = $("#goods_sku0").attr("skuid");
 							
 							getGoodsPurchaseRestrictionForCurrentUser($("#hidden_goodsid").val(),$("#num").val(),function(purchase){
-								
 								if(purchase.code>0){
 									$.ajax({
 										url : __URL(SHOPMAIN + "/member/ordercreatesession"),
 										type : "post",
-										data : { "tag" : "buy_now", "sku_id" : sku_id , "num" : $("#num").val(), "goods_type" : $("#hidden_goods_type").val() },
+										data : { "tag" : options.tag, "sku_id" : sku_id , "num" : $("#num").val(), "goods_type" : $("#hidden_goods_type").val(),'is_open_presell':$('#hidden_is_open_presell').val()  },
 										success : function(res){
 											if(res > 0){
 												location.href= __URL(SHOPMAIN + "/member/paymentorder");

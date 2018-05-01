@@ -43,10 +43,30 @@ var OpenCategoryDialog = function(ADMIN_MAIN, category_id, goodsid, flag, box_id
 	art.dialog.open(__URL(ADMIN_MAIN + '/goods/dialogselectcategory?category_id='+category_id+'&goodsid='+goodsid+"&flag="+flag+"&box_id="+box_id+"&category_extend_id="+category_extend_id), {
 		lock : true,
 		title : dialog_title,
-		width : 974,
-		height : 550,
+		width : 846,
+		height : 516,
 		drag : false,
 		background : "#000000"
+	}, true);
+	
+	$('iframe').prop('scrolling','no');
+	
+}
+
+//弹出商品分类选择界面
+//type 决定商品是单选还是多选 1：多选 2：单选
+//data 商品显示列表的控制数据
+var OpenGoodsSelectDialog = function(ADMIN_MAIN,type,obj) {
+	var dialog_title = "商品列表";
+	var data = JSON.stringify(obj);
+	
+	art.dialog.open(__URL(ADMIN_MAIN + '/promotion/goodsSelectList?type=' + type + '&data=' + data), {
+		lock : true,
+		title : dialog_title,
+		width : '50%',
+		height : 530,
+		drag : true,
+		background : "grba(0,0,0,0)"
 	}, true);
 	
 }

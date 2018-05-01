@@ -226,7 +226,7 @@
 		</dd>
 	</dl>
 
-	<dl style="display: none;">
+	<dl style="display:none">
 		<dt>阶梯优惠：</dt>
 		<dd>
 			<p class="hint" style="color: #FF8400;">设置商品阶梯优惠，当购买数量达到所设数量时，商品单价 = 商品销售价 - 优惠价格</p>
@@ -340,22 +340,31 @@
 		</dd>
 	</dl>
 	
-	<!-- <h3 class="js-goods-img">展示视频</h3> -->
-	<dl style="display: none;">
+	<h3 class="js-goods-img">展示视频</h3>
+	<dl>
 		<dt><i class="required">*</i>展示视频：</dt>
 		<dd>
 			<div class="controls" style="background-color:#FFF;border: 1px solid #E9E9E9;">
 				<div class="ncsc-goods-default-pic">
 					<div class="goodspic-uplaod" style="padding: 15px;">
+						<div style="min-height:120px;">
+							<div class="video-thumb" >
+								<video id="my-video" controls {if condition="empty($goods_info['goods_video_address'])"}poster="__STATIC__/blue/img/vs.png"  {else/} poster=""  {/if} preload="auto"  style="max-width:100%;max-height:100%;width:auto;height:auto;">
+			  						<source src="{:__IMG($goods_info.goods_video_address)}" type="video/mp4" id="video-source">
+								</video>
+								<span class="del-video {if condition='empty($goods_info.goods_video_address)'} hide {/if}" onclick="del_video()"></span>
+							</div>
+						</div>
 						<div class="clear"></div>
-							<div class="handle">
+						
+						<div class="handle">
 							<div class="ncsc-upload-btn" id="video-file-box">
 								<a href="javascript:void(0);">
 									<span>
-										<input class="input-file" name="file_upload" id="videoupload" type="file" onchange="" >
+										<input class="input-file" name="file_upload" id="videoupload" type="file" onchange="fileUpload_video(this);" >
 									</span>
 									<p>上传视频</p>
-									<input type="hidden" id="video_url" value="">
+									<input type="hidden" id="video_url" value="{$goods_info.goods_video_address}">
 								</a>
 							</div>
 							

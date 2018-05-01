@@ -11,16 +11,15 @@
 		<dt><span class="required">*</span>伪静态路由规则：</dt>
 		<dd>
 			<input type="text" class="input-common" id="rule" onchange="url_route_if_exists('rule',this);" onKeyUp="value=value.replace(/[^\d|\w]/g,'')" value="{$routeDetail.rule}" maxlength="100" onpaste="return false"/>
-			<p class="hint">
-				<span style="color: orange;">伪静态路由规则不可使用"addons,base,cms,components"这些关键字</span>
-			</p>
+			<p class="hint"></p>
 			<p class="error rule_error">该路由规则已经存在</p>
 		</dd>
 	</dl>
 	<dl>
 		<dt><span class="required">*</span>路由地址：</dt>
 		<dd>
-			<input type="text" class="input-common" id="route" onchange="url_route_if_exists('route',this);" value="{$routeDetail.route}" placeholder="路由地址由 模块名/控制器名/方法名 组成" maxlength="150" />
+			<input type="text" class="input-common" id="route" onchange="url_route_if_exists('route',this);" value="{$routeDetail.route}"  maxlength="150" />
+			<p class="hint">路由地址由<i class="important-note">模块名/控制器名/方法名</i>组成，如shop/goods/goodslist</p>
 			<p class="error route_error">该路由地址已经存在</p>
 		</dd>
 	</dl>
@@ -43,12 +42,15 @@
 	<dl>
 		<dt>描述：</dt>
 		<dd>
-			<textarea name="" id="remark" cols="30" rows="10">{$routeDetail.remark}</textarea>
+			<textarea name="" id="remark" class="textarea-common">{$routeDetail.remark}</textarea>
 		</dd>
 	</dl>	
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="save();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="save();">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
 	</dl>
 	<input type="hidden" id="routeid" value="{$routeDetail.routeid}">
 </div>
@@ -57,7 +59,7 @@
 var keyword = new Array("addons","base","cms","components","helpcenter","login","member","notice","order","topic","basecontroller");
 $(function(){
 	keywordstr = keyword.join(",");
-	$(".hint").html('<span style="color: orange;">伪静态路由规则不可使用"' + keywordstr +'"这些关键字</span>');
+	$("#rule").next().html('伪静态路由规则不可使用<i class="important-note">"' + keywordstr +'"</i>这些关键字');
 })
 var rule_if_exists = false; //伪静态路由规则是否存在
 var route_if_exists = false; //路由地址是否存在
@@ -120,9 +122,10 @@ function save(){
 				success : function(data){
 					is_sub = false;
 					if(data["code"] > 0){
-						showMessage("success","修改成功","{:__URL('ADMIN_MAIN/config/customPseudoStaticRule')}");
+						showTip("添加成功","success");
+						location.href = "{:__URL('ADMIN_MAIN/config/customPseudoStaticRule')}";
 					}else{
-						showMessage("error","修改失败");
+						showTip("添加失败","error");
 					}
 				}
 			})

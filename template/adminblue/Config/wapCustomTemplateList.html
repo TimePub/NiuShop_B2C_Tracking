@@ -5,23 +5,30 @@
 <style>
 .table-class tr th, .table-class tr td{padding:10px;}
 .tiphelp-info{margin:0;padding:8px;}
+.set-style h4{margin-left:0px;}
+.set-style dl dt{width:10%;}
+.ns-main{margin-top:0px;}
 </style>
 {/block}
 {block name="warm_prompt"}{/block}
 {block name="right_tab_tip"}{/block}
 {block name="main"}
-<div class="mb10" style="margin-bottom:0;">
-	<div class="tiphelp-info" style="overflow: hidden;">
-		<span>是否开启自定义模板</span>
-		<input type="checkbox" class="checkbox js-status" {if condition="$is_enable == 1"}checked="checked"{/if} />
-	</div>
+<div class="set-style">
+	<h4>开启设置</h4>
+	<dl>
+		<dt >是否开启自定义模板：</dt>
+		<dd>
+			<input type="checkbox" class="checkbox js-status" {if condition="$is_enable == 1"}checked="checked"{/if} />
+		</dd>
+	</dl>
+	<h4>模版设置</h4>
 </div>
 <table class="mytable">
 	<tbody>
 		<tr>
 			<td style="text-align: left;">
-				<button class="btn-common-delete btn-small" onclick="batchDelete()" style="margin:0 5px 0 0 !important;">批量删除</button>
-				<button class="btn-common btn-small" onclick="location.href='{:__URL('ADMIN_MAIN/config/wapCustomTemplateEdit')}';" style="margin:0 !important;">添加模块页面</button>
+				<button class="btn-common-delete" onclick="batchDelete()" style="margin:0 5px 0 0 !important;">批量删除</button>
+				<button class="btn-common" onclick="location.href='{:__URL('ADMIN_MAIN/config/wapCustomTemplateEdit')}';" style="margin:0 !important;">添加模板页面</button>
 			</td>
 			<td>
 				模板名称：<input id="template_name" class="input-medium input-common" type="text" placeholder="要搜索的模板名称">
@@ -32,17 +39,17 @@
 </table>
 <table class="table-class">
 	<colgroup>
-		<col width="5%">
-		<col width="40%">
-		<col width="20%">
-		<col width="35%">
+		<col width="2%">
+		<col width="68%">
+		<col width="15%">
+		<col width="15%">
 	</colgroup>
 	<thead>
 		<tr>
-			<th><input type="checkbox" onclick="CheckAll(this)"></th>
+			<th><i class="checkbox-common"><input type="checkbox" onclick="CheckAll(this)"></i></th>
 			<th align="left">模板名称</th>
 			<th>创建时间</th>
-			<th align="right">操作</th>
+			<th align="center">操作</th>
 		</tr>
 	</thead>
 	<tbody id="list"></tbody>
@@ -67,15 +74,16 @@ function LoadingInfo(page_index) {
 		},
 		url : "{:__URL('ADMIN_MAIN/config/wapCustomTemplateList')}",
 		success : function(data){
-			var html = "";
 			if(data['data'].length>0){
+				$("#list").empty();
 				for(var i=0;i<data['data'].length;i++){
+					var html = "";
 					var curr = data['data'][i];
 					html += '<tr>';
-						html += '<td align="center"><input type="checkbox" name="sub" value="' + curr.id + '"></td>';
+						html += '<td align="center"><i class="checkbox-common"><input type="checkbox" name="sub" value="' + curr.id + '"></i></td>';
 						html += '<td align="left">' + curr.template_name + '</td>';
 						html += '<td align="center">' + timeStampTurnTime(curr.create_time) + '</td>';//curr.modify_time
-						html += '<td align="right">';
+						html += '<td align="center">';
 							html += '<a href=\'{:__URL("ADMIN_MAIN/config/wapCustomTemplateEdit?id=' + curr.id + '")}\'>编辑</a>';
 							
 							html += '<a href="javascript:deleteCustomTemplateById(' + curr.id + ');">删除</a>';
@@ -86,11 +94,12 @@ function LoadingInfo(page_index) {
 							}
 						html += '</td>';
 					html += '</tr>';
+					$("#list").append(html);
 				}
 			}else{
-				html += '<tr align="center"><td colspan="5" style="text-align: center;font-weight: normal;color: #999;">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr align="center"><td colspan="5" style="text-align: center;font-weight: normal;color: #999;">暂无符合条件的数据记录</td></tr>';
+				$("#list").html(html);
 			}
-			$("#list").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}
@@ -117,7 +126,7 @@ function deleteCustomTemplateById(id){
 				});
 				$(this).dialog('close');
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 			},
 		},
@@ -127,7 +136,10 @@ function deleteCustomTemplateById(id){
 
 //全选
 function CheckAll(event){
-	$("#list input[type = 'checkbox']").prop("checked",event.checked);
+	var checked = event.checked;
+	$("#list input[type = 'checkbox']").prop("checked",checked);
+	if(checked) $("#list input[type = 'checkbox']").parent().addClass("selected");
+	else $("#list input[type = 'checkbox']").parent().removeClass("selected");
 }
 
 /**
@@ -143,7 +155,7 @@ function batchDelete() {
 	if(custom_template_id_array.length ==0){
 		$( "#dialog" ).dialog({
 			buttons: {
-				"确定,#e57373": function() {
+				"确定,#0059d6,#fff": function() {
 					$(this).dialog('close');
 				}
 			},

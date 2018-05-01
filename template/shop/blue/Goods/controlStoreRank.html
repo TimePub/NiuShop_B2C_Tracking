@@ -19,7 +19,7 @@
 					<li class="goods-item first">
 						<div class="picture">
 							<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$goods['goods_id'])}" title="{$goods.goods_name}">
-								<img src="{:__IMG($goods['pic_cover_mid'])}" />
+								<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($goods['pic_cover_mid'])}" />
 							</a>
 						</div>
 						<div class="price">
@@ -35,7 +35,7 @@
 					<li class="goods-item first">
 						<div class="picture">
 							<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$goods['goods_id'])}" title="{$goods.goods_name}">
-								<img src="{:__IMG($goods['pic_cover_mid'])}" />
+								<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($goods['pic_cover_mid'])}" />
 							</a>
 						</div>
 						<div class="price">

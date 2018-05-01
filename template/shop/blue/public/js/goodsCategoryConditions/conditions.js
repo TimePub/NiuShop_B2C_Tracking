@@ -1,3 +1,18 @@
+$(function(){
+	$(".more-screen-condition a.more-option").on("click", function(){
+		var is_show = parseInt($(this).attr("is-show"));
+		if(is_show == 0){
+			$(".goodslist-screen-condition dl").eq(3).nextAll("dl").show();
+			$(this).attr("is-show", 1);
+			$(this).find("i").attr("class","fa fa-angle-double-up");
+		}else{
+			$(".goodslist-screen-condition dl").eq(3).nextAll("dl").hide();
+			$(this).attr("is-show", 0);
+			$(this).find("i").attr("class","fa fa-angle-double-down");
+		}
+	})
+})
+
 /**
  * 条件筛选查询 2017年2月22日 09:54:58
  */
@@ -20,7 +35,7 @@ function searchConditions() {
 			return;
 		}
 		var url = SHOPMAIN + "/goods/goodslist?" + url_parameter;
-		url += "&min_price=" + min_price + "&max_price=" + max_price;
+		url += "&min_p_jg=" + min_price + "&max_p_jg=" + max_price;
 		if($.trim(attr_item) != "" && $.trim(attr_item) != undefined ){
 			url += "&attr=" + attr_item;
 		}
@@ -35,12 +50,14 @@ var isMore = false;
 // 同一类，多选条件进行筛选，显示
 // ns_category.js会控制“确定”按钮的样式
 function showDuoXuan(obj) {
+	$(obj).css("height","auto");
 	$(obj).find(".duoxuan-btnbox").css("text-align", "center");
 	$(obj).find(".duoxuan-btnbox").show();
 	isMore = true;
 }
 // 同一类，多选条件进行筛选 隐藏
 function hiddenDuoXuan(obj) {
+	$(obj).css("height","57px"); //目前仅有品牌有多选
 	$(obj).find(".duoxuan-btnbox").hide();
 	$("#brand-abox").find("li").removeClass("brand-seled");
 	$(".select-button-sumbit").addClass("disabled");
@@ -295,4 +312,19 @@ function specArrayChangeString(array){
 		temp_array.push(v.join(":"));
 	});
 	spec_item = temp_array.join(";");
+}
+
+//点击显示更多
+function showMore(obj){
+	var is_show = parseInt($(obj).attr("is-show"));
+	var _height = parseInt($(obj).attr("data-height"));
+	if(is_show == 0){
+		$(obj).parents("dl").css("height","auto");
+		$(obj).find("i").css({"transform":"rotate(180deg)"});
+		$(obj).attr("is-show", 1);
+	}else{
+		$(obj).parents("dl").css("height",_height);
+		$(obj).find("i").css({"transform":"rotate(0deg)"});
+		$(obj).attr("is-show", 0);
+	}
 }

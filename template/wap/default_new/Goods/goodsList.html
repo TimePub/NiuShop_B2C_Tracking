@@ -1,4 +1,4 @@
-{extend name="wap/default_new/base" /} 
+{extend name="wap/default_new/base" /}
 {block name="resources"}
 <link rel="stylesheet" type="text/css" href="__TEMP__/{$style}/public/css/common.css">
 <link rel="stylesheet" type="text/css" href="__TEMP__/{$style}/public/css/components.css">
@@ -7,49 +7,17 @@
 <script src="__TEMP__/{$style}/public/js/new_goods_list.js" type="text/javascript"></script>
 <script src="__TEMP__/{$style}/public/js/jquery.cookie.js" type="text/javascript"></script>
 <style>
-.openList li dd {width: 90%;}
-.openList li dl dt {font-size: 14px;width: 90%;height: 20px;overflow: hidden;}
 .openList .goods-sales {font-size: 12px;}
 .openList li dd i {font-size: 14px;}
 .custom-search{width:90%;margin-left:20px;}
 .custom-search .custom-search-input{width:97%;}
 .custom-search-button{top:6px;}
-.controlSearch {
-    width: 85%;
-    padding: 0; 
-    background: none; 
-    margin: 8px 0 5px 9%;
-}
-.controlSearch .control-search-input{
-	height: 30px;
-	border-bottom-left-radius: 15px;
-    border-top-left-radius: 15px;
-    overflow: hidden;
-    border-bottom-right-radius: 15px;
-    border-top-right-radius: 15px;
-}
-.controlSearch .control-search-input .search-input {
-    width: 75%;
-    height: 20px;
-    line-height: 20px;
-    margin: 4px 0;
-    padding: 0 10px;
-    border: none;
-    color: #999;
-    float: left;
-    font-size: 13px;
-    background:#EFEFEF;
-}
-.controlSearch .control-search-input .search-button{
-	margin: 4px 0;
-}
-.filtrate-term{
-	max-width: 640px;
-}
-.filtrate-more{
-	max-width: 640px;
-	margin:auto;
-}
+.controlSearch {width: 85%;padding: 0;background: none;margin: 8px 0 5px 9%;}
+.controlSearch .control-search-input{height: 30px;border-bottom-left-radius: 15px;border-top-left-radius: 15px;overflow: hidden;border-bottom-right-radius: 15px;border-top-right-radius: 15px;}
+.controlSearch .control-search-input .search-input {width: 75%;height: 20px;line-height: 20px;margin: 4px 0;padding: 0 10px;border: none;color: #999;float: left;font-size: 13px;background:#EFEFEF;}
+.controlSearch .control-search-input .search-button{margin: 4px 0;}
+.filtrate-term{max-width: 640px;}
+.filtrate-more{max-width: 640px;margin:auto;}
 </style>
 {/block}
 {block name="goodsHead"}
@@ -79,7 +47,9 @@
 		</div>
 	</div>
 	<!-- 筛选条件 -->
-	{include file="wap/default_new/Goods/goodsCategoryConditions" /}
+	{if !empty($category_id)}
+		{include file="wap/default_new/Goods/goodsCategoryConditions" /}
+	{/if}
 	<!-- 选择分类start -->
 	<div class="data-category-select-layer">
 		<ul class="primary_classification" >
@@ -115,7 +85,7 @@
 <!-- 总页数 -->
 <input type="hidden" id="page_count">
 <!-- 当前页数 -->
-<input type="hidden" id="page">
+<input type="hidden" id="page" value="1">
 <input type="hidden" id='order' name="order"/>
 <input type="hidden" id='sort' name="sort"/>
 <input type="hidden" id='category_id' name='category_id' value="{$category_id}" />
@@ -159,26 +129,22 @@ function getgoodlist(page){
 			data : {
 				'category_id':'{$category_id}',
 				'brand_id':brand_id,
-				'order':order,
-				'sort':sort, 
+				'obyzd':order,
+				'st':sort, 
 				"page" : page,
-				"min_price" : min_price,
-				"max_price" : max_price,
+				"mipe" : min_price,
+				"mape" : max_price,
 				"attr" : attr,
 				"spec" : spec
 			},
-			beforeSend:function(){
-				showLoadMaskLayer();
-			},
 			success : function(data){
-				hiddenLoadMaskLayer();
 				$("#page_count").val(data['page_count']);//总页数
 				if(page == 1){
 					var list_html = "";
 				}else if(page > 1){
 					var list_html = $('.tablelist-append').html();
 				}
-				if(data['data'].length >0 ){
+				if(data['data'].length >0){
 					for(var i=0;i<data['data'].length;i++){
 						var item=data['data'][i];
 						if(display_mode == "big_img"){
@@ -191,32 +157,29 @@ function getgoodlist(page){
 							
 									list_html += '<div class="item-pic">';
 										list_html += '<a href="'+__URL('APP_MAIN/goods/goodsdetail?id='+item.goods_id)+'">';
-											list_html += '<img class="" src="'+__IMG(item.pic_cover_small)+'" alt="'+item.goods_name+'" style="display: block;max-width:100%;max-height:100%;">';
+											list_html += '<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="'+__IMG(item.pic_cover_small)+'" alt="'+item.goods_name+'" style="display: block;max-width:100%;max-height:100%;">';
 										list_html += '</a>';
 									list_html += '</div>';
 
 									list_html += '<dl>';
 										list_html += '<dt>';
-											list_html += '<a href="'+__URL('APP_MAIN/goods/goodsdetail?id='+item.goods_id)+'">'+item.goods_name+'</a>';
+											list_html += '<a href="'+__URL('APP_MAIN/goods/goodsdetail?id='+item.goods_id)+'">';
+											if(item.gorup_list.length > 0){
+												list_html += '<i class="goods_tab">'+item['gorup_list'][0]['group_name']+'</i>';
+											}
+											list_html += item.goods_name;
+											list_html += '</a>';
 										list_html += '</dt>';
 										list_html += '<dd>';
-											list_html += '<i>￥'+item.promotion_price+'</i>';
+											list_html += '<i>'+item.display_price+'</i>';
+											if(item['shipping_fee'] == 0){
+												list_html += '<i class="shipping_fee" style="margin-top:7px;">包邮</i>';
+											}
 										list_html += '</dd>';
 									list_html += '</dl>';
 									
 								list_html += '</div>';
 
-								list_html += '<div class="item-con-info">';
-									list_html += '<span class="goods-sales"> {:lang("goods_sales_volume")}：'+item.sales+'</span>';
-									list_html += '<div class="cart-box">';
-										if(item.goods_type == 1){
-											list_html += '<a class="add-cart increase" href="javascript:CartGoodsInfo('+item.goods_id+','+item.state+')"></a>';
-										}else{
-											list_html += '<a class="add-cart virtual-increase" href="'+__URL('APP_MAIN/goods/goodsdetail?id='+item.goods_id)+'"></a>';
-										}
-										list_html += '<a class="decrease hide" data-goods_id="575" style="right: 60px;"></a>';
-									list_html += '</div>';
-								list_html += '</div>';
 								
 							list_html += '</li>';
 						list_html += '</div>';
@@ -224,28 +187,35 @@ function getgoodlist(page){
 							list_html += '<div class="goods_info">';
 							list_html +='<div class="goods_img">';
 							list_html += '<a href="'+__URL('APP_MAIN/goods/goodsdetail?id='+item.goods_id)+'">';
-							list_html += '<img src="'+__IMG(item.pic_cover_small)+'" alt="" class="pic"  onerror="this.src=\'__TEMP__/{$style}/public/images/goods_img_empty.png\'">';
+							list_html += '<img src="{:__IMG($default_goods_img)}" class="lazy_load pic" data-original="'+__IMG(item.pic_cover_small)+'" alt="">';
 							list_html += '</a></div>';
 							list_html += '<div class="data_info">';
-							list_html += '<p class="goods_name" onclick="location.href=\''+__URL('APP_MAIN/goods/goodsdetail?id='+item.goods_id)+'\'">'+item['goods_name']+'</p>';
+							list_html += '<p class="goods_name" onclick="location.href=\''+__URL('APP_MAIN/goods/goodsdetail?id='+item.goods_id)+'\'">';
+							if(item.gorup_list.length > 0){
+								list_html += '<i class="goods_tab">'+item['gorup_list'][0]['group_name']+'</i>';
+							}
+							list_html += item['goods_name'];
+							list_html += '</p>';
 							list_html += '<div class="price_share">';
-							list_html += '<span class="price">￥'+item['promotion_price']+'</span>';
+							list_html += '<span class="price">'+item['display_price'];
+							if(item['shipping_fee'] == 0){
+								list_html += '<i class="shipping_fee">包邮</i>';
+							}
+							list_html += '</span>';
 							list_html += '</div>';
-							list_html += '<div class="data-goods-sales-info"><span class="data-sales">销售量：<i>'+item.sales+'</i></span><span class="add_cart" onclick="CartGoodsInfo('+item.goods_id+','+item.state+')"></span></div>';
+							list_html += '<div class="data-goods-sales-info"><span class="data-sales">销售量：<i>'+item.sales+'</i></span></div>';
 							list_html += '</div>';
 							list_html += '</div>';
 						}
 					}
-				}else{
-					list_html+= '<p style="color:#939393;text-align:center;margin-top:100px;"><img src="__TEMP__/{$style}/public/images/wap_nodata.png" style="margin-bottom:20px;height:60px;"><br>Sorry！没有找到您想要的商品……</p>';
+				}else if(data["data"].length == 0 && page == 1){
+					list_html+= '<p style="color:#939393;text-align:center;margin-top:100px;"><img src="__TEMP__/{$style}/public/images/wap_nodata.png" height="60" style="margin-bottom:20px;"><br>Sorry！{:lang("goods_no_goods_you_want")}…</p>';
 				}
 				is_load = true;
 				$('.tablelist-append').html(list_html);
+				img_lazyload();	
 				var	goods_img_height = parseInt($('.goods_img').height());
 				$(".data_info").height(goods_img_height);
-			},
-			error : function(data){
-				hiddenLoadMaskLayer();
 			}
 		});	
 	}
@@ -276,10 +246,8 @@ $(window).scroll(function(){
 </script>
 <script type="text/javascript">
 $("#head_back").click(function (){
-    var json ={
-            "center" : "2"
-        }
-    window.webkit.messageHandlers.center.postMessage(json);
-})
+	var json ={ "center" : "2" };
+	window.webkit.messageHandlers.center.postMessage(json);
+});
 </script>
 {/block}

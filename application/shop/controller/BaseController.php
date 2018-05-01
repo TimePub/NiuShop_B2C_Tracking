@@ -16,7 +16,6 @@
 namespace app\shop\controller;
 
 \think\Loader::addNamespace('data', 'data/');
-use data\service\AdminUser as User;
 use data\service\Config;
 use data\service\GoodsCategory;
 use data\service\Member as Member;
@@ -108,9 +107,15 @@ class BaseController extends Controller
             $this->assign("seoconfig", $seoconfig);
             
             $custom_service = $config->getcustomserviceConfig($this->instance_id);
-            if (empty($custom_service)) {
+         if (empty($custom_service)) {
                 $custom_service['id'] = '';
                 $custom_service['value']['service_addr'] = '';
+            }else if($custom_service['value']['checked_num'] == 1){
+                $custom_service['value']['service_addr'] =  $custom_service['value']['meiqia_service_addr'];
+            }else if($custom_service['value']['checked_num'] == 2){
+                $custom_service['value']['service_addr'] =  $custom_service['value']['kf_service_addr'];
+            }else if($custom_service['value']['checked_num'] == 3){
+                $custom_service['value']['service_addr'] =  'http://sighttp.qq.com/msgrd?v=1&uin='.$custom_service['value']['qq_service_addr'];
             }
             $this->assign("custom_service", $custom_service);
             // 是否开启验证码
@@ -134,7 +139,8 @@ class BaseController extends Controller
             // 导航
             $nav = new ShopService();
             $navigation_list = $nav->ShopNavigationList(1, 10, [
-                'type' => 1
+                'type' => 1,
+                'is_show'=> 1
             ], 'sort');
             $this->assign("navigation_list", $navigation_list["data"]);
             $this->getHotkeys(); // 热搜关键词
@@ -144,6 +150,10 @@ class BaseController extends Controller
             $this->assign('page_num', 5); // 分页显示的页码个数 注：误删不然所有分页都报错必须为奇数
             
             $this->assign('is_head_goods_nav', 0); // 商品分类是否显示样式
+            
+            $defaultImages = $config->getDefaultImages($this->instance_id);
+            $this->assign("default_goods_img", $defaultImages["value"]["default_goods_img"]);//默认商品图片
+            $this->assign("default_headimg", $defaultImages["value"]["default_headimg"]);//默认用户头像
         }
         // 获取当前使用的PC端模板
         $use_pc_template = $config->getUsePCTemplate($this->instance_id);
@@ -153,6 +163,7 @@ class BaseController extends Controller
         if (! checkTemplateIsExists("shop", $use_pc_template['value'])) {
             $this->error("模板配置有误，请联系商城管理员");
         }
+//         $use_pc_template['value'] = "blue"; //本地使用发布时删除
         $this->style = "shop/" . $use_pc_template['value'] . "/";
         $this->assign("style", "shop/" . $use_pc_template['value']);
         $this->getDropDownMenu();
@@ -209,6 +220,10 @@ class BaseController extends Controller
         
         $platform_help_Document = $platform->getPlatformHelpDocumentList(1, 0, 'is_visibility=1', 'sort');
         $this->assign('platform_help_document', $platform_help_Document['data']); // 帮助中心列表
+        //获取商家服务
+        $Config = new Config();
+        $merchant_service_list = $Config->getExistingMerchantService($this->instance_id);
+        $this->assign("merchant_service_list", $merchant_service_list);
     }
 
     /**

@@ -276,7 +276,7 @@ $(function(){
 	});
 	
 	
-	var flag = false;
+	var is_submit = false;
 	/**
 	 * 保存运费模板
 	 * edit_button为旧界面
@@ -285,20 +285,21 @@ $(function(){
 	 */
 	$(".edit_button,.btn-common").click(function(){
 		if(validation()){
-			if(flag){
+			if(is_submit){
 				return;
 			}
-			flag = true;
+			is_submit = true;
 			$.ajax({
 				url : __URL(ADMINMAIN + "/express/freighttemplateedit"),
 				type : "post",
 				data : { "data" : getData() },
 				success : function(res){
 					if (parseInt(res.code)) {
-						showMessage('success', res.message,__URL(ADMINMAIN+'/Express/freightTemplateList?co_id='+$("#hidden_co_id").val()));
+						showTip(res.message,'success');
+						location.href = __URL(ADMINMAIN+'/Express/freightTemplateList?co_id='+$("#hidden_co_id").val());
 					}else{
-						showMessage('error',  res.message);
-						flag = false;
+						showTip(res.message,'error');
+						is_submit = false;
 					}
 				}
 			});
@@ -389,7 +390,6 @@ function setDistrictIdArray(){
  * 2017年6月26日 19:01:40 王永杰
  */
 function validation(){
-
 	if (!$("#shipping_fee_name").val()) {
 		showTip("请输入模板名称","warning");
 		$("#shipping_fee_name").focus();
@@ -407,45 +407,35 @@ function validation(){
 	var reg = /^\d+(.{0,1})\d{0,2}$/;//默认规则：不能为负数，保留两位小数点
 	var reg_int = /^\d+$/;//整数
 	var reg_greater_int = /^[1-9]\d+$/;//用于续件，必须是大于0的整数 
-	var reg_greater_double = /^([1-9])[0-9]{0,}(.{0,1})[0-9]{0,2}$/;//用于续运费，不能为负数，并且保留两位小数点
+	//var reg_double = /^([1-9])[0-9]{0,}(.{0,1})[0-9]{0,2}$/;//用于续运费，不能为负数，并且保留两位小数点
+	var reg_double = /^[1-9][0-9]*(\.[0-9]{1,2})?$/;
 	var flag = true;//验证输入信息是否合法，默认true：合法，false：不合法
 	
 	$(".input-info-table input[type='text']").each(function(){
 		var rule = reg;
-		if($(this).val().length){
-			if(isNaN($(this).val())){
+		var msg = '请输入正确的数字';
+		var value = $(this).val();
+		if(value.length){
+			if(isNaN(value)){
 				flag = false;
 			}else{
-//				if($(this).attr("data-rule")){
-//					switch($(this).attr("data-rule")){
-//					case "int":
-//						//首件
-//						rule = reg_int;
-//						break;
-//						
-//					case "greater_int":
-//						//续件
-//						rule = reg_greater_int;
-//						break;
-//						
-//					case "greater_double":
-//						//续运费
-//						rule = reg_greater_double;
-//						break;
-//					default:
-//						rule = reg;
-//						break;
-//					}
-//				}else{
-//					rule = reg;
-//				}
-				rule = reg;
-				if(!rule.test($(this).val())){
-					flag = false;
+				var type = $(this).attr("data-rule");
+				var msg = $(this).attr("data-msg");
+				switch(type){
+					case 'int':
+						rule = reg_int;
+						break;
+					case 'double':
+						rule = reg_double;
+						break;
 				}
+				if(Number(value) != 0 && !rule.test(value)){
+					flag = false;
+					msg = $(this).attr('data-msg');
+				} 
 			}
 			if(!flag){
-				showTip($(this).attr("data-msg"),"warning");
+				showTip(msg,"warning");
 				$(this).select();
 				return false;
 			}

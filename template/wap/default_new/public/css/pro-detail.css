@@ -380,7 +380,7 @@ body, .detail_info_wrap .detail_item, .sku_wrap, .layer_detail_full .layer_detai
 }
 
 .buy_area .fn_wrap {
-	padding: 12px 10px 13px 10px
+	padding: 12px 10px 0 10px
 }
 
 .buy_area .tit {
@@ -1210,7 +1210,9 @@ body, .detail_info_wrap .detail_item, .sku_wrap, .layer_detail_full .layer_detai
 .ali-photo {
 	margin:  0 10px 0 5px;
 }
-
+.union-photo {
+	margin:  0 10px 0 5px;
+}
 .ali-item {
 	font-size: 14px;
 	/*line-height: 31px;*/
@@ -1229,6 +1231,11 @@ body, .detail_info_wrap .detail_item, .sku_wrap, .layer_detail_full .layer_detai
 	margin-right: 13px;
 	float: right;
 }
+#unionpay{
+	margin-right: 13px;
+	float: right;
+}
+
 
 .nav-pic {
 	position: relative;

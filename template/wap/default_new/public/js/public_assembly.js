@@ -14,7 +14,7 @@ $(function(){
 	$('.custom-search-button').click(function(){
 		var search = $('.custom-search-input').val();
 		var shop_id = $('#hidden_shop_id').val();
-		location.href= __URL(APPMAIN+"/goods/goodssearchlist?sear_name="+search+"&shop_id="+shop_id);
+		location.href= __URL(APPMAIN+"/goods/goodssearchlist?search_name="+search+"&shop_id="+shop_id);
 	})
 })
 
@@ -23,7 +23,7 @@ document.onkeydown=function(event){
 	if(e.keyCode==13){
 		var search = $('.custom-search-input').val();
 		var shop_id = $('#hidden_shop_id').val();
-		location.href= __URL(APPMAIN+"/goods/goodssearchlist?sear_name="+search+"&shop_id="+shop_id);
+		location.href= __URL(APPMAIN+"/goods/goodssearchlist?search_name="+search+"&shop_id="+shop_id);
 	} 
 }
 
@@ -58,7 +58,7 @@ function CartGoodsInfo(goodid,state){
 				state_msg = "该商品违规（禁售）";
 				break;
 			}
-			showBox(state_msg);
+			showBox(state_msg,"warning");
 		}
 	}
 }

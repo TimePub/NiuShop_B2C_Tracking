@@ -161,21 +161,20 @@ var STATIC = "__STATIC__";
 			$.ajax({
 				type : "post",
 				url : "{:__URL('APP_MAIN/login/register')}",
-				async : true,
 				data : {
 					"username" : username,
 					"password" : password
 				},
 				success : function(data) {
-					 if(data["code"] > 0 ){
-						 layer.msg(data["message"]);
-						 login(username,password);
-						 //setTimeout(function(){location.href="APP_MAIN/Login/index"},1000);
+					if(data["code"] > 0 ){
+						layer.msg(data["message"]);
+						login(username,password);
+						//setTimeout(function(){location.href="APP_MAIN/Login/index"},1000);
 						//showMessage('success', data["message"],'APP_MAIN/Login/index');
 					}else{
 						layer.msg(data["message"]);
 						//showMessage('error', data["message"]);
-					} 
+					}
 				}
 			});
 	}
@@ -482,7 +481,7 @@ function verifyPassword(password){
 <div class="content">
 {include file='wap/default_new/urlModel'/}
 	<div class="nk_reg_logo">
-		<img src="__TEMP__/{$style}/public/images/login.png" />
+		<img src="{:__IMG($register_adv['adv_image'])}" />
 		<a href="{:__URL('APP_MAIN')}">
 			<div class="back-home"><span class="data-home"></span></div>
 		</a>

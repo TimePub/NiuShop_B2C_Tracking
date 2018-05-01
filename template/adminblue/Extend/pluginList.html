@@ -4,7 +4,7 @@
 {/block}
 {block name="main"}
 <div class="options-btn">
-	<button class="btn-common btn-small" onclick="location.href='{:__URL('ADMIN_MAIN/extend/addaddons')}';">添加插件</button>
+	<button class="btn-common" onclick="location.href='{:__URL('ADMIN_MAIN/extend/addaddons')}';">添加插件</button>
 </div>
 <table class="table-class">
 	<colgroup>
@@ -41,9 +41,10 @@ function LoadingInfo_A(page_index) {
 		url : "{:__URL('ADMIN_MAIN/extend/pluginList')}",
 		data : { "id" : {$id} },
 		success : function(data) {
-			var html = '';
 			if (data.length > 0) {
+				$(".table-class tbody").empty();
 				for (var i = 0; i < data.length; i++) {
+					var html = '';
 					var status = '';
 					var operation = '';
 					switch(parseInt(data[i]['status'])){
@@ -73,11 +74,12 @@ function LoadingInfo_A(page_index) {
 					html += '<td class="tal">'+ data[i]['version'] +'</td>';
 					html += '<td>'+ operation +'</td>';
 					html += '</tr>';
+					$(".table-class tbody").append(html);
 				}
 			} else {
-				html += '<tr align="center"><th colspan="7">暂无符合条件的数据记录</th></tr>';
+				var html = '<tr align="center"><th colspan="7">暂无符合条件的数据记录</th></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
 // 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 // 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}

@@ -52,8 +52,8 @@ class OrderStatus extends BaseService
                     ),
                     '3' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     )
                 ),
                 'member_operation' => array(
@@ -82,8 +82,8 @@ class OrderStatus extends BaseService
                     ),
                     '1' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     ),
                     '2' => array(
                         'no' => 'update_address',
@@ -100,12 +100,12 @@ class OrderStatus extends BaseService
                 'operation' => array(
                     '0' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     ),
                     '1' => array(
                         'no' => 'logistics',
-                        'color' => '#ccc',
+                        'color' => '#666666',
                         'name' => '查看物流'
                     ),
                     '2' => array(
@@ -135,12 +135,12 @@ class OrderStatus extends BaseService
                 'operation' => array(
                     '0' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     ),
                     '1' => array(
                         'no' => 'logistics',
-                        'color' => '#ccc',
+                        'color' => '#666666',
                         'name' => '查看物流'
                     )
                 ),
@@ -159,12 +159,12 @@ class OrderStatus extends BaseService
                 'operation' => array(
                     '0' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     ),
                     '1' => array(
                         'no' => 'logistics',
-                        'color' => '#ccc',
+                        'color' => '#666666',
                         'name' => '查看物流'
                     )
                 ),
@@ -183,8 +183,8 @@ class OrderStatus extends BaseService
                 'operation' => array(
                     '0' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     ),
                     '1' => array(
                         'no' => 'delete_order',
@@ -207,8 +207,201 @@ class OrderStatus extends BaseService
                 'operation' => array(
                     '0' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
+                    )
+                ),
+                'member_operation' => array()
+            )
+        );
+        return $status;
+    }
+
+    /**
+     * 获取实物订单所有可能的订单状态
+     */
+    public static function getOrderO2oStatus()
+    {
+        $status = array(
+            array(
+                'status_id' => '0',
+                'status_name' => '待付款',
+                'is_refund' => 0, // 是否可以申请退款
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'pay',
+                        'name' => '线下支付',
+                        'color' => '#FF9800'
+                    ),
+                    '1' => array(
+                        'no' => 'close',
+                        'color' => '#E61D1D',
+                        'name' => '交易关闭'
+                    ),
+                    '2' => array(
+                        'no' => 'adjust_price',
+                        'color' => '#4CAF50',
+                        'name' => '修改价格'
+                    ),
+                    '3' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    )
+                ),
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'pay',
+                        'name' => '去支付',
+                        'color' => '#F15050'
+                    ),
+                    
+                    '1' => array(
+                        'no' => 'close',
+                        'name' => '关闭订单',
+                        'color' => '#999999'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '1',
+                'status_name' => '待发货',
+                'is_refund' => 1,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'o2o_delivery',
+                        'color' => 'green',
+                        'name' => '发货'
+                    ),
+                    '1' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '2' => array(
+                        'no' => 'update_address',
+                        'color' => '#51A351',
+                        'name' => '修改地址'
+                    )
+                ),
+                'member_operation' => array()
+            ),
+            array(
+                'status_id' => '2',
+                'status_name' => '已发货',
+                'is_refund' => 1,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '1' => array(
+                        'no' => 'logistics',
+                        'color' => '#666666',
+                        'name' => '查看物流'
+                    ),
+                    '2' => array(
+                        'no' => 'getdelivery',
+                        'name' => '确认收货',
+                        'color' => '#FF6600'
+                    )
+                ),
+                
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'getdelivery',
+                        'name' => '确认收货',
+                        'color' => '#FF6600'
+                    ),
+                    '1' => array(
+                        'no' => 'logistics',
+                        'color' => '#ccc',
+                        'name' => '查看物流'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '3',
+                'status_name' => '已收货',
+                'is_refund' => 0,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '1' => array(
+                        'no' => 'logistics',
+                        'color' => '#666666',
+                        'name' => '查看物流'
+                    )
+                ),
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'logistics',
+                        'color' => '#ccc',
+                        'name' => '查看物流'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '4',
+                'status_name' => '已完成',
+                'is_refund' => 0,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '1' => array(
+                        'no' => 'logistics',
+                        'color' => '#666666',
+                        'name' => '查看物流'
+                    )
+                ),
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'logistics',
+                        'color' => '#ccc',
+                        'name' => '查看物流'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '5',
+                'status_name' => '已关闭',
+                'is_refund' => 0,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '1' => array(
+                        'no' => 'delete_order',
+                        'color' => '#ff0000',
+                        'name' => '删除订单'
+                    )
+                ),
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'delete_order',
+                        'color' => '#ff0000',
+                        'name' => '删除订单'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '-1',
+                'status_name' => '退款中',
+                'is_refund' => 1,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
                     )
                 ),
                 'member_operation' => array()
@@ -245,8 +438,8 @@ class OrderStatus extends BaseService
                     ),
                     '3' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     )
                 ),
                 'member_operation' => array(
@@ -270,13 +463,11 @@ class OrderStatus extends BaseService
                 'operation' => array(
                     '0' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     )
                 ),
                 'member_operation' => array()
-
-                
             ),
             array(
                 'status_id' => '4',
@@ -285,8 +476,8 @@ class OrderStatus extends BaseService
                 'operation' => array(
                     '0' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     )
                 ),
                 'member_operation' => array()
@@ -298,8 +489,8 @@ class OrderStatus extends BaseService
                 'operation' => array(
                     '0' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     ),
                     '1' => array(
                         'no' => 'delete_order',
@@ -347,8 +538,8 @@ class OrderStatus extends BaseService
                     ),
                     '3' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     )
                 ),
                 'member_operation' => array(
@@ -377,8 +568,8 @@ class OrderStatus extends BaseService
                     ),
                     '1' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     )
                 ),
                 'member_operation' => array()
@@ -391,8 +582,8 @@ class OrderStatus extends BaseService
                     
                     '0' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     ),
                     '1' => array(
                         'no' => 'logistics',
@@ -410,8 +601,8 @@ class OrderStatus extends BaseService
                 'operation' => array(
                     '0' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     ),
                     '1' => array(
                         'no' => 'logistics',
@@ -429,8 +620,8 @@ class OrderStatus extends BaseService
                 'operation' => array(
                     '0' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     ),
                     '1' => array(
                         'no' => 'delete_order',
@@ -454,8 +645,8 @@ class OrderStatus extends BaseService
                 'operation' => array(
                     '0' => array(
                         'no' => 'seller_memo',
-                        'color' => '#8e8c8c',
-                        'name' => '添加备注'
+                        'color' => '#666666',
+                        'name' => '备注'
                     )
                 ),
                 'member_operation' => array()
@@ -464,6 +655,462 @@ class OrderStatus extends BaseService
         return $status;
     }
 
+    /**
+     * 拼团订单状态
+     *
+     * @return multitype:multitype:string number multitype:multitype:string multitype:string number multitype: multitype:multitype:string
+     */
+    public static function getOrderPintuanStatus()
+    {
+        $status = array(
+            array(
+                'status_id' => '0',
+                'status_name' => '待付款',
+                'is_refund' => 0, // 是否可以申请退款
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'pay',
+                        'name' => '线下支付',
+                        'color' => '#FF9800'
+                    ),
+                    '1' => array(
+                        'no' => 'close',
+                        'color' => '#E61D1D',
+                        'name' => '交易关闭'
+                    ),
+                    '2' => array(
+                        'no' => 'adjust_price',
+                        'color' => '#4CAF50',
+                        'name' => '修改价格'
+                    ),
+                    '3' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    )
+                ),
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'pay',
+                        'name' => '去支付',
+                        'color' => '#F15050'
+                    ),
+                    
+                    '1' => array(
+                        'no' => 'close',
+                        'name' => '关闭订单',
+                        'color' => '#999999'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '6',
+                'status_name' => '待成团',
+                'is_refund' => 1,
+                'operation' => array(
+                    
+                    '1' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '2' => array(
+                        'no' => 'update_address',
+                        'color' => '#51A351',
+                        'name' => '修改地址'
+                    )
+                ),
+                'member_operation' => array()
+            ),
+            array(
+                'status_id' => '1',
+                'status_name' => '待发货',
+                'is_refund' => 1,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'delivery',
+                        'color' => 'green',
+                        'name' => '发货'
+                    ),
+                    '1' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '2' => array(
+                        'no' => 'update_address',
+                        'color' => '#51A351',
+                        'name' => '修改地址'
+                    )
+                ),
+                'member_operation' => array()
+            ),
+            array(
+                'status_id' => '2',
+                'status_name' => '已发货',
+                'is_refund' => 1,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '1' => array(
+                        'no' => 'logistics',
+                        'color' => '#666666',
+                        'name' => '查看物流'
+                    ),
+                    '2' => array(
+                        'no' => 'getdelivery',
+                        'name' => '确认收货',
+                        'color' => '#FF6600'
+                    )
+                ),
+                
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'getdelivery',
+                        'name' => '确认收货',
+                        'color' => '#FF6600'
+                    ),
+                    '1' => array(
+                        'no' => 'logistics',
+                        'color' => '#ccc',
+                        'name' => '查看物流'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '3',
+                'status_name' => '已收货',
+                'is_refund' => 0,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '1' => array(
+                        'no' => 'logistics',
+                        'color' => '#666666',
+                        'name' => '查看物流'
+                    )
+                ),
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'logistics',
+                        'color' => '#ccc',
+                        'name' => '查看物流'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '4',
+                'status_name' => '已完成',
+                'is_refund' => 0,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '1' => array(
+                        'no' => 'logistics',
+                        'color' => '#666666',
+                        'name' => '查看物流'
+                    )
+                ),
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'logistics',
+                        'color' => '#ccc',
+                        'name' => '查看物流'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '5',
+                'status_name' => '已关闭',
+                'is_refund' => 0,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '1' => array(
+                        'no' => 'delete_order',
+                        'color' => '#ff0000',
+                        'name' => '删除订单'
+                    )
+                ),
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'delete_order',
+                        'color' => '#ff0000',
+                        'name' => '删除订单'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '-1',
+                'status_name' => '退款中',
+                'is_refund' => 1,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    )
+                ),
+                'member_operation' => array()
+            )
+        );
+        return $status;
+    }
+    
+    /**
+     * 获取预售操作状态
+     */
+    public static function getOrderPresellStatus(){
+          $status = array(
+              
+              array(
+                  'status_id' => '6',
+                  'status_name' => '订金待支付',
+                  'is_refund' => 0, // 是否可以申请退款
+                  'operation' => array(
+                      '0' => array(
+                          'no' => 'order_presell',
+                          'name' => '线下支付',
+                          'color' => '#FF9800'
+                      ),
+                      '1' => array(
+                          'no' => 'close',
+                          'color' => '#E61D1D',
+                          'name' => '交易关闭'
+                      ),
+                      
+                  ),
+                  'member_operation' => array(
+                      '0' => array(
+                          'no' => 'pay_presell',
+                          'name' => '去支付',
+                          'color' => '#F15050'
+                      ),
+              
+                      '1' => array(
+                          'no' => 'close',
+                          'name' => '关闭订单',
+                          'color' => '#999999'
+                      )
+                  )
+              ),
+              array(
+                  'status_id' => '7',
+                  'status_name' => '备货中',
+                  'is_refund' => 0, // 是否可以申请退款
+                  'operation' => array(
+                      '0' => array(
+                          'no' => 'stocking_complete',
+                          'name' => '备货完成',
+                          'color' => '#F15050'
+                      ),
+                  ),
+                  'member_operation' => array(
+                  )
+              ),
+            array(
+                'status_id' => '0',
+                'status_name' => '预售中',
+                'is_refund' => 0, // 是否可以申请退款
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'pay',
+                        'name' => '线下支付',
+                        'color' => '#FF9800'
+                    ),
+                    '1' => array(
+                        'no' => 'close',
+                        'color' => '#E61D1D',
+                        'name' => '交易关闭'
+                    ),
+                    '2' => array(
+                        'no' => 'adjust_price',
+                        'color' => '#4CAF50',
+                        'name' => '修改价格'
+                    ),
+                    '3' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    )
+                ),
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'pay',
+                        'name' => '去支付',
+                        'color' => '#F15050'
+                    ),
+                    
+                    '1' => array(
+                        'no' => 'close',
+                        'name' => '关闭订单',
+                        'color' => '#999999'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '1',
+                'status_name' => '待发货',
+                'is_refund' => 1,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'delivery',
+                        'color' => 'green',
+                        'name' => '发货'
+                    ),
+                    '1' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '2' => array(
+                        'no' => 'update_address',
+                        'color' => '#51A351',
+                        'name' => '修改地址'
+                    )
+                ),
+                'member_operation' => array()
+            ),
+            array(
+                'status_id' => '2',
+                'status_name' => '已发货',
+                'is_refund' => 1,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '1' => array(
+                        'no' => 'logistics',
+                        'color' => '#666666',
+                        'name' => '查看物流'
+                    ),
+                    '2' => array(
+                        'no' => 'getdelivery',
+                        'name' => '确认收货',
+                        'color' => '#FF6600'
+                    )
+                ),
+                
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'getdelivery',
+                        'name' => '确认收货',
+                        'color' => '#FF6600'
+                    ),
+                    '1' => array(
+                        'no' => 'logistics',
+                        'color' => '#ccc',
+                        'name' => '查看物流'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '3',
+                'status_name' => '已收货',
+                'is_refund' => 0,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '1' => array(
+                        'no' => 'logistics',
+                        'color' => '#666666',
+                        'name' => '查看物流'
+                    )
+                ),
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'logistics',
+                        'color' => '#ccc',
+                        'name' => '查看物流'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '4',
+                'status_name' => '已完成',
+                'is_refund' => 0,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '1' => array(
+                        'no' => 'logistics',
+                        'color' => '#666666',
+                        'name' => '查看物流'
+                    )
+                ),
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'logistics',
+                        'color' => '#ccc',
+                        'name' => '查看物流'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '5',
+                'status_name' => '已关闭',
+                'is_refund' => 0,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    ),
+                    '1' => array(
+                        'no' => 'delete_order',
+                        'color' => '#ff0000',
+                        'name' => '删除订单'
+                    )
+                ),
+                'member_operation' => array(
+                    '0' => array(
+                        'no' => 'delete_order',
+                        'color' => '#ff0000',
+                        'name' => '删除订单'
+                    )
+                )
+            ),
+            array(
+                'status_id' => '-1',
+                'status_name' => '退款中',
+                'is_refund' => 1,
+                'operation' => array(
+                    '0' => array(
+                        'no' => 'seller_memo',
+                        'color' => '#666666',
+                        'name' => '备注'
+                    )
+                ),
+                'member_operation' => array()
+            )
+        );
+        return $status;
+    }
+    
+    
+    
+    
+    
     /**
      * 获取发货操作状态
      */
@@ -680,6 +1327,10 @@ class OrderStatus extends BaseService
             array(
                 'type_id' => '10',
                 'type_name' => '线下支付'
+            ),
+            array(
+                'type_id' => '11',
+                'type_name' => '积分兑换'
             )
         );
         $type_name = '';
@@ -717,6 +1368,36 @@ class OrderStatus extends BaseService
         );
         $type_name = array();
         foreach ($order_grom_type as $k => $v) {
+            if ($v['type_id'] == $type_id) {
+                $type_name = $v;
+            }
+        }
+        return $type_name;
+    }
+
+    /**
+     * 获取配送方式名称
+     *
+     * @param unknown $type_id            
+     */
+    public static function getShippingTypeName($type_id)
+    {
+        $shipping_type_name = array(
+            array(
+                'type_id' => '1',
+                'type_name' => '物流配送'
+            ),
+            array(
+                'type_id' => '2',
+                'type_name' => '买家自提'
+            ),
+            array(
+                'type_id' => '3',
+                'type_name' => '本地配送'
+            )
+        );
+        $type_name = array();
+        foreach ($shipping_type_name as $k => $v) {
             if ($v['type_id'] == $type_id) {
                 $type_name = $v;
             }

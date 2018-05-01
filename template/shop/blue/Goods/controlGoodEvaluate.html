@@ -115,9 +115,9 @@ function GetDataList(pageindex){
 					+'<div class="user-info">'
 					+'<div class="face">';
 					if(dataitem["user_img"] != "" && dataitem['user_img'] != undefined && dataitem['user_img'] != 0){
-						listhtml+='<img src="'+__IMG(dataitem['user_img'])+'">';
+						listhtml+='<img src="{:__IMG($default_headimg)}" class="lazy_load" data-original="'+__IMG(dataitem['user_img'])+'">';
 					}else{
-						listhtml+='<img src="__TEMP__/{$style}/public/images/default_user_portrait_0.png">';
+						listhtml+='<img src="{:__IMG($default_headimg)}">';
 					}
 					listhtml+='</div>'
 					+'<div class="name-box">'
@@ -178,6 +178,7 @@ function GetDataList(pageindex){
 			page_display(data['page_count'],pageindex);
 			$('#pagination').show();
 			loadFunction();
+			img_lazyload();
 		}
 	});
 }

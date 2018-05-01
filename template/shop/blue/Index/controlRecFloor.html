@@ -109,9 +109,17 @@ function levelGoodsList(obj){
 							{/if}
 								<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$v['goods_id'])}" target="_blank">
 									<div class="goods-list-padding-block">
-										<div><img src="{:__IMG($v['pic_cover_mid'])}" /></div>
+										<div><img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($v['pic_cover_mid'])}" /></div>
 										<div>{$v['goods_name']}</div>
-										<div>¥{$v['promotion_price']}</div>
+										{in name="$v.point_exchange_type" value="0,2"}
+											<div>¥{$v['promotion_price']}</div>
+										{else/}
+											{if $v['point_exchange_type'] == 1 && $v['promotion_price'] > 0}
+												<div>￥{$v.promotion_price}+{$v.point_exchange}积分</div>
+											{else/}
+												<div>{$v.point_exchange}积分</div>
+											{/if}
+										{/in}
 										{if condition="$v['is_hot'] eq 1"}
 											<img src="__TEMP__/{$style}/public/images/hot.png" alt="" class="recommend">
 										{/if}
@@ -142,9 +150,17 @@ function levelGoodsList(obj){
 											{/if}
 												<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$list['goods_id'])}" target="_blank">
 													<div class="goods-list-padding-block">
-														<div><img src="{:__IMG($list['pic_cover_mid'])}" /></div>
+														<div><img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($list['pic_cover_mid'])}" /></div>
 														<div>{$list['goods_name']}</div>
-														<div>¥{$list['promotion_price']}</div>
+														{in name="$list.point_exchange_type" value="0,2"}
+															<div>¥{$list['promotion_price']}</div>
+														{else/}
+															{if $list['point_exchange_type'] == 1 && $list['promotion_price'] > 0}
+																<div>￥{$list.promotion_price}+{$list.point_exchange}积分</div>
+															{else/}
+																<div>{$list.point_exchange}积分</div>
+															{/if}
+														{/in}
 														{if condition="$list['is_hot'] eq 1"}
 														<img src="__TEMP__/{$style}/public/images/hot.png" alt="" class="recommend">
 														{/if}
@@ -171,7 +187,11 @@ function levelGoodsList(obj){
 					<div class="floor-tabs-panel" style="width:20%;height:426px;float:left;">
 						<ul  class="bland-list" style="height:426px;">
 						{volist name="vo['brand_list']" id="brandlist" key<8}
-							<li><a href="{:__URL('SHOP_MAIN/goods/goodslist','brand_id='.$brandlist['brand_id'])}"><img src="{$brandlist['brand_pic']}" style="max-width:100%;max-height:100%;vertical-align: middle;" title="{$brandlist['brand_name']}"/></a></li>
+							<li>
+								<a href="{:__URL('SHOP_MAIN/goods/goodslist','brand_id='.$brandlist['brand_id'])}">
+									<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{$brandlist['brand_pic']}" style="max-width:100%;max-height:100%;vertical-align: middle;" title="{$brandlist['brand_name']}"/>
+								</a>
+							</li>
 						{/volist}
 						</ul>
 					</div>

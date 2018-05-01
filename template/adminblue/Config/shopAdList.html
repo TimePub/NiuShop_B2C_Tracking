@@ -3,7 +3,7 @@
 {/block}
 {block name="main"}
 <div class="options-btn">
-	<button class="btn-common btn-small" onclick="location.href='{:__URL('ADMIN_MAIN/config/addshopad')}';">添加广告</button>
+	<button class="btn-common" onclick="location.href='{:__URL('ADMIN_MAIN/config/addshopad')}';">添加广告</button>
 </div>
 <table class="table-class">
 	<colgroup>
@@ -46,9 +46,10 @@ function LoadingInfo(page_index) {
 			"page_size" : $("#showNumber").val()
 		},
 		success : function(data) {
-			var html = '';
 			if (data['data'].length > 0) {
+				$(".table-class tbody").empty();
 				for (var i = 0; i < data['data'].length; i++) {
+					var html = '';
 					html += '<tr align="center">';
 					html += '<td><input name="sub" type="checkbox" value="'+ data['data'][i]['id']+'" ></td>';
 					html += '<td><img src="'+ __IMG(data['data'][i]['ad_image'])+'" style="height:50px;"/></td>';
@@ -61,11 +62,12 @@ function LoadingInfo(page_index) {
 					html += '<td><a href="'+__URL('ADMIN_MAIN/config/updateshopad?id=' + data['data'][i]["id"])+'">编辑</a> ';
 					html += '<a href="javascript:;" onclick="delShopAd('+ data['data'][i]["id"] +')">删除</a></td> ';
 					html += '</tr>';
+					$(".table-class tbody").append(html);
 				}
 			} else {
-				html += '<tr align="center"><td colspan="5">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr align="center"><td colspan="5">暂无符合条件的数据记录</td></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
 		}
 	});
 }

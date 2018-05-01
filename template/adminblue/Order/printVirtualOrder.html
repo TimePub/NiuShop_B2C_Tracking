@@ -17,7 +17,7 @@
 		.print_area{
 			width: auto;
    			margin: 20px;
-   			height:1026px
+   			height:1025px
 		}
 		.print_area table{
 			border-top: 1px solid #aaa;
@@ -90,7 +90,7 @@
 </head>
 <body>
 	{foreach name="$order_list" item="vo"}
-	<div class="print_area">
+	<div class="print_area" style="page-break-after: always;">
 		<table style="border-top: none;padding: 0;">
 			<tr>
 				<th><img src="{:__IMG($web_info['logo'])}" alt=""></th>

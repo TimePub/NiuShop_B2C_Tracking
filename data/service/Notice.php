@@ -23,6 +23,7 @@ use data\service\BaseService as BaseService;
 use data\api\INotice;
 use data\model\NoticeRecordsModel;
 use data\model\BaseModel;
+use think\Controller;
 
 class Notice extends BaseService implements INotice
 {
@@ -167,4 +168,46 @@ class Notice extends BaseService implements INotice
         $ret=$notice_records_model->save(["is_send"=>$status, "send_message"=>$result, "send_date"=>time()], ["id"=>$notice_id]);
         return $ret;
     }
+    
+    /**
+     * 获取通知记录
+     * @param number $page_index
+     * @param number $page_size
+     * @param unknown $condition
+     * @param string $order
+     * @param string $field
+     * @return multitype:number unknown
+     */
+
+    public function getNoticeRecordsList($page_index=1, $page_size=0, $condition=array(), $order='', $field="*"){
+        $notice_records_model = new NoticeRecordsModel();  
+        $list = $notice_records_model->pageQuery($page_index, $page_size, $condition, $order, $field);
+        
+        foreach ($list['data'] as $v) {
+            $user_service = new User();
+            $user_info = $user_service->getUserInfoByUid($v['uid']);
+            $v['user_name'] = $user_info['nick_name'];
+        }
+        
+        
+        return $list;
+
+    }    
+     /**
+      * 获取通知记录详情
+      * @param unknown $condition
+      */   
+    public function getNotifyRecordsDetail( $condition=array()){
+        $notice_records_model = new NoticeRecordsModel();
+        $detail = $notice_records_model->getInfo($condition);
+        
+        $user_service = new User();
+        $user_info = $user_service->getUserInfoByUid($detail['uid']);
+        $detail['user_name'] = $user_info['nick_name'];
+        
+        return $detail;
+    }   
+
+    
+    
 }

@@ -239,7 +239,7 @@ function userTelBind(){
 function removeUserQQBind(){
 	$( "#dialog" ).dialog({
 		buttons: {
-			"确定,#e57373": function() {
+			"确定,#0059d6,#fff": function() {
 			$(this).dialog('close');
 			$.ajax({
 				type:"post",
@@ -294,9 +294,7 @@ function updateUserNameConfirm(){
 	$.ajax({
 		type:"post",
 		url:"{:__URL('ADMIN_MAIN/auth/modifyusername')}",
-		data:{
-			'user_name':user_name,
-		},
+		data:{ 'user_name':user_name },
 		success:function (data) {
 			if (data["code"] > 0) {
 				showMessage('success', data["message"],"{:__URL('ADMIN_MAIN/auth/userdetail')}");

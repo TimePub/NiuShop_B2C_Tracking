@@ -150,6 +150,7 @@ class AliPay extends PayParam
             "subject" => $subject,
             "total_fee" => $total_fee,
             "body" => $body,
+            "app_pay" => 'Y',
             "show_url" => $show_url,
             "anti_phishing_key" => $anti_phishing_key,
             "exter_invoke_ip" => $exter_invoke_ip,
@@ -163,7 +164,37 @@ class AliPay extends PayParam
         // echo $html_text;
         return $html_text;
     }
-
+    /**
+     * 订单关闭
+     * @param unknown $orderNumber
+     * @return multitype:number string |multitype:number mixed
+     */
+    public function setOrderClose($orderNumber)
+    {
+        try{
+            $alipay_config = $this->getAlipayConfig();
+            $service = 'clost_trade';
+            $parameter = array(
+                "service" => $service,
+                "partner" => trim($alipay_config['partner']),
+                "seller_email" => trim($alipay_config['seller_email']),
+                "_input_charset" => trim(strtolower($alipay_config['input_charset'])),
+                "out_trade_no" => $orderNumber
+            );
+            // 建立请求
+            $alipaySubmit = new AlipaySubmit($alipay_config);
+            
+            $html_text = $alipaySubmit->buildRequestForm($parameter, "get", "确认");
+            $test = $this->getHttpResponse($html_text);
+            return $test;
+        } catch (\Exception $e)
+        {
+            
+            Log::write("支付宝订单关闭异常".$e->getMessage());
+            return $e->getMessage();
+        }
+      
+    }
     /**
      * 获取配置参数是否正确
      *
@@ -277,43 +308,4 @@ class AliPay extends PayParam
         }
     }
 
-    /**
-     * 支付宝转账
-     *
-     * @param unknown $out_biz_no订单编号            
-     * @param unknown $ali_account转账账户            
-     * @param unknown $money转账金额            
-     * @return \data\extend\alipay\提交表单HTML文本
-     */
-    public function aliPayTransfer($out_biz_no, $ali_account, $money)
-    {
-        $alipay_config = $this->getAlipayConfig();
-        $service = 'alipay.fund.trans.toacc';
-        // 防钓鱼时间戳-安全
-        $anti_phishing_key = "";
-        // 若要使用请调用类文件submit中的query_timestamp函数
-        
-        // 客户端的IP地址-
-        $exter_invoke_ip = "";
-        // 非局域网的外网IP地址，如：221.0.0.1
-        // 构造要请求的参数数组，无需改动
-        $parameter = array(
-            "service" => $service,
-            "partner" => trim($alipay_config['partner']),
-            "seller_email" => trim($alipay_config['seller_email']),
-            "_input_charset" => trim(strtolower($alipay_config['input_charset'])),
-            "payee_type" => 'ALIPAY_LOGONID',
-            "payee_account" => $ali_account,
-            "payer_account" => trim($alipay_config['seller_email']),
-            "payer_type" => 'ALIPAY_LOGONID',
-            "amount" => $money,
-            "out_biz_no" => $out_biz_no
-        );
-        // 建立请求
-        $alipaySubmit = new AlipaySubmit($alipay_config);
-        
-        $html_text = $alipaySubmit->buildRequestForm($parameter, "get", "确认");
-        // echo $html_text;
-        return $html_text;
-    }
 }

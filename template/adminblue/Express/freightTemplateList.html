@@ -3,9 +3,9 @@
 <link href="ADMIN_CSS/express/freight_template_list.css" rel="stylesheet" />
 {/block}
 {block name="main"}
-<div class="operation">
-	<button class="btn-common-delete btn-small" onclick="batchDelete()" style="margin:0 !important;">批量删除</button>
-	<button class="btn-common btn-small" onclick="location.href='{:__URL('ADMIN_MAIN/express/freighttemplateedit?co_id='.$co_id)}';">添加模板</button>
+<div class="options-btn">
+	<button class="btn-common-delete" onclick="batchDelete()" style="margin:0 !important;">批量删除</button>
+	<button class="btn-common" onclick="location.href='{:__URL('ADMIN_MAIN/express/freighttemplateedit?co_id='.$co_id)}';">添加模板</button>
 </div>
 <table class="list">
 	<colgroup>
@@ -64,7 +64,7 @@ function batchDelete(){
 	if(shipping_fee_id.length==0){
 		$( "#dialog" ).dialog({
 			buttons: {
-				"确定,#e57373": function() {
+				"确定,#0059d6,#fff": function() {
 					$(this).dialog('close');
 				}
 			},
@@ -96,7 +96,7 @@ function freightTemplateDelete(shipping_fee_id) {
 					}
 				});
 			},
-			"取消,#e57373":function(){
+			"取消,#f5f5f5,#666":function(){
 				$(this).dialog('close');
 			}
 		},

@@ -244,9 +244,15 @@ class BaseModel extends Model
      * @param unknown $condition
      * @param unknown $field
      */
-    public function getQuery($condition, $field, $order)
+    public function getQuery($condition, $field, $order, $group='')
     {
-        $list = $this->field($field)->where($condition)->order($order)->select();
+        if(empty($group))
+        {
+            $list = $this->field($field)->where($condition)->order($order)->select();
+        }else{
+            $list = $this->field($field)->where($condition)->group($group)->order($order)->select();
+        }
+        
         return $list;
     }
 
@@ -266,6 +272,7 @@ class BaseModel extends Model
         if ($page_size == 0) {
             $list = $viewObj->where($condition)
                 ->order($order)
+                ->limit(0, 1000000)
                 ->select();
         } else {
             $start_row = $page_size * ($page_index - 1);
@@ -274,6 +281,33 @@ class BaseModel extends Model
                 ->order($order)
                 ->limit($start_row . "," . $page_size)
                 ->select();
+        }
+        return $list;
+    }
+    /**
+     * 获取关联查询列表
+     *
+     * @param unknown $viewObj
+     *            对应view对象
+     * @param unknown $page_index
+     * @param unknown $page_size
+     * @param unknown $condition
+     * @param unknown $order
+     * @return multitype:number unknown
+     */
+    public function viewPageQueryNew($viewObj, $page_index, $page_size, $condition, $condition_sql,$order)
+    {
+        if ($page_size == 0) {
+            $list = $viewObj->where($condition)->where($condition_sql)
+            ->order($order)
+            ->limit(0, 1000000)
+            ->select();
+        } else {
+            $start_row = $page_size * ($page_index - 1);
+            $list = $viewObj->where($condition)->where($condition_sql)
+            ->order($order)
+            ->limit($start_row . "," . $page_size)
+            ->select();
         }
         return $list;
     }
@@ -289,8 +323,38 @@ class BaseModel extends Model
      */
     public function viewCount($viewObj, $condition)
     {
-        $count = $viewObj->where($condition)->count();
+        $count = $viewObj->where($condition)->limit(0, 1000000)->count();
         return $count;
+    }
+    /**
+     * 获取关联查询数量
+     * @param unknown $viewObj
+     * @param unknown $condition
+     * @param unknown $where_sql
+     */
+    public function viewCountNew($viewObj, $condition, $where_sql){
+        $count = $viewObj->where($condition)->where($where_sql)->limit(0, 1000000)->count();
+        return $count;
+    }
+    /**
+     * 查询商品的条数
+     * @param unknown $viewObj
+     * @param unknown $condition
+     * @param unknown $where_sql
+     * @param unknown $field
+     */
+    public function unionGoodsCountNew($viewObj, $condition, $where_sql, $field){
+        $result=$viewObj->where($condition)->field($field)->buildSql();
+        $first_sql=substr($result, 1, strlen($result)-2);
+        $second_result=$viewObj->where($condition)->where($where_sql)->field($field)->buildSql();
+        $second_sql=substr($second_result, 1, strlen($second_result)-2);
+        $sql="select count(1) as ns_count from (".$first_sql."union".$second_sql.") ngc";
+        $result=Db::query($sql);
+        if(!empty($result)){
+            return $result[0]["ns_count"];
+        }else{
+            return 0;
+        }
     }
 
     /**

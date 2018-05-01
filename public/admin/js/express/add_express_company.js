@@ -71,39 +71,23 @@ function addExpressCompanyAjax() {
 			},
 			success : function(data) {
 				if(data['code']>0){
-
-					$("#dialog").dialog({
-						buttons : {
-							"确定" : function() {
+					showTip(data["message"],'success');
+					location.href = __URL(ADMINMAIN + '/express/expresscompany');
+					/*$("#dialog").dialog({
+						buttons: {
+							"设置运费模板": function() {
 								$(this).dialog('close');
-
-								$("#dialog").dialog({
-									buttons: {
-										"设置运费模板": function() {
-											$(this).dialog('close');
-											location.href = __URL(ADMINMAIN + '/express/freighttemplatelist?co_id='+data['code']);
-										},
-										"取消,#e57373": function() {
-											$(this).dialog('close');
-											location.href = __URL(ADMINMAIN + '/express/expresscompany');
-										}
-									},
-									contentText:"物流公司需要设置运费模板才能配送，是否前往设置？",
-								});
+								location.href = __URL(ADMINMAIN + '/express/freighttemplatelist?co_id='+data['code']);
+							},
+							"取消,#e57373": function() {
+								$(this).dialog('close');
+								location.href = __URL(ADMINMAIN + '/express/expresscompany');
 							}
 						},
-						contentText : data["message"]
+						contentText:"物流公司需要设置运费模板才能配送，是否前往设置？",
 					});
-				}else{
-					$("#dialog").dialog({
-						buttons : {
-							"确定" : function() {
-								$(this).dialog('close');
-								flag = false;
-							}
-						},
-						contentText : data["message"]
-					});
+				}else{*/
+					showTip(data["message"],'error');
 				}
 			}
 		});

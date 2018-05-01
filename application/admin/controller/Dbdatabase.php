@@ -15,11 +15,10 @@
  */
 namespace app\admin\controller;
 
-
 use data\extend\database;
 use data\extend\dir;
 use data\service\DbQuery;
-use think\Config;
+
 /**
  * 网站设置模块控制器
  *
@@ -88,7 +87,7 @@ class Dbdatabase extends BaseController
         if (! empty($tables) && is_array($tables)) { // 初始化
                                                      // 读取备份配置
             $config = array(
-                'path' => $this->backup_path.DIRECTORY_SEPARATOR,
+                'path' => $this->backup_path . DIRECTORY_SEPARATOR,
                 'part' => 20971520,
                 'compress' => 1,
                 'level' => 9
@@ -118,7 +117,6 @@ class Dbdatabase extends BaseController
             
             // 缓存要备份的表
             session('backup_tables', $tables);
-            
             
             $database = new database($file, $config);
             if (false !== $database->create()) {
@@ -186,7 +184,7 @@ class Dbdatabase extends BaseController
 
     /**
      * 还原数据库
-     * 
+     *
      * @author
      *
      */
@@ -197,7 +195,7 @@ class Dbdatabase extends BaseController
         $start = request()->post('start', 0);
         
         if (is_numeric($time) && (is_null($part) || empty($part)) && (is_null($start) || empty($start))) { // 初始化
-                                                                                                     // 获取备份文件信息
+                                                                                                           // 获取备份文件信息
             $name = date('Ymd-His', $time) . '-*.sql*';
             $path = realpath($this->backup_path) . DIRECTORY_SEPARATOR . $name;
             $files = glob($path);
@@ -350,7 +348,7 @@ class Dbdatabase extends BaseController
 
     /**
      * 修复表
-     * 
+     *
      * @param String $tables
      *            表名
      * @author
@@ -366,7 +364,7 @@ class Dbdatabase extends BaseController
 
     /**
      * 优化表
-     * 
+     *
      * @return multitype:integer string
      */
     public function optimize()
@@ -379,16 +377,17 @@ class Dbdatabase extends BaseController
 
     /**
      * sql文本执行
-     * 
+     *
      * @return Ambigous <\think\response\View, \think\response\$this, \think\response\View>
      */
     public function sqlFileQuery()
     {
         if (request()->isAjax()) {
-            $sql_text = request()->post("sql_text", "");
-            $db_query = new DbQuery();
-            $retval = $db_query->sqlQuery($sql_text);
-            return $retval;
+            return showMessage("执行完毕", 1);
+            // $sql_text = request()->post("sql_text", "");
+            // $db_query = new DbQuery();
+            // $retval = $db_query->sqlQuery($sql_text);
+            // return $retval;
         } else {
             $child_menu_list = array(
                 array(
@@ -411,9 +410,9 @@ class Dbdatabase extends BaseController
             return view($this->style . "Dbdatabase/sqlFileQuery");
         }
     }
-    
-    
-    public function test(){
+
+    public function test()
+    {
         $db_query = new DbQuery();
         $sql_text = "";
         $retval = $db_query->sqlQuery($sql_text);

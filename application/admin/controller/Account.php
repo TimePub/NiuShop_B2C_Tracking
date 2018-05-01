@@ -620,6 +620,10 @@ class Account extends BaseController
         $goods_category = new GoodsCategory();
         $list = $goods_category->getGoodsCategoryListByParentId(0);
         $this->assign("cateGoryList", $list);
+        
+        // 查找一级商品分类
+        $oneGoodsCategory = $goods_category->getGoodsCategoryListByParentId(0);
+        $this->assign("oneGoodsCategory", $oneGoodsCategory);
         return view($this->style . "Account/shopGoodsGroupSaleCount");
     }
 }

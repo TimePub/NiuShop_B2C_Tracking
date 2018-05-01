@@ -5,34 +5,34 @@
 {block name="main"}
 <div class="set-style">
 	<dl>
-		<dt><span class="color-red">*</span>楼层名称:</dt>
+		<dt><span class="color-red">*</span>楼层名称：</dt>
 		<dd>
 			<p><input id="block_name" type="text" style="width:300px;" value="{$block_info['block_name']}" class="input-common"></p>
 			<p class="error">请输入楼层名称</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>简称:</dt>
+		<dt>简称：</dt>
 		<dd>
 			<p><input id="block_short_name" type="text" style="width:300px;" value="{$block_info['block_short_name']}" class="input-common"></p>
 			<p class="error">请输入楼层简称</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>颜色风格:</dt>
+		<dt>颜色风格：</dt>
 		<dd>
-			<input id="block_color" type="color" style="width:60px;height:25px;" value="{$block_info['block_color']}" class="input-common"/>
+			<input id="block_color" type="color" style="width:60px;height:25px;" value="{$block_info['block_color']}" class="input-common-color"/>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span class="color-red">*</span>排序:</dt>
+		<dt><span class="color-red">*</span>排序：</dt>
 		<dd>
 			<p><input id="sort" type="text" style="width:300px;" value="{$block_info['sort']}" class="input-common"></p>
 			<p class="error">请输入序号</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>是否显示:</dt>
+		<dt>是否显示：</dt>
 		<dd>
 			<p>
 				<input id="is_display" type="checkbox" class="checkbox" {if condition="$block_info['is_display'] eq 1"} checked {/if}>
@@ -40,7 +40,7 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>推荐单图广告位:</dt>
+		<dt>推荐单图广告位：</dt>
 		<dd>
 			<p>
 				<input id="recommend_ad_image_name" type="text" placeholder="请输入推荐单图广告位名称" value="{$block_info['recommend_ad_image_name']}" style="width:300px;" class="input-common"> 
@@ -55,7 +55,7 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>推荐多图广告位:</dt>
+		<dt>推荐多图广告位：</dt>
 		<dd>
 			<p>
 				<input id="recommend_ad_images_name" type="text" placeholder="请输入推荐多图广告位名称"  value="{$block_info['recommend_ad_images_name']}"  style="width:300px;" class="input-common">

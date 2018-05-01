@@ -19,6 +19,60 @@ $(function(){
 	init();
 	
 	/**
+	 * 打开商品配送时间
+	 * 创建时间：2018年1月5日17:17:58 全栈小学生
+	 */
+	$("#delivery-time .update-delivery-time").click(function(){
+		$(".mask-layer-delivery-time").css("margin-top","-" + ($(".mask-layer-delivery-time").outerHeight()/2) + "px").fadeIn();
+		$("#mask").fadeIn();
+	});
+	
+	/**
+	 * 选择商品配送时间
+	 * 创建时间：2018年1月5日17:23:10 全栈小学生
+	 */
+	$("#delivery-time ul li").on("click",function(){
+		$(this).addClass("selected").siblings().removeClass("selected");
+	});
+	
+	/**
+	 * 关闭商品配送时间弹出层
+	 * 创建时间：2018年1月5日17:27:48 全栈小学生
+	 */
+	$(".mask-layer-delivery-time header>a,.mask-layer-delivery-time footer .btn-cancle").click(function(){
+
+		$(".mask-layer-delivery-time").fadeOut();
+		$("#mask").fadeOut();
+		//阻止a、button后续事件
+		return false;
+	});
+	
+	/**
+	 * 确定-->选择商品配送时间
+	 * 创建时间：2018年1月5日17:28:52 全栈小学生
+	 */
+	$(".mask-layer-delivery-time footer .btn-confirm").click(function(){
+
+		var selected = $(".mask-layer-delivery-time ul li.selected");
+		$("#hidden_shipping_time").val(selected.attr("data-shipping-time"));
+		$("#delivery-time .item>span").text(selected.attr("data-text"));
+		$("#delivery-time .delete-delivery-time").show();
+		$(".mask-layer-delivery-time footer .btn-cancle").click();
+		return false;
+		
+	});
+	
+	/**
+	 * 删除选择的商品配送时间
+	 * 创建时间：2018年1月5日17:37:15 全栈小学生
+	 */
+	$("#delivery-time .delete-delivery-time").click(function(){
+		$("#hidden_shipping_time").val("0");
+		$("#delivery-time .item>span").text($("#delivery-time .item>span").attr("data-default"));
+		$(this).hide();
+	});
+	
+	/**
 	 * 选择物流公司
 	 * 2017年6月28日 09:57:40 王永杰
 	 */
@@ -45,9 +99,17 @@ $(function(){
 			if($("#account_balance").val() != undefined){
 				account_balance = $("#account_balance").val() == "" ? 0 : $("#account_balance").val();
 			}
-			var integral = $("#count_point_exchange").val() == ""? 0 : $("#count_point_exchange").val();//积分
+			//var integral = $("#count_point_exchange").val() == ""? 0 : $("#count_point_exchange").val();//积分
+			var integral = $("#use_point").val();
 			var pay_type = parseInt($("#paylist li a[class='selected']").attr("data-select"));//支付方式 0：在线支付，4：货到付款
 			var buyer_invoice = getInvoiceContent();//发票
+			var shipping_type = 1; //配送方式 1商家配送 2用户自提 3本地配送
+			if(getPickupId() > 0){
+				shipping_type = 2;
+			}else if(getO2o_distributionId() > 0){
+				shipping_type = 3;
+			}
+
 			$.ajax({
 				url : __URL(SHOPMAIN + "/order/ordercreate"),
 				type : "post",
@@ -60,7 +122,9 @@ $(function(){
 					'pay_type' : pay_type,
 					'buyer_invoice' : buyer_invoice,
 					'pick_up_id' : getPickupId(),
-					'express_company_id' : $("#express_company").val()
+					'express_company_id' : $("#express_company").val(),
+					'shipping_time' : $("#hidden_shipping_time").val(),
+					'shipping_type' : shipping_type
 				},
 				success : function(res) {
 					if (res.code > 0) {
@@ -98,14 +162,25 @@ $(function(){
 			case "merchant_distribution":
 				//商家配送
 				$(".js-pickup-point-list").hide();//隐藏自提列表
+				$("#distribution_time").hide();//隐藏本地配送时间
 				//如果后台开启了选择物流公司，则显示
 				if(parseInt($("#hidden_is_logistice").val()) === 1) $("#select_express_company").slideDown(300);
 				else $("#select_express_company").slideUp(300);//物流公司显示
+				$("#delivery-time").slideDown(300);
 			break;
 			case "afhalen":
 				//门店自提
 				$(".js-pickup-point-list").show();//显示自提列表
 				$("#select_express_company").hide();//隐藏物流公司
+				$("#distribution_time").hide();//隐藏本地配送时间
+				$("#delivery-time").hide();
+			break;
+			case "o2o_distribution":
+				//本地配送
+				$(".js-pickup-point-list").hide();//显示自提列表
+				$("#select_express_company").hide();//隐藏物流公司
+				$("#delivery-time").hide();
+				$("#distribution_time").slideDown(300);//显示本地配送时间
 			break;
 		}
 		calculateTotalAmount();
@@ -141,6 +216,8 @@ $(function(){
 //		如果后台开启了选择物流公司，则显示
 		if(parseInt($("#hidden_is_logistice").val()) === 1) $("#select_express_company").slideDown(300);
 		else $("#select_express_company").slideUp(300);//物流公司隐藏
+		
+		$("#delivery-time").slideDown(300);
 		switch(parseInt($(this).children("a").attr("data-select"))){
 		case 0:
 			//在线支付
@@ -178,6 +255,20 @@ $(function(){
 		}
 	});
 	
+	/**
+	 * 用户输入积分，进行验证并矫正，同时更新总优惠、应付金额等数据
+	 * 规则：
+	 * 1、可用积分，不可超过订单最大可使用积分
+	 * 2、不可超过用户最大可用积分
+	 * 3、只能输入正整数
+	 * 2017年6月22日 15:00:14 王永杰
+	 */
+	$("#use_point").keyup(function(){
+		if(validationMemberPoint()){
+			calculateTotalAmount();
+		}
+	});
+
 	/**
 	 * 选择优惠券
 	 * 2017年6月19日 18:45:58 王永杰
@@ -261,6 +352,10 @@ $(function(){
  * 2017年6月22日 15:10:02 王永杰
  */
 function init(){
+
+	//加载配送时间
+	loadingShippingTime();
+	
 	$(".js-goods-num").text($(".goodinfo").length);//商品数量
 	var total_money = 0;//总计
 	$("div[data-subtotal]").each(function(){
@@ -281,6 +376,8 @@ function init(){
 					//商家配送,如果后台开启了选择物流公司，则显示
 					if(parseInt($("#hidden_is_logistice").val()) === 1) $("#select_express_company").slideDown(300);
 					else $("#select_express_company").slideUp(300);//物流公司显示
+					
+					$("#delivery-time").slideDown(300);
 					break;
 				case 'afhalen':
 					
@@ -346,7 +443,7 @@ function validationMemberBalance(){
 		}
 		var r = /^\d+(\.\d{1,2})?$/;
 		var account_balance = $("#account_balance").val() == "" ? 0 : parseFloat($("#account_balance").val());//可用余额
-		var max_total = parseFloat($("#realprice").attr("data-old-total-money"));//总计
+		var max_total =parseFloat($("#realprice").attr("data-old-total-money"));//总计
 		if(!r.test(account_balance)){
 			$.msg("余额输入错误");
 			$("#account_balance").val(account_balance.toString().substr(0,account_balance.toString().length-1));
@@ -371,6 +468,29 @@ function validationMemberBalance(){
 	
 	return false;
 }
+
+/**
+ *验证输入的积分
+ */
+function validationMemberPoint(){
+	//最大可用积分
+	var member_account_point = parseInt($(".member-account-point").text());
+	var max_use_point = $("#max_use_point").val(); 
+	//使用积分
+	var use_point = parseInt($("#use_point").val());
+
+	if(use_point < 0 || use_point == NaN) $("#use_point").val(0);
+
+	if(use_point > max_use_point){
+		if(member_account_point > max_use_point){
+			$("#use_point").val(max_use_point); 
+		}else{
+			$("#use_point").val(member_account_point); 
+		}
+	}
+	return true;
+}
+
 
 /**
  * 验证
@@ -486,6 +606,15 @@ function getPickupId(){
 	return id;
 }
 
+function getO2o_distributionId(){
+	var res = false;
+	if($("#shipping_method li[data-code='o2o_distribution'] a").hasClass("selected")){
+		res = true;
+	}
+	return res;
+}
+
+
 
 /**
  * 计算总金额
@@ -496,25 +625,33 @@ function calculateTotalAmount(){
 	var total_discount = 0;//总优惠
 	var order_invoice_tax_money = 0;//发票税额 显示
 	var tax_sum = parseFloat($("#hidden_count_money").val());//计算发票税额计算：（商品总计+运-优惠活动-优惠券）*发票税率
+	var express = 0; //运费
 	// 运费
 	//如果选择的是门店自提，则不计算运费
 	if(getPickupId()>0){
 		money += parseFloat($("#hidden_pick_up_money").val());
 		tax_sum += parseFloat($("#hidden_pick_up_money").val());
 		$("#express").text(parseFloat($("#hidden_pick_up_money").val()).toFixed(2));
+		express = parseFloat($("#hidden_pick_up_money").val());
+	}else if(getO2o_distributionId()){
+		money += parseFloat($("#hidden_o2o_distribution").val());
+		tax_sum += parseFloat($("#hidden_o2o_distribution").val());
+		$("#express").text(parseFloat($("#hidden_o2o_distribution").val()).toFixed(2));
+		express = parseFloat($("#hidden_o2o_distribution").val());
 	}else{
-		money += parseFloat($("#hidden_express").val());
-		tax_sum += parseFloat($("#hidden_express").val());
-		$("#express").text(parseFloat($("#hidden_express").val()).toFixed(2));
-	}
-	//有运费
-	var init_total_money = parseFloat($("#hidden_count_money").val());//商品金额
-	if($("#hidden_full_mail_is_open").val()==1){
-		//满额包邮开启
-		if(init_total_money>=parseFloat($("#hidden_full_mail_money").val())){
-			$("#hidden_express").val(0);
+		//满额包邮
+		var init_total_money = parseFloat($("#hidden_count_money").val());//商品金额
+		if($("#hidden_full_mail_is_open").val()==1 && init_total_money>=parseFloat($("#hidden_full_mail_money").val())){
+			money += 0;
+			tax_sum += 0;
+			$("#express").text(0.00);
+			express = $("#hidden_express").val();
+		}else{
+			money += parseFloat($("#hidden_express").val());
+			tax_sum += parseFloat($("#hidden_express").val());
+			$("#express").text(parseFloat($("#hidden_express").val()).toFixed(2));
+			express = $("#hidden_express").val();
 		}
-		$("#express").text(parseFloat($("#hidden_express").val()).toFixed(2));//设置运费
 	}
 	
 	//满减送活动
@@ -567,14 +704,68 @@ function calculateTotalAmount(){
 		}
 		money = 0;
 	}
-	var old_total_money = parseFloat($("#realprice").attr("data-old-keep-total-money"))+parseFloat(order_invoice_tax_money);
-	$("#realprice").attr("data-old-total-money",old_total_money.toFixed(2));//原合计（不包含优惠,但包括税额）
-	$("#realprice").text(money.toFixed(2));//合计
+
+	var old_total_money = parseFloat($("#realprice").attr("data-old-keep-total-money"))+parseFloat(order_invoice_tax_money) + parseFloat(express);
+
+	//是否开启积分抵现
+	var integral_balance_is_open = $("#integral_balance_is_open").val();
+	if(integral_balance_is_open == 1){
+		var use_point = $("#use_point").val();
+		var point_convert_rate = $("#point_convert_rate").val();
+		var point_money = use_point * point_convert_rate;
+		$("#point_money").text(parseFloat(point_money).toFixed(2));
+		money = parseFloat((money - point_money).toFixed(2));
+		if(money < 0){
+			var overflow_money = 0 - money;
+				use_point = use_point - parseInt((overflow_money / point_convert_rate));
+				point_money = use_point * point_convert_rate;
+				$("#point_money").text(parseFloat(point_money).toFixed(2));
+				$("#use_point").val(use_point);	
+			money = 0;
+		}
+		old_total_money -= point_money;
+	}
+	old_total_money = old_total_money < 0 ? 0 : old_total_money;
+
+	$("#realprice").attr("data-old-total-money",old_total_money.toFixed(2));//原合计（不包含优惠,但包括税额 减去积分抵现额）
 	$("#realprice").attr("data-total-money",money.toFixed(2));//合计[实际付款金额]（包含优惠券、运费）
+	$("#realprice").text(money.toFixed(2));//合计
 	$("#discount_money").text(total_discount.toFixed(2))//总优惠
 	if($("#account_balance").val() != undefined){
 		$("#use_balance").text(account_balance.toFixed(2));//使用余额
 	}
 	$("#invoice_tax_money").text(order_invoice_tax_money.toFixed(2));//税率
-	validationMemberBalance();
+}
+
+/**
+ * 加载配送时间
+ * 创建时间：2018年1月5日16:57:35 全栈小学生
+ */
+function loadingShippingTime(){
+	
+	var html = '';
+	
+	var week_arr = ["周日","周一","周二","周三","周四","周五","周六"];
+	var MIN = 1;//配送时间至少需要两天
+	
+	//选择未来一个月的配送时间
+	for(var i=MIN;i<30;i++){
+		var date = new Date();
+		date.setDate(date.getDate()+i);
+		var year = date.getFullYear();
+		var month = date.getMonth() + 1;
+		var day = date.getDate();
+		var week = week_arr[date.getDay()];
+		var time = Math.round(date.getTime()/1000);
+		
+		if(i==MIN) html += '<li class="selected"';
+		else html += '<li';
+		var text = year + "年" + month + "月" + day + "日" + week;
+		html += ' data-text="' + text + '" data-shipping-time="' + time + '" >';
+		html += month + '月' + day + "日";
+		html += '<span class="data">' + week + '</span>';
+		html += '</li>';
+	}
+	$(".mask-layer-delivery-time ul").html(html);
+	
 }

@@ -16,7 +16,7 @@ var goods_category_quick = new Array();// 快速选择商品分类集合
 $(function() {
 	
 	$("#next_Page").addClass("disabled");
-	$("#next_Page").attr("disabled", true);
+	//$("#next_Page").attr("disabled", true);
 	$select_ids=$("#category_select_ids").val();
 	$select_names=$("#category_select_names").val();
 	if($select_ids!=""){
@@ -70,8 +70,8 @@ function quick(quick_id, quick_name) {
 	if (quick_id != -1) {
 		$(".hasSelectedCategoryDiv").html($selectedCategory);
 		var arr = quick_id.split(",");
-		$("#selectCategoryDiv2").remove();// 删除子类目
-		$("#selectCategoryDiv3").remove();// 删除子类目
+		//$("#selectCategoryDiv2").remove();// 删除子类目
+		//$("#selectCategoryDiv3").remove();// 删除子类目
 		for (var i = 0; i < arr.length; i++) {
 			loadingQuick(arr[i], (i + 1));
 		}
@@ -91,16 +91,48 @@ function loadingQuick(categoryID, index) {
 			"categoryID" : categoryID
 		},
 		success : function(res) {
+			
+			/**
+			 * 修改后的操作
+			 */
+			var $nextDivNum = parseInt(index) + 1;
+			var $categoryDiv = $('#selectCategoryDiv' + $nextDivNum);
+			if($nextDivNum == 2){
+				$('#selectCategoryDiv2').html('');
+				$('#selectCategoryDiv3').html('');
+			}else if($nextDivNum == 3){
+				$('#selectCategoryDiv3').html('');
+			}
+			
 			if (res != null && res.length != 0) {
-				var $categoryDiv = CreateSelectCatgoryDiv(230, 300, (parseInt(index) + 1));
-				$("#categoryDivContainer").append($categoryDiv);
+				//修改前的操作
+//				var $categoryDiv = CreateSelectCatgoryDiv(230, 300, (parseInt(index) + 1));
+//				$("#categoryDivContainer").append($categoryDiv);
+//				var $data = GetProductCategoryData(res);
+//				$categoryDiv.append($data);
+				
+				/**
+				 * 修改后的操作
+				 */
 				var $data = GetProductCategoryData(res);
-				$categoryDiv.append($data);
+				$categoryDiv.html($data);
+				
 				$("#next_Page").addClass("disabled");
-				$("#next_Page").attr("disabled", true);
+				//$("#next_Page").attr("disabled", true);
 			} else {
+				/**
+				 * 无数据提示
+				 */
+				var $noCategoryTip = '';
+				$noCategoryTip += '<div class="categorySet" id="">';
+				  $noCategoryTip += '<div class="no-category-tip">';
+				    $noCategoryTip += '<span style="width: 170px;">暂无分类</span>';
+				  $noCategoryTip += '</div>';
+				$noCategoryTip += '</div>';
+				$categoryDiv.html($noCategoryTip);
+				
 				$("#next_Page").removeClass("disabled");
-				$("#next_Page").attr("disabled", false);
+				//$("#next_Page").attr("disabled", false);
 			}
 			$selectedCategory += '<span id="' + (index) + '" cid="'
 					+ categoryID + '" data-attr-id="'+event.attr("data-attr-id")+'" >';
@@ -216,16 +248,16 @@ function GetProductCategoryData(categoryData) {
 		if (leaf == 0) {
 			var nbsp = '';
 			if(is_parent > 0){
-				nbsp = '&nbsp;&gt;&nbsp;';
+				nbsp = '&gt;';
 			}
 			$rootCategory = "<div id='"
 					+ cateId
-					+ "' data-attr-id='"+attrId+"' class='categoryItem' onclick='ClickHasSubCategory(this)'><span style='width: 170px;'>"
-					+ name + "</span><span>"+nbsp+"</span></div>";
+					+ "' data-attr-id='"+attrId+"' class='categoryItem' onclick='ClickHasSubCategory(this)'><span class='span-left'>"
+					+ name + "</span><span class='span-right'>"+nbsp+"</span></div>";
 		} else {
 			$rootCategory = "<div id='"
 					+ cateId
-					+ "' data-attr-id='"+attrId+"' class='categoryItem' onclick='ClickHasSubCategory(this)'><span style='width: 170px;'>"
+					+ "' data-attr-id='"+attrId+"' class='categoryItem' onclick='ClickHasSubCategory(this)'><span class='span-left'>"
 					+ name + "</span></div>";
 		}
 		categorySet = categorySet + $rootCategory;
@@ -249,11 +281,35 @@ function ClickHasSubCategory(event) {
 			"categoryID" : $currentCategoryID
 		},
 		success : function(res) {
+			/**
+			 * 修改后的操作
+			 */
+			var $nextDivNum = parseInt($currentSelectCategoryDivIdNum) + 1;
+			var $categoryDiv = $('#selectCategoryDiv' + $nextDivNum);
+			if($nextDivNum == 2){
+				$('#selectCategoryDiv2').html('');
+				$('#selectCategoryDiv3').html('');
+			}else if($nextDivNum == 3){
+				$('#selectCategoryDiv3').html('');
+			}
+			
 			if (res != null && res.length != 0) {
-				var $categoryDiv = CreateSelectCatgoryDiv(230, 300, (parseInt($currentSelectCategoryDivIdNum) + 1));
-				$("#categoryDivContainer").append($categoryDiv);
+				/**
+				 * 原来的操作
+				 */
+				//var $categoryDiv = CreateSelectCatgoryDiv(230, 300, (parseInt($currentSelectCategoryDivIdNum) + 1));
+				//$("#categoryDivContainer").append($categoryDiv);
+				//var $data = GetProductCategoryData(res);
+				//$categoryDiv.append($data);
+				//var $data = GetProductCategoryData(res);
+				//$categoryDiv.append($data);
+				
+				/**
+				 * 修改后的操作
+				 */
 				var $data = GetProductCategoryData(res);
-				$categoryDiv.append($data);
+				$categoryDiv.html($data);
+				
 				// 点击某一个父类目之后，将其categoryName记录在类样式名为hasSelectedCategoryDiv的div中
 				var $selectedCategory = "<span id="
 						+ $currentSelectCategoryDivIdNum + " cid="
@@ -262,8 +318,16 @@ function ClickHasSubCategory(event) {
 				$(".hasSelectedCategoryDiv").append($selectedCategory);
 				// 点击有子类目的项之后将“已选好类目，进入下一步”按钮隐藏
 				$("#next_Page").addClass("disabled");
-				$("#next_Page").attr("disabled", true);
+				//$("#next_Page").attr("disabled", true);
 			} else {
+				var $noCategoryTip = '';
+				$noCategoryTip += '<div class="categorySet" id="">';
+				  $noCategoryTip += '<div class="no-category-tip">';
+				    $noCategoryTip += '<span style="width: 170px;">暂无分类</span>';
+				  $noCategoryTip += '</div>';
+				$noCategoryTip += '</div>';
+				$categoryDiv.html($noCategoryTip);
+				
 				var $selectedCategory = "<span id="
 						+ $currentSelectCategoryDivIdNum + " cid="
 						+ $(event).attr("id") + " data-attr-id='"+$(event).attr("data-attr-id")+"'> " + $(event).text()
@@ -272,7 +336,7 @@ function ClickHasSubCategory(event) {
 				var category_extend_id = $("#category_extend_id").val();
 				if(category_extend_id.indexOf($currentCategoryID) == -1){
 					$("#next_Page").removeClass("disabled");
-					$("#next_Page").attr("disabled", false);	
+					//$("#next_Page").attr("disabled", false);	
 				}
 			}
 
@@ -284,20 +348,21 @@ function RemoveDiv($eventSrc) {
 	// 给事件源所在的div加上高亮效果，并移除其它兄弟项的高亮效果
 	$eventSrc.siblings().removeClass("categoryItemClick");
 	$eventSrc.addClass("categoryItemClick");
+
 	// 找到要删除的对象
 	var $currentSelectCategoryDiv = $eventSrc.parent().parent();
 	var $currentSelectCategoryDivId = $currentSelectCategoryDiv.attr("id");
 	var $currentSelectCategoryDivIdNum = $currentSelectCategoryDivId
 			.substring($currentSelectCategoryDivId.lastIndexOf('v') + 1); // 截取出数字num
 	var $allSelectCategoryDiv = $("div[id^=selectCategoryDiv]");
-	for (var i = 0; i < $allSelectCategoryDiv.length; i++) {
-		var $thisSelectCategoryDivId = $allSelectCategoryDiv[i].id;
-		var $thisSelectCategoryDivIdNum = $thisSelectCategoryDivId
-				.substring($thisSelectCategoryDivId.lastIndexOf('v') + 1);
-		if ($thisSelectCategoryDivIdNum > $currentSelectCategoryDivIdNum) {
-			$("#selectCategoryDiv" + $thisSelectCategoryDivIdNum + "").remove();
-		}
-	}
+//	for (var i = 0; i < $allSelectCategoryDiv.length; i++) {
+//		var $thisSelectCategoryDivId = $allSelectCategoryDiv[i].id;
+//		var $thisSelectCategoryDivIdNum = $thisSelectCategoryDivId
+//				.substring($thisSelectCategoryDivId.lastIndexOf('v') + 1);
+//		if ($thisSelectCategoryDivIdNum > $currentSelectCategoryDivIdNum) {
+//			$("#selectCategoryDiv" + $thisSelectCategoryDivIdNum + "").remove();
+//		}
+//	}
 	// 找到已经记录的类目，将其后面的，包括自己删除
 	var $allSelectedCategory = $(".hasSelectedCategoryDiv span");
 	if ($allSelectedCategory.length > 0) {

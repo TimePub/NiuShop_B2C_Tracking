@@ -2540,6 +2540,7 @@
 	top: 50%;
 	z-index: 3333;
 	display: block;
+	margin-top:-150px;
 }
 
 .elevator .elevator-floor {

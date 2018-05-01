@@ -31,7 +31,7 @@
 										{notempty name="$goods['goods_id']"}
 											<li class="favorite-pic-list">
 												<div class="favorite-goods-thumb">
-													<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$goods['goods_id'])}" target="_blank" title="{$goods.goods_name}"><img src="{:__IMG($goods['pic_cover_mid'])}" alt="{$goods.goods_name}" width="200" height="200"></a>
+													<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$goods['goods_id'])}" target="_blank" title="{$goods.goods_name}"><img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($goods['pic_cover_mid'])}" alt="{$goods.goods_name}" width="200" height="200"></a>
 												</div>
 												<div class="favorite-goods-info">
 													<dl>

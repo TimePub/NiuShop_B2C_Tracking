@@ -48,15 +48,14 @@ class Articlecenter extends BaseController
      */
     public function getArticleList()
     {
-        $class_id = request()->post('class_id', '');
+        $class_id = request()->post('class_id', '0');
         $page = request()->post("page",1);
-        if (! is_numeric($class_id)) {
-            $this->error("未获取到分类信息");
+        $condition = array();
+        if($class_id != 0){
+            $condition['nca.class_id'] = $class_id;
         }
         $article = new Article();
-        $article_list = $article->getArticleList($page, PAGESIZE, [
-            'nca.class_id' => $class_id
-        ], 'nca.sort desc');
+        $article_list = $article->getArticleList($page, PAGESIZE, $condition, 'nca.sort desc');
         return $article_list;
     }
 
@@ -73,6 +72,29 @@ class Articlecenter extends BaseController
         }
         $this->assign("title_before",$article_info['title']);
         $this->assign('article_info', $article_info);
+  
+        // 上一篇
+        $prev_info = $article->getArticleList(1, 1, [
+            "article_id" => array(
+                "<",
+                $article_id
+            ),
+            "nca.class_id" => $article_info["class_id"],
+            "status" => 2
+        ], "article_id desc");
+        $this->assign("prev_info", $prev_info['data'][0]);
+
+        // 下一篇
+        $next_info = $article->getArticleList(1, 1, [
+            "article_id" => array(
+                ">",
+                $article_id
+            ),
+            "nca.class_id" => $article_info["class_id"],
+            "status" => 2
+        ], "article_id asc");
+        $this->assign("next_info", $next_info['data'][0]);
+        
         return view($this->style . 'Articlecenter/articleContent');
     }
     

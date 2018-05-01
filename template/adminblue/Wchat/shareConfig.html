@@ -7,10 +7,14 @@
 <link rel="stylesheet" type="text/css" href="ADMIN_CSS/set.css">
 <style>
 .main{margin-left: 5px;overflow: hidden;}
-#btnBut{width:750px;margin:10px auto;}
+#btnBut{width:100px;margin:10px 15px;}
 .share .card, .share .product, .share .store{margin:0 10px 10px;}
 .share .product{margin:0 10px 10px 0;}
 </style>
+{/block}
+{block name="alert_info"}
+<strong>提示：</strong>设置分享内容，设置方法如下：<br>
+点击下方的“编辑”按钮，在出现的对话框中填写您想要的内容，如果想要取消，点击“取消”按钮，如果需要保存点击保存即可。
 {/block}
 {block name="main"}
 <script>
@@ -73,12 +77,8 @@ $(document).ready(function () {
 })
 </script>
 <!-- <div id="DialogLayer"></div> -->
+<div class="space-10"></div>
 <div class="main share">
-	<div class="mb10 mlr15">
-		<div class="tiphelp-info"><strong>提示：</strong>设置分享内容，设置方法如下：<br>
-		点击下方的“编辑”按钮，在出现的对话框中填写您想要的内容，如果想要取消，点击“取消”按钮，如果需要保存点击保存即可。
-		</div>
-	</div>
 	<div class="card">
 		<h3 class="title">
 			<span>推广二维码</span>
@@ -91,11 +91,11 @@ $(document).ready(function () {
 			<dd>
 				<p class="price" style="margin:5px 0;">
 					<span class="text" id="qrcode_one" style="display: inline;">{$config['qrcode_param_1']}</span>
-					<input class="input-common w60" type="text" value=" {$config['qrcode_param_1']}" placeholder="请输入分享标题" style="display: none;" id="Qrcode_param_1">
+					<input class="input-common w60 middle" type="text" value="{$config['qrcode_param_1']}" placeholder="请输入分享标题" style="display: none;" id="Qrcode_param_1">
 				</p>
 				<p class="advertisiment">
 					<span class="text" id="qrcode_two" style="display: block;">{$config['qrcode_param_2']}</span>
-					<input class="input-medium input-common" type="text" value="{$config['qrcode_param_2']}" style="display: none;" id="Qrcode_param_2">
+					<input class="input-medium input-common middle" type="text" value="{$config['qrcode_param_2']}" style="display: none;" id="Qrcode_param_2">
 				</p>
 				<p class="hot"><span>收藏热度：</span><span class="star">★★★★★</span></p>
 			</dd>
@@ -113,12 +113,12 @@ $(document).ready(function () {
 			<dd style="padding-left:10px;">
 				<p class="price">
 					<span class="text" id="pricespan" style="display: inline;">{$config['goods_param_1']}</span>
-					<input class="w60 input-common" type="text" value="{$config['goods_param_1']}" placeholder="价格标题" style="display: none;" id="PriceDesc">
+					<input class="w60 input-common middle" type="text" value="{$config['goods_param_1']}" placeholder="价格标题" style="display: none;" id="PriceDesc">
 					<span class="number"><!-- ￥0.00 --></span>
 				</p>
 				<p class="advertisiment">
 					<span class="text" id="descspan" style="display: block;">{$config['goods_param_2']}</span>
-					<input class="input-medium input-common" type="text" value="{$config['goods_param_2']}" style="display: none;" id="ProductDesc">
+					<input class="input-medium input-common middle" type="text" value="{$config['goods_param_2']}" style="display: none;" id="ProductDesc">
 				</p>
 				<p class="hot"><span>收藏热度：</span><span class="star">★★★★★</span></p>
 			</dd>
@@ -132,7 +132,7 @@ $(document).ready(function () {
 		</h3>
 		<h4 class="store-title">
 			<span class="text pre" id="opendescspan" style="display: inline-block;">{$config['shop_param_1']}</span>
-			<input type="text" class="input-medium input-common" value="{$config['shop_param_1']}" placeholder="请输入欢迎语" style="display: none;">
+			<input type="text" class="input-medium input-common middle" value="{$config['shop_param_1']}" placeholder="请输入欢迎语" style="display: none;">
 			<span class="storeName" id="shopName">**店</span>
 		</h4>
 		<dl>
@@ -140,11 +140,11 @@ $(document).ready(function () {
 			<dd>
 				<p class="price">
 					<span class="text advertisiment" id="openremarkspan1" style="display: block;">{$config['shop_param_2']}</span>
-					<input id="txtOpenRemark" class="input-medium input-common" type="text" value="{$config['shop_param_2']}" placeholder="请输入内容" style="display: none;">
+					<input id="txtOpenRemark" class="input-medium input-common middle" type="text" value="{$config['shop_param_2']}" placeholder="请输入分享标题" style="display: none;">
 				</p>
 				<p class="more">
 					<span class="text" id="openremarkspan2" style="display: block;">{$config['shop_param_3']}</span>
-					<input class="input-medium input-common" type="text" value="{$config['shop_param_3']}" style="display: none;">
+					<input class="input-medium input-common middle" type="text" value="{$config['shop_param_3']}" style="display: none;">
 				</p>
 				<p class="hot"><span>收藏热度：</span><span class="star">★★★★★</span></p>
 			</dd>
@@ -203,9 +203,10 @@ $(function () {
 					$(".button").hide();
 				}
 				if(data['code']){
-					showMessage('success', data['message'], '#');
+					showTip(data['message'],'success');
 				}else{
-					showMessage('error', data['message']);
+					showTip(data['message'],'error');
+					
 				}
 			}
 		});

@@ -41,7 +41,7 @@ interface IGoodsCategory
      * @param unknown $goods_classid  添加时$goods_classid=0
      * @param unknown $data
      */
-    function addOrEditGoodsCategory($category_id, $category_name, $short_name, $pid, $is_visible, $keywords='', $description='', $sort=0, $category_pic, $attr_id=0, $attr_name='');
+    function addOrEditGoodsCategory($category_id, $category_name, $short_name, $pid, $is_visible, $keywords='', $description='', $sort=0, $category_pic, $attr_id=0, $attr_name='', $pc_custom_template, $wap_custom_template);
     
     /**
      * 删除商品分类信息

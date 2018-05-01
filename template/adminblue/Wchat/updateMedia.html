@@ -3,7 +3,7 @@
 <script type="text/javascript" charset="utf-8" src="ADMIN_JS/ueditor/ueditor.config.common.js"></script>
 <script type="text/javascript" charset="utf-8" src="ADMIN_JS/ueditor/ueditor.all.common.js"></script>
 <style>
-.media {max-width: 800px;margin: 0 auto;}
+.media {max-width: 800px;margin-left:140px;}
 .media:after {content: "";display: table;clear: both;}
 .img-text {display: block;width: 100%;line-height: 120px;background: #ececec;text-align: center;font-size: 22px;color: #c0c0c0;font-weight: 400;}
 .media-left {width: 30%;margin-right: 2%;}
@@ -36,17 +36,20 @@
 		</dd>
 	</dl>
 </div>
+<!-- 文本消息 -->
 <div class="set-style type1" {eq name="info['type']" value="1"}style='display:block;'{else/}style='display:none;'{/eq}>
 	<dl>
 		<dt>描述:</dt>
 		<dd>
 			<p>
-				<textarea id="type1_desc" class="input-common">{eq name="info['type']" value="1"}{$info['title']}{/eq}</textarea>
+				<textarea id="type1_desc" class="textarea-common">{eq name="info['type']" value="1"}{$info['title']}{/eq}</textarea>
 			</p>
 			<p class="error">请输入模块描述</p>
 		</dd>
 	</dl>
 </div>
+<!-- 文本消息 -->
+<!-- 单图文消息 -->
 <div class="type2 media" {eq name="info['type']" value="2"}style='display:block;'{else/}style='display:none;'{/eq}>
 	<div class="media-left">
 		<div class="media-border">
@@ -62,6 +65,7 @@
 		<input style="width: 98%;" class="input-common" type="text" id="title" {eq name="info['type']" value="2"}value="{$info['item_list'][0]['title']}"{else/}value=""{/eq}>
 		<p>作者（选填）</p>
 		<input style="width: 98%;" class="input-common" type="text" id="author" {eq name="info['type']" value="2"}value="{$info['item_list'][0]['author']}"{else/}value=""{/eq}>
+		<p></p>
 		<p>
 			<span style="color:red;"> *</span> 封面 
 		</p>
@@ -85,14 +89,14 @@
 		</div>
 		<p></p>
 		<p>
-			<input type="checkbox" id="show_cover_pic"
-				style="margin-top: -2px; margin-right: 5px;" {eq name="info['type']" value="2"}{eq name="info['item_list'][0]['show_cover_pic']" value="1"}checked{/eq}{/eq}><label
-				for="show_cover_pic"
-				style="font-weight: normal; display: inline-block;">封面图片显示在正文中</label>
+			<i class="checkbox-common {eq name="info['type']" value="2"}{eq name="info['item_list'][0]['show_cover_pic']" value="1"}selected{/eq}{/eq}">
+			<input type="checkbox" id="show_cover_pic" style="margin-top: -2px; margin-right: 5px;" {eq name="info['type']" value="2"}{eq name="info['item_list'][0]['show_cover_pic']" value="1"}checked{/eq}{/eq}>
+			</i>
+			<label for="show_cover_pic" style="font-weight: normal; display: inline-block;">封面图片显示在正文中</label>
 		</p>
 		<p><span style="color:red;"> *</span> 摘要</p>
 		<p>
-			<textarea id="desc" class="input-common" style="width: 98%;">{eq name="info['type']" value="2"}{$info['item_list'][0]['summary']}{/eq}</textarea>
+			<textarea id="desc" class="textarea-common" style="width: 98%;">{eq name="info['type']" value="2"}{$info['item_list'][0]['summary']}{/eq}</textarea>
 		</p>
 		<textarea id="editor_text" style="display:none;">{eq name="info['type']" value="2"}{$info['item_list'][0]['content']}{/eq}</textarea>
 		<p class="error">请输入模块描述</p>
@@ -107,6 +111,8 @@
 		<input style="width: 98%;" type="text" class="input-common" id="content_source_url" {eq name="info['type']" value="2"}value="{$info['item_list'][0]['content_source_url']}"{else/}value=""{/eq}>
 	</div>
 </div>
+<!-- 单图文消息 -->
+<!-- 多图文消息 -->
 <div class="type3 media" {eq name="info['type']" value="3"}style='display:block;'{else/}style='display:none;'{/eq}>
 	<div class="media-left">
 	{eq name="info['type']" value="3"}
@@ -192,6 +198,7 @@
 		<p>
 		<p>作者</p>
 		<input style="width: 98%;" type="text" id="form_author" class="input-common" onchange="changeElement('author')">
+		<p></p>
 		<p>
 			封面<span></span>
 		</p>
@@ -214,12 +221,14 @@
 		</div>
 		<p></p>
 		<p>
+			<i class="checkbox-common">
 			<input type="checkbox" id="form_show_cover_pic" onchange="changeElement('show_cover_pic')" style="margin-top: -2px; margin-right: 5px;">
+			</i>
 			<label for="form_show_cover_pic" style="font-weight: normal; display: inline-block;">封面图片显示在正文中</label>
 		</p>
 		<p>摘要</p>
 		<p>
-			<textarea id="form_summary" class="input-common" style="width: 98%;" onchange="changeElement('summary')"></textarea>
+			<textarea id="form_summary" class="textarea-common" style="width: 98%;" onchange="changeElement('summary')"></textarea>
 		</p>
 		<p class="error">请输入模块描述</p>
 		<p>正文</p>
@@ -230,13 +239,21 @@
 		</div>
 		<p></p>
 		<p>原文链接</p>
-		<input style="width: 98%;" type="text" id="form_content_source_url" input-common" onchange="changeElement('content_source_url')">
+		<input  type="text" id="form_content_source_url" class="input-common" onchange="changeElement('content_source_url')">
 	</div>
 </div>
+<!-- 多图文消息 -->
 <input type="hidden" id="media_id" value="{$info['media_id']}">
-
-<div style="width:200px;margin:20px auto;">
-<button class="btn-common btn-big" onclick="save();">提交</button>
+<div class="set-style">
+	<dl>
+		<dt></dt>
+		<dd>
+			<button class="btn-common btn-big" onclick="save();">保存</button>
+			<a href="{:__URL('ADMIN_MAIN/wchat/materialmessage?type='.$info['type'])}">
+			<button class="btn-common-cancle btn-big" >返回</button>
+			</a>
+		</dd>
+	</dl>
 </div>
 <script src="__STATIC__/js/ajax_file_upload.js" type="text/javascript"></script>
 <script src="__STATIC__/js/file_upload.js" type="text/javascript"></script>
@@ -249,7 +266,9 @@ $(function(){
 			UE.getEditor('editor').setContent($("#editor_text").val());
 		});
 	}else if({$info['type']} == 3){
-		edit($(".js-action:first"), 0);
+		UE.getEditor('editor').addListener( 'ready', function() {
+			edit($(".js-action:first"), 0);
+		});
 	}
 });
 
@@ -293,6 +312,7 @@ function edit(event, num){
 	var summary = $("#summary"+num).val();
 	var content = $("#content"+num).val();
 	var content_source_url = $("#content_source_url"+num).val();
+	
 	//把 form 的值填进去
 	$("#form_title").val(title);
 	$("#form_author").val(author);
@@ -302,9 +322,9 @@ function edit(event, num){
 		$("#imgLogo1").attr('src',__IMG(cover));
 	}
 	if(show_cover_pic == 1){
-		$("#form_show_cover_pic").prop("checked","checked");
+		$("#form_show_cover_pic").prop("checked",true).parent().addClass('selected');
 	}else{
-		$("#form_show_cover_pic").prop("checked","");
+		$("#form_show_cover_pic").prop("checked",false).parent().removeClass('selected');
 	}
 	$("#form_summary").val(summary);
 	UE.getEditor('editor1').setContent(content);
@@ -322,7 +342,7 @@ function save(){
 		var title = $("#type1_desc").val();
 		var content = '';
 		if(title == ''){
-			showMessage('error', '内容不能为空');
+			showTip('请输入内容','warning');
 			return false;
 		}
 	}else if(type == 2){
@@ -340,16 +360,16 @@ function save(){
 		var content_source_url = $("#content_source_url").val();
 		var contents = title+'`|`'+author+'`|`'+cover+'`|`'+show_cover_pic+'`|`'+summary+'`|`'+content+'`|`'+content_source_url;
 		if(title == ''){
-			showMessage('error', '标题不能为空');
+			showTip('请输入标题','warning');
 			return false;
 		}else if(cover == ''){
-			showMessage('error', '请上传封面图片');
+			showTip('请上传封面图片','warning');
 			return false;
 		}else if(summary == ''){
-			showMessage('error', '摘要不能为空');
+			showTip('请输入摘要','warning');
 			return false;
 		}else if(content == ''){
-			showMessage('error', '正文不能为空');
+			showTip('请输入正文内容','warning');
 			return false;
 		}
 	}else if(type == 3){
@@ -362,16 +382,16 @@ function save(){
 			var content_new = '';
 			$("input[name='hidden"+i+"']").each(function(l){
 				if($("input[name='hidden"+i+"']").eq(0).val() == ""){
-					showMessage('error', '第'+(i+1)+'篇文章的标题不能为空');
+					showTip('请输入'+'第'+(i+1)+'篇文章的标题','warning');
 					return false;
 				}else if($("input[name='hidden"+i+"']").eq(2).val() == ""){
-					showMessage('error', '第'+(i+1)+'篇文章的封面图片不能为空');
+					showTip('请上传'+'第'+(i+1)+'篇文章的封面图片','warning');
 					return false;
 				}else if($("input[name='hidden"+i+"']").eq(4).val() == ""){
-					showMessage('error', '第'+(i+1)+'篇文章的摘要不能为空');
+					showTip('请输入'+'第'+(i+1)+'篇文章的摘要','warning');
 					return false;
 				}else if($("textarea[name='hidden"+i+"']").val() == ""){
-					showMessage('error', '第'+(i+1)+'篇文章的正文不能为空');
+					showTip('请输入'+'第'+(i+1)+'篇文章的正文','warning');
 					return false;
 				}else{
 					if(l == 4){
@@ -386,7 +406,7 @@ function save(){
 		}
 		contents = contents.substring(3);
 	}else{
-		showMessage('error', '请选择消息类型');
+		showTip('请选择消息类型','warning');
 		return false;
 	}
 	//类型,标题,content
@@ -397,9 +417,10 @@ function save(){
 			data : { "media_id" : media_id, "type" : type, "title" : title, "content" : contents },
 			success : function(data) {
 				if(data['code'] > 0){
-					showMessage('success', data['message'], "{:__URL('ADMIN_MAIN/wchat/materialmessage')}");
+					showTip(data['message'],'success');
+					location.href = "{:__URL('ADMIN_MAIN/wchat/materialmessage?type='.$info['type'])}";
 				}else{
-					showMessage('error', data['message']);
+					showTip(data['message'],'error');
 				}
 			}
 	});
@@ -408,7 +429,7 @@ function save(){
 $(".media-plus").click(function() {
 	var num = $(this).parents(".media-left").find(".media-body").length;
 	if (num > 7) {
-		showMessage('error', '最多只可以加入8条图文消息。');
+		showTip('最多只可以加入8条图文消息。','warning');
 		return false;
 	}
 	var html = '';
@@ -475,7 +496,7 @@ $("#author").keyup(function(){
 function deleteWeixinMediaDetail(id){
 	$( "#dialog" ).dialog({
 		buttons: {
-			"确定,#e57373": function() {
+			"确定,#0059d6,#fff": function() {
 				$(this).dialog('close');
 				$.ajax({
 					type : "post",
@@ -483,14 +504,15 @@ function deleteWeixinMediaDetail(id){
 					data : {"id" : id},
 					success : function(res){
 						if(res>0){
-							showMessage('success', "操作成功", "{:__URL('ADMIN_MAIN/wchat/updatemedia','media_id='.$info['media_id'])}");
+							showTip(res.message,"success");
+							location.href = "{:__URL('ADMIN_MAIN/wchat/updatemedia','media_id='.$info['media_id'])}";
 						}else{
-							showMessage('error', "操作失败");
+							showTip(res.message,"error");
 						}
 					}
 				});
 			},
-			"取消": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 				return 0;
 			}
@@ -517,5 +539,6 @@ function hide(event) {
 function removeMedia(event){
 	$(event).parents(".media-body").remove();
 }
+
 </script>
 {/block}

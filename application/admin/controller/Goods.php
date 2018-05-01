@@ -26,6 +26,7 @@ use data\service\Supplier;
 use Qiniu\json_decode;
 use think\Config;
 use data\service\VirtualGoods;
+use data\service\Config as ConfigService;
 
 /**
  * 商品控制器
@@ -65,7 +66,7 @@ class Goods extends BaseController
             $end_date = request()->post('end_date') == '' ? 0 : getTimeTurnTimeStamp(request()->post('end_date'));
             $goods_name = request()->post('goods_name', '');
             $goods_code = request()->post('code', '');
-            $state = request()->post('state', '');
+            $state_type = request()->post('state', '');
             $category_id_1 = request()->post('category_id_1', '');
             $category_id_2 = request()->post('category_id_2', '');
             $category_id_3 = request()->post('category_id_3', '');
@@ -73,6 +74,11 @@ class Goods extends BaseController
             $supplier_id = request()->post('supplier_id', '');
             $stock_warning = request()->post("stock_warning", 0); // 库存预警
             $sort_rule = request()->post("sort_rule", ""); // 字段排序规则
+            $goods_type = request()->post("goods_type", "all"); // 商品类型
+            
+            if($goods_type != "all"){
+                $condition["ng.goods_type"] = $goods_type;
+            }
             
             if (! empty($selectGoodsLabelId)) {
                 $selectGoodsLabelIdArray = explode(',', $selectGoodsLabelId);
@@ -116,8 +122,10 @@ class Goods extends BaseController
                 ];
             }
             
-            if ($state != "") {
-                $condition["ng.state"] = $state;
+            if ($state_type >0) {
+                $condition["ng.state"] = 0;
+            }else{
+                $condition["ng.state"] = 1;
             }
             if (! empty($goods_name)) {
                 $condition["ng.goods_name"] = array(
@@ -156,7 +164,7 @@ class Goods extends BaseController
                     "<= ng.min_stock_alarm"
                 );
             }
-
+            
             $order = array();
             if (! empty($sort_rule)) {
                 $sort_rule_arr = explode(",", $sort_rule);
@@ -191,7 +199,7 @@ class Goods extends BaseController
                 $order['ng.create_time'] = 'desc';
             }
             
-            $result = $goodservice->getGoodsList($page_index, $page_size, $condition, $order);
+            $result = $goodservice->getBackStageGoodsList($page_index, $page_size, $condition, $order);
             
             // 根据商品分组id，查询标签名称
             foreach ($result['data'] as $k => $v) {
@@ -233,30 +241,92 @@ class Goods extends BaseController
             $supplier_list = $supplier->getSupplierList();
             $this->assign("supplier_list", $supplier_list['data']);
             // 上下架
-            $state = request()->get("state", "");
-            $this->assign("state", $state);
+            $state_type = request()->get("state_type", "");
+            $this->assign("state", $state_type);
             // 库存预警
             $stock_warning = request()->get("stock_warning", 0);
             $this->assign("stock_warning", $stock_warning);
-
-            $child_menu_list = array(
-                array(
-                    'url' => "goods/goodslist",
-                    'menu_name' => "商品列表",
-                    "active" => 1
-                ),
-                array(
-                    'url' => "goods/recyclelist",
-                    'menu_name' => "商品回收站",
-                    "active" => 0
-                )
-            );
+            if($state_type == 2){
+                $child_menu_list = array(
+                    array(
+                        'url' => "goods/goodslist",
+                        'menu_name' => "出售中",
+                        "active" => 0
+                    ),
+                    array(
+                        'url' => "goods/goodslist?state_type=2",
+                        'menu_name' => "已下架",
+                        'active' => 1
+                    ),
+                    array(
+                        'url' => "goods/goodslist?stock_warning=1",
+                        'menu_name' => "库存预警",
+                        "active" => 0
+                    ),
+                    array(
+                        'url' => "goods/recyclelist",
+                        'menu_name' => "回收站",
+                        "active" => 0
+                    )
+                );
+            }else if($stock_warning == 1){
+                $child_menu_list = array(
+                    array(
+                        'url' => "goods/goodslist",
+                        'menu_name' => "出售中",
+                        "active" => 0
+                    ),
+                    array(
+                        'url' => "goods/goodslist?state_type=2",
+                        'menu_name' => "已下架",
+                        'active' => 0
+                    ),
+                    array(
+                        'url' => "goods/goodslist?stock_warning=1",
+                        'menu_name' => "库存预警",
+                        "active" => 1
+                    ),
+                    array(
+                        'url' => "goods/recyclelist",
+                        'menu_name' => "回收站",
+                        "active" => 0
+                    )
+                );
+            }else{
+                $child_menu_list = array(
+                    array(
+                        'url' => "goods/goodslist",
+                        'menu_name' => "出售中",
+                        "active" => 1
+                    ),
+                    array(
+                        'url' => "goods/goodslist?state_type=2",
+                        'menu_name' => "已下架",
+                        'active' => 0
+                    ),
+                    array(
+                        'url' => "goods/goodslist?stock_warning=1",
+                        'menu_name' => "库存预警",
+                        "active" => 0
+                    ),
+                    array(
+                        'url' => "goods/recyclelist",
+                        'menu_name' => "回收站",
+                        "active" => 0
+                    )
+                );
+            }
+            
+//             if ($stock_warning == 1) {
+//                 $child_menu_list[0]['active'] = 0;
+//                 $child_menu_list[1]['active'] = 1;
+//             }
             $this->assign('child_menu_list', $child_menu_list);
-
+            
             return view($this->style . "Goods/goodsList");
         }
     }
-
+    
     public function getCategoryByParentAjax()
     {
         if (request()->isAjax()) {
@@ -311,6 +381,8 @@ class Goods extends BaseController
         $goods = new GoodsService();
         $supplier = new Supplier();
         $goodsbrand = new GoodsBrand();
+        $album = new Album();
+        $virtual_goods = new VirtualGoods();
         
         $goodsId = request()->get('goodsId', 0);
         $groupList = $goods_group->getGoodsGroupList(1, 0, [
@@ -344,28 +416,37 @@ class Goods extends BaseController
         }
         $this->assign("goods_id", $goodsId);
         $this->assign("shop_type", 2);
+        
         // 相册列表
-        $album = new Album();
         $detault_album_detail = $album->getDefaultAlbumDetail();
         $this->assign('detault_album_id', $detault_album_detail['album_id']);
+        
         // 物流公司
         $expressCompanyList = $express->getExpressCompanyList(1, 0, [
             'shop_id' => $this->instance_id
         ]);
         $this->assign("expressCompanyList", $expressCompanyList['data']);
         
-        //虚拟商品类型
-        $virtual_goods = new VirtualGoods();
-        $virtual_goods_type_list = $virtual_goods->getVirtualGoodsTypeList(1, 0);
-        $this->assign("virtual_goods_type_list", $virtual_goods_type_list['data']);
+        // 虚拟商品分组
+        $virtual_goods_group = $virtual_goods->getVirtualGoodsGroup();
+        $this->assign("virtual_goods_group", $virtual_goods_group);
+        
+        $template_url = array();
+        $config = new ConfigService();
+        $pc_template = $config->getUsePCTemplate($this->instance_id);
+        $wap_template = $config ->getUseWapTemplate($this->instance_id);
+
+        $template_url["pc_template_url"] = "template/shop/".$pc_template['value'].'/Goods/';
+        $template_url["wap_template_url"] = "template/wap/".$wap_template['value'].'/Goods/';
+        $this->assign("template_url", $template_url);
         
         if ($goodsId > 0) {
             if (! is_numeric($goodsId)) {
                 $this->error("参数错误");
             }
-            $this->assign("goodsid", $goodsId);
             $goods_info = $goods->getGoodsDetail($goodsId);
             if (! empty($goods_info)) {
+                $goods_info['presell_time'] = getTimeStampTurnTime($goods_info['presell_time']);
                 $goods_info['sku_list'] = json_encode($goods_info['sku_list']);
                 $goods_info['goods_group_list'] = json_encode($goods_info['goods_group_list']);
                 $goods_info['img_list'] = json_encode($goods_info['img_list']);
@@ -410,7 +491,7 @@ class Goods extends BaseController
                     $goods_info["category_name"] = $category_name;
                 }
                 $goods_info['description'] = str_replace(PHP_EOL, '', $goods_info['description']);
-                $this->assign("goods_info", $goods_info);
+                
                 // 规格数据转json
                 if (! empty($goods_info["sku_picture_array"])) {
                     $sku_picture_array_str = json_encode($goods_info["sku_picture_array"]);
@@ -421,13 +502,133 @@ class Goods extends BaseController
                 
                 $brand_info = $goodsbrand->getGoodsBrandInfo($goods_info['brand_id'], 'brand_id,brand_name');
                 $goods_info['brand_info'] = $brand_info;
-                return view($this->style . "Goods/selectCategoryNextUpdate");
+                
+                // 商品阶梯优惠
+                $ladder_preferential = '';
+                
+                $this->assign("ladder_preferential", $ladder_preferential);
+                
+                // 查询虚拟商品数据
+                $virtual_goods_type_info ='';
+                if (! empty($virtual_goods_type_info)) {
+                    $virtual_goods_type_info['value_info'] = json_decode($virtual_goods_type_info['value_info'], true);
+                    $this->assign("virtual_goods_type_info", $virtual_goods_type_info);
+                }
+                
+                $virtual_goods_count = 0;
+                $this->assign("virtual_goods_count", $virtual_goods_count);
+                
+                $this->assign("goods_info", $goods_info);
             } else {
                 $this->error("商品不存在");
             }
-        } else {
-            return view($this->style . 'Goods/selectCategoryNext');
         }
+        return view($this->style . "Goods/editGoods");
+    }
+
+    /**
+     * 虚拟商品管理控制器
+     */
+    public function virtualGoodsList()
+    {
+        $goods_id = request()->get('goods_id',0);
+        $this->assign('goods_id', $goods_id);
+        
+        //商品详情
+        $goods = new GoodsService();
+        $goods_info = $goods->getGoodsDetail($goods_id);
+        $this->assign('goods_info', $goods_info);
+        //虚拟商品信息
+        $virtual_goods = new VirtualGoods();
+        $virtual_goods_type_info = $virtual_goods->getVirtualGoodsTypeInfo(['relate_goods_id' => $goods_id]);
+        $this->assign('virtual_goods_type_info', $virtual_goods_type_info);
+        
+        //虚拟商品分组信息
+        $virtual_goods_group_id = $virtual_goods_type_info['virtual_goods_group_id'];
+        $virtual_group_info = $virtual_goods->getVirtualGoodsGroupInfo($virtual_goods_group_id);
+        $this->assign('virtual_group_info', $virtual_group_info);
+        
+        //卡密库存
+        $virtual_goods_count = $virtual_goods->getVirtualGoodsCountByGoodsId($goods_id);
+        $this->assign("virtual_goods_count", $virtual_goods_count);
+        
+        return view($this->style . "Goods/virtualGoodsList");
+    }
+
+    /**
+     * 根据goodsid查询虚拟商品列表
+     * 创建时间：2018年3月6日14:51:48
+     *
+     * @return void|Ambigous
+     */
+    public function getVirtualGoodsListByGoodsId()
+    {
+        $goods_id = request()->post("goods_id", 0);
+        $page_index = request()->post("page_index", 1);
+        $page_size = request()->post("page_size", PAGESIZE);
+        $search_name = request()->post("search_name", '');
+        $use_status = request()->post("use_status", '');
+        $virtual_code = request()->post("virtual_code", '');
+        
+        if ($goods_id == 0) {
+            return;
+        }
+        
+        $condition = array();
+        $condition['ng.goods_id'] = $goods_id;
+        $condition['ng.goods_name'] = [
+            'like',
+            '%' . $search_name . '%'
+        ];
+        if ($use_status != '') {
+            $condition['nvg.use_status'] = $use_status;
+        }
+        if ($virtual_code != '') {
+            $condition['nvg.virtual_code'] = $virtual_code;
+        }
+        
+        $virtual_goods = new VirtualGoods();
+        $res = $virtual_goods->getVirtualGoodsListByGoodsId($page_index, $page_size, $condition, 'nvg.virtual_goods_id desc');
+        return $res;
+    }
+
+    /**
+     * 添加虚拟商品
+     * 创建时间：2018年3月6日16:10:09 王永杰
+     *
+     * @return Ambigous <boolean, number, \think\false, string>
+     */
+    public function addVirtualGoods()
+    {
+        $card_number = request()->post("card_number", "");
+        $card_password = request()->post("card_password", "");
+        $validity_period = request()->post("validity_period", 0);
+        $confine_use_number = request()->post("confine_use_number", 0);
+        $goods_id = request()->post("goods_id", 0);
+        $res = - 1;
+        if (! empty($card_number) && ! empty($card_password) && $goods_id > 0) {
+            $virtual_goods = new VirtualGoods();
+            $remark = "卡号：" . $card_number . '&nbsp;&nbsp;密码：' . $card_password;
+            $res = $virtual_goods->addVirtualGoods($this->instance_id, '', 0.00, '', '', 0, '', $validity_period, 0, 0, 0, $confine_use_number, - 2, $goods_id, $remark);
+        }
+        return $res;
+    }
+
+    /**
+     * 根据主键id删除虚拟商品，支持多个删除
+     * 创建时间：2018年3月6日16:37:17 王永杰
+     *
+     * @return Ambigous <number, unknown>
+     */
+    public function deleteVirtualGoodsById()
+    {
+        $virtual_goods_id = request()->post("virtual_goods_id", "");
+        $res = - 1;
+        if (!empty($virtual_goods_id)) {
+            $virtual_goods = new VirtualGoods();
+            $res = $virtual_goods->deleteVirtualGoodsById($virtual_goods_id);
+        }
+        return AjaxReturn($res);
     }
 
     /**
@@ -490,14 +691,6 @@ class Goods extends BaseController
         $goods_category = new GoodsCategory();
         $list = $goods_category->getGoodsCategoryListByParentId($categoryID);
         return $list;
-    }
-
-    /**
-     * 修改商品
-     */
-    public function updataGoods()
-    {
-        return view($this->style . "Goods/addGoods");
     }
 
     /**
@@ -576,7 +769,8 @@ class Goods extends BaseController
         } else {
             $goodscategory = new GoodsCategory();
             $list = $goodscategory->getGoodsCategoryListByParentId(0);
-            $this->assign('goods_category_list', $list);            
+            $this->assign('goods_category_list', $list);
+            
             return view($this->style . "Goods/addGoodsBrand");
         }
     }
@@ -675,7 +869,9 @@ class Goods extends BaseController
             $attr_id = request()->post("attr_id", 0);
             $attr_name = request()->post("attr_name", '');
             $short_name = request()->post("short_name", '');
-            $result = $goodscate->addOrEditGoodsCategory(0, $category_name, $short_name, $pid, $is_visible, $keywords, $description, $sort, $category_pic, $attr_id, $attr_name);
+            $pc_custom_template = request()->post("pc_custom_template", "");
+            $wap_custom_template = request()->post("wap_custom_template", "");
+            $result = $goodscate->addOrEditGoodsCategory(0, $category_name, $short_name, $pid, $is_visible, $keywords, $description, $sort, $category_pic, $attr_id, $attr_name, $pc_custom_template, $wap_custom_template);
             return AjaxReturn($result);
         } else {
             $category_list = $goodscate->getGoodsCategoryTree(0);
@@ -683,6 +879,14 @@ class Goods extends BaseController
             $goods = new GoodsService();
             $goodsAttributeList = $goods->getAttributeServiceList(1, 0);
             $this->assign("goodsAttributeList", $goodsAttributeList['data']);
+            
+            $template_url = array();
+            $config = new ConfigService();
+            $pc_template = $config->getUsePCTemplate($this->instance_id);
+            $wap_template = $config ->getUseWapTemplate($this->instance_id);
+            $template_url["pc_template_url"] = "template/shop/".$pc_template['value'].'/Goods/';
+            $template_url["wap_template_url"] = "template/wap/".$wap_template['value'].'/Goods/';
+            $this->assign("template_url", $template_url);
             
             return view($this->style . "Goods/addGoodsCategory");
         }
@@ -707,10 +911,12 @@ class Goods extends BaseController
             $attr_name = request()->post("attr_name", '');
             $category_pic = request()->post('category_pic', '');
             $goods_category_quick = request()->post("goods_category_quick", '');
+            $pc_custom_template = request()->post("pc_custom_template", "");
+            $wap_custom_template = request()->post("wap_custom_template", "");
             if ($goods_category_quick != '') {
                 setcookie("goods_category_quick", $goods_category_quick, time() + 3600 * 24);
             }
-            $result = $goodscate->addOrEditGoodsCategory($category_id, $category_name, $short_name, $pid, $is_visible, $keywords, $description, $sort, $category_pic, $attr_id, $attr_name);
+            $result = $goodscate->addOrEditGoodsCategory($category_id, $category_name, $short_name, $pid, $is_visible, $keywords, $description, $sort, $category_pic, $attr_id, $attr_name, $pc_custom_template, $wap_custom_template);
             return AjaxReturn($result);
         } else {
             $category_id = request()->get('category_id', '');
@@ -734,39 +940,47 @@ class Goods extends BaseController
                         $category_list = $goodscate->getGoodsCategoryListByParentId(0);
                     }
                 }
-            } else 
-                if ($result['level'] == 2) {
-                    $chile_list = $goodscate->getGoodsCategoryListByParentId($category_id);
-                    if (empty($chile_list)) {
-                        $category_list = $goodscate->getGoodsCategoryTree(0);
-                    } else {
-                        $category_list = $goodscate->getGoodsCategoryListByParentId(0);
-                    }
-                } else 
-                    if ($result['level'] == 3) {
-                        $category_list = $goodscate->getGoodsCategoryTree(0);
-                    }
-            foreach ($category_list as $k => $v) {
-                if ($v["category_id"] == $category_id && $category_id !== 0) {
-                    unset($category_list[$k]);
+            } elseif ($result['level'] == 2) {
+                $chile_list = $goodscate->getGoodsCategoryListByParentId($category_id);
+                if (empty($chile_list)) {
+                    $category_list = $goodscate->getGoodsCategoryTree(0);
                 } else {
-                    if (isset($v["child_list"])) {
-                        $temp_array = $v["child_list"];
-                        foreach ($temp_array as $t => $m) {
-                            if ($m["category_id"] == $category_id && $category_id !== 0) {
-                                unset($temp_array[$t]);
+                    $category_list = $goodscate->getGoodsCategoryListByParentId(0);
+                }
+            } elseif ($result['level'] == 3) {
+                $category_list = $goodscate->getGoodsCategoryTree(0);
+            }
+            if (! empty($category_list)) {
+                foreach ($category_list as $k => $v) {
+                    if ($v["category_id"] == $category_id && $category_id !== 0) {
+                        unset($category_list[$k]);
+                    } else {
+                        if (isset($v["child_list"])) {
+                            $temp_array = $v["child_list"];
+                            foreach ($temp_array as $t => $m) {
+                                if ($m["category_id"] == $category_id && $category_id !== 0) {
+                                    unset($temp_array[$t]);
+                                }
                             }
+                            sort($temp_array);
+                            $category_list[$k]["child_list"] = $temp_array;
                         }
-                        sort($temp_array);
-                        $category_list[$k]["child_list"] = $temp_array;
                     }
                 }
+                sort($category_list);
             }
-            sort($category_list);
             $this->assign('category_list', $category_list);
             $goods = new GoodsService();
             $goodsAttributeList = $goods->getAttributeServiceList(1, 0);
             $this->assign("goodsAttributeList", $goodsAttributeList['data']);
+            
+            $template_url = array();
+            $config = new ConfigService();
+            $pc_template = $config->getUsePCTemplate($this->instance_id);
+            $wap_template = $config ->getUseWapTemplate($this->instance_id);
+            $template_url["pc_template_url"] = "template/shop/".$pc_template['value'].'/Goods/';
+            $template_url["wap_template_url"] = "template/wap/".$wap_template['value'].'/Goods/';
+            $this->assign("template_url", $template_url);
             
             return view($this->style . "Goods/updateGoodsCategory");
         }
@@ -855,65 +1069,16 @@ class Goods extends BaseController
             
             $shopId = $this->instance_id;
             $goodservice = new GoodsService();
-            $res = $goodservice->addOrEditGoods(
-                $product["goodsId"], // 商品Id
-                $product["title"], // 商品标题
-                $shopId, 
-                $product["categoryId"], // 商品类目
-                $category_id_1 = 0,
-                $category_id_2 = 0, 
-                $category_id_3 = 0, 
-                $product["supplierId"], 
-                $product["brandId"], 
-                $product["groupArray"], // 商品分组
-                $product['goods_type'], 
-                $product["market_price"], 
-                $product["price"], // 商品现价
-                $product["cost_price"], 
-                $product["point_exchange_type"], 
-                $product['integration_available_use'],
-                $product['integration_available_give'], 
-                $is_member_discount = 0, 
-                $product["shipping_fee"], 
-                $product["shipping_fee_id"], 
-                $product["stock"], 
-                $product['max_buy'], 
-                $product['min_buy'], 
-                $product["minstock"], 
-                $product["base_good"], 
-                $product["base_sales"], 
-                $collects = 0, 
-                $star = 0, 
-                $evaluates = 0, 
-                $product["base_share"], 
-                $product["province_id"],
-                $product["city_id"], 
-                $product["picture"], 
-                $product['key_words'], 
-                $product["introduction"], // 商品简介，促销语
-                $product["description"],
-                $product['qrcode'], // 商品二维码
-                $product["code"], 
-                $product["display_stock"], 
-                $is_hot = 0, 
-                $is_recommend = 0, 
-                $is_new = 0, 
-                $sort = $product['sort'], 
-                $product["imageArray"], 
-                $product["skuArray"], 
-                $product["is_sale"], '', // $product["sku_img_array"]
-                $product['goods_attribute_id'], 
-                $product['goods_attribute'], 
-                $product['goods_spec_format'], 
-                $product['goods_weight'], 
-                $product['goods_volume'], 
-                $product['shipping_fee_type'], 
-                $product['categoryExtendId'], 
-                $product["sku_picture_vlaues"], 
-                $product['virtual_goods_type_id'],
-                $product['production_date'], 
-                $product['shelf_life']
-            );
+            $res = $goodservice->addOrEditGoods($product["goodsId"], // 商品Id
+$product["title"], // 商品标题
+$shopId, $product["categoryId"], // 商品类目
+$category_id_1 = 0, $category_id_2 = 0, $category_id_3 = 0, $product["supplierId"], $product["brandId"], $product["groupArray"], // 商品分组
+$product['goods_type'], $product["market_price"], $product["price"], // 商品现价
+$product["cost_price"], $product["point_exchange_type"], $product['integration_available_use'], $product['integration_available_give'], $is_member_discount = 0, $product["shipping_fee"], $product["shipping_fee_id"], $product["stock"], $product['max_buy'], $product['min_buy'], $product["minstock"], $product["base_good"], $product["base_sales"], $collects = 0, $star = 0, $evaluates = 0, $product["base_share"], $product["province_id"], $product["city_id"], $product["picture"], $product['key_words'], $product["introduction"], // 商品简介，促销语
+$product["description"], $product['qrcode'], // 商品二维码
+$product["code"], $product["display_stock"], $is_hot = 0, $is_recommend = 0, $is_new = 0, $sort = $product['sort'], $product["imageArray"], $product["skuArray"], $product["is_sale"], '', // $product["sku_img_array"]
+$product['goods_attribute_id'], $product['goods_attribute'], $product['goods_spec_format'], $product['goods_weight'], $product['goods_volume'], $product['shipping_fee_type'], $product['categoryExtendId'], $product["sku_picture_vlaues"], $product['virtual_goods_type_data'], $product['production_date'], $product['shelf_life'], $product['ladder_preference'], $product['goods_video_address'], $product['pc_custom_template'], $product['wap_custom_template'], $product['max_use_point'],
+$product['is_open_presell'], $product['presell_delivery_type'], $product['presell_price'], $product['presell_time'], $product['presell_day'], $product['goods_unit']);
             
             // sku编码分组
             
@@ -988,10 +1153,11 @@ class Goods extends BaseController
             $is_visible = request()->post('is_visible', '');
             $sort = request()->post('sort', '');
             $group_pic = request()->post('group_pic', '');
-            $result = $goodsgroup->addOrEditGoodsGroup(0, $shop_id, $group_name, $pid, $is_visible, $sort, $group_pic);
+            $group_dec = request()->post('group_dec', '');
+            
+            $result = $goodsgroup->addOrEditGoodsGroup(0, $shop_id, $group_name, $pid, $is_visible, $sort, $group_pic, $group_dec);
             return AjaxReturn($result);
         } else {
-
             return view($this->style . "Goods/addGoodsGroup");
         }
     }
@@ -1010,13 +1176,15 @@ class Goods extends BaseController
             $is_visible = request()->post('is_visible', '');
             $sort = request()->post('sort', '');
             $group_pic = request()->post('group_pic', '');
-            $result = $goodsgroup->addOrEditGoodsGroup($group_id, $shop_id, $group_name, $pid, $is_visible, $sort, $group_pic);
+            $group_dec = request()->post('group_dec', '');
+            
+            $result = $goodsgroup->addOrEditGoodsGroup($group_id, $shop_id, $group_name, $pid, $is_visible, $sort, $group_pic, $group_dec);
             return AjaxReturn($result);
         } else {
             $group_id = request()->get('group_id', '');
             $result = $goodsgroup->getGoodsGroupDetail($group_id);
             $this->assign("data", $result);
-           
+            
             return view($this->style . "Goods/updateGoodsGroup");
         }
     }
@@ -1028,9 +1196,6 @@ class Goods extends BaseController
     {
         $goodsgroup = new GoodsGroup();
         $group_id = request()->post('group_id', '');
-        if (! is_numeric($group_id)) {
-            $this->error('未获取到信息');
-        }
         $res = $goodsgroup->deleteGoodsGroup($group_id, $this->instance_id);
         return AjaxReturn($res);
     }
@@ -1092,7 +1257,9 @@ class Goods extends BaseController
     {
         $page_index = request()->post("page_index", 1);
         $page_size = request()->post("page_size", PAGESIZE);
-        $search_text = request()->post("search_text","");
+        $search_text = request()->post("search_text", "");
+        $is_have_sku = request()->post("is_have_sku", 1);
+        $goods_type = request()->post("goods_type", "");
         $condition = array(
             "goods_name" => [
                 "like",
@@ -1103,6 +1270,12 @@ class Goods extends BaseController
                 0
             ]
         );
+        if ($is_have_sku == 0) {
+            $condition["goods_spec_format"] = '[]';
+        }
+        if (! empty($goods_type)) {
+            $condition["goods_type"] = $goods_type;
+        }
         $goods_detail = new GoodsService();
         $result = $goods_detail->getSearchGoodsList($page_index, $page_size, $condition);
         return $result;
@@ -1186,10 +1359,10 @@ class Goods extends BaseController
             $spec_value_str = request()->post('spec_value_str', '');
             $attr_id = request()->post('attr_id', 0);
             $is_screen = request()->post('is_screen', 0);
-            $res = $goods->addGoodsSpecService($this->instance_id, $spec_name, $show_type, $is_visible, $sort, $spec_value_str, $attr_id, $is_screen);
+            $spec_des = request()->post('spec_des', 0);
+            $res = $goods->addGoodsSpecService($this->instance_id, $spec_name, $show_type, $is_visible, $sort, $spec_value_str, $attr_id, $is_screen, $spec_des);
             return AjaxReturn($res);
         }
-    
         return view($this->style . 'Goods/addGoodsSpec');
     }
 
@@ -1210,12 +1383,12 @@ class Goods extends BaseController
             $sort = request()->post('sort', '');
             $spec_value_str = request()->post('spec_value_str', '');
             $is_screen = request()->post('is_screen', 0);
-            $res = $goods->updateGoodsSpecService($spec_id, $this->instance_id, $spec_name, $show_type, $is_visible, $sort, $spec_value_str, $is_screen);
+            $spec_des = request()->post('spec_des', 0);
+            $res = $goods->updateGoodsSpecService($spec_id, $this->instance_id, $spec_name, $show_type, $is_visible, $sort, $spec_value_str, $is_screen, $spec_des);
             return AjaxReturn($res);
         }
         $detail = $goods->getGoodsSpecDetail($spec_id);
         $this->assign('info', $detail);
-       
         return view($this->style . 'Goods/updateGoodsSpec');
     }
 
@@ -1265,6 +1438,26 @@ class Goods extends BaseController
         if (request()->isAjax()) {
             $page_index = request()->post('page_index', 1);
             $page_size = request()->post('page_size', 0);
+            $search_name = request()->post("search_name", "");
+            $goods_type_name = request()->post("goods_type_name", "");
+            $goods_type_id = request()->post("goods_type_id", "");
+            $condition = array();
+            if($search_name != ""){
+                $condition["attr_name"] = array(
+                        [
+                            "like",
+                            "%$search_name%"
+                        ],
+                        [
+                            'eq',
+                            $goods_type_name
+                        ],
+                        'or'
+                    );
+            }
+            if(!empty($goods_type_id)){
+                $condition["attr_id"] = $goods_type_id;
+            }
             $goods = new GoodsService();
             $goodsEvaluateList = $goods->getAttributeServiceList($page_index, $page_size, '', 'sort');
             return $goodsEvaluateList;
@@ -1298,10 +1491,16 @@ class Goods extends BaseController
             $sort = request()->post('sort', '');
             $spec_id_array = request()->post('select_box', '');
             $value_string = request()->post('data_obj_str', '');
-            $goodsAttribute = $goods->addAttributeService($attr_name, $is_use, $spec_id_array, $sort, $value_string);
+            $brand_id_array = request()->post('select_brank', '');
+            $goodsAttribute = $goods->addAttributeService($attr_name, $is_use, $spec_id_array, $sort, $value_string, $brand_id_array);
             return AjaxReturn($goodsAttribute);
         }
-    
+        
+        // 品牌
+        $goodsbrand = new GoodsBrand();
+        $brand_list = $goodsbrand->getGoodsBrandList();
+        
+        $this->assign('brand_list', $brand_list['data']);
         return view($this->style . 'Goods/addGoodsAttribute');
     }
 
@@ -1331,7 +1530,8 @@ class Goods extends BaseController
             $sort = request()->post('sort', '');
             $spec_id_array = request()->post('select_box', '');
             $value_string = request()->post('data_obj_str', '');
-            $res = $goods->updateAttributeService($attr_id, $attr_name, $is_use, $spec_id_array, $sort, $value_string);
+            $brand_id_array = request()->post('select_brank', '');
+            $res = $goods->updateAttributeService($attr_id, $attr_name, $is_use, $spec_id_array, $sort, $value_string, $brand_id_array);
             return AjaxReturn($res);
         }
         $attribute_detail = $goods->getAttributeServiceDetail($attr_id);
@@ -1340,6 +1540,11 @@ class Goods extends BaseController
         $this->assign('goodsguige', $goodsguige);
         $this->assign('attr_id', $attr_id);
         
+        // 品牌
+        $goodsbrand = new GoodsBrand();
+        $brand_list = $goodsbrand->getGoodsBrandList();
+        
+        $this->assign('brand_list', $brand_list['data']);
         return view($this->style . 'Goods/updateGoodsAttribute');
     }
 
@@ -1445,9 +1650,6 @@ class Goods extends BaseController
             $goodsEvaluateList = $goods->getGoodsEvaluateList($page_index, $page_size, $condition, 'addtime desc');
             return $goodsEvaluateList;
         }
-        // $goods = new GoodsService();
-        // $goodsEvaluateList = $goods->getGoodsEvaluateList($page_index = 1, $page_size = 0);
-        // //var_dump($goodsEvaluateList['data']);
         return view($this->style . "Goods/goodsComment");
     }
 
@@ -1566,13 +1768,11 @@ class Goods extends BaseController
             }
             if ($category_id_3 != "") {
                 $condition["ng.category_id_3"] = $category_id_3;
-            } else 
-                if ($category_id_2 != "") {
-                    $condition["ng.category_id_2"] = $category_id_2;
-                } else 
-                    if ($category_id_1 != "") {
-                        $condition["ng.category_id_1"] = $category_id_1;
-                    }
+            } elseif ($category_id_2 != "") {
+                $condition["ng.category_id_2"] = $category_id_2;
+            } elseif ($category_id_1 != "") {
+                $condition["ng.category_id_1"] = $category_id_1;
+            }
             $condition["ng.shop_id"] = $this->instance_id;
             $result = $goodservice->getGoodsDeletedList($page_index, $page_size, $condition, "ng.create_time desc");
             return $result;
@@ -1583,21 +1783,32 @@ class Goods extends BaseController
             $goodsCategory = new GoodsCategory();
             $oneGoodsCategory = $goodsCategory->getGoodsCategoryListByParentId(0);
             $this->assign("oneGoodsCategory", $oneGoodsCategory);
-
+            
             $child_menu_list = array(
                 array(
                     'url' => "goods/goodslist",
-                    'menu_name' => "商品列表",
+                    'menu_name' => "出售中",
+                    "active" => 0
+                ),
+                array(
+                    'url' => "goods/goodslist?state_type=2",
+                    'menu_name' => "已下架",
+                    'active' => 0
+                ),
+                
+                array(
+                    'url' => "goods/goodslist?stock_warning=1",
+                    'menu_name' => "库存预警",
                     "active" => 0
                 ),
                 array(
                     'url' => "goods/recyclelist",
-                    'menu_name' => "商品回收站",
+                    'menu_name' => "回收站",
                     "active" => 1
                 )
             );
             $this->assign('child_menu_list', $child_menu_list);
-
+            
             return view($this->style . 'Goods/recycleList');
         }
     }
@@ -1673,6 +1884,7 @@ class Goods extends BaseController
             $category_select_ids = $category_select_result["category_ids"];
             $category_select_names = $category_select_result["category_names"];
         }
+      
         $this->assign("category_select_ids", $category_select_ids);
         $this->assign("category_select_names", $category_select_names);
         return view($this->style . 'Goods/dialogSelectCategory');
@@ -1822,5 +2034,140 @@ class Goods extends BaseController
         $is_enabled = request()->post("is_enabled", 1);
         $res = $virtual_goods->setVirtualGoodsTypeIsEnabled($virtual_goods_type_id, $is_enabled);
         return AjaxReturn($res);
+    }
+
+    /**
+     * 获取添加活动商品列表
+     */
+    public function getSelectGoodslist()
+    {
+        $goods = new GoodsService();
+        $page_index = request()->post("page_index", 1);
+        $page_size = request()->post("page_size", PAGESIZE);
+        $goods_name = request()->post('goods_name', '');
+        $goods_id_array = request()->post("goods_id_array", "");
+        $type = request()->post("type", "");
+        $category_id_1 = request()->post('category_id_1', '');
+        $category_id_2 = request()->post('category_id_2', '');
+        $category_id_3 = request()->post('category_id_3', '');
+        
+        $data = request()->post("data");
+        $data = json_decode($data, true);
+        $goods_type = $data['goods_type'];
+        $state = $data['state'];
+        
+        $condition = array();
+       
+        if (! empty($goods_name)) {
+            $condition["goods_name"] = array(
+                "like",
+                "%" . $goods_name . "%"
+            );
+        }
+        
+        // 选择指定id的商品
+        if (! empty($goods_id_array)) {
+            if ($type == "select") {
+                $condition["goods_id"] = array(
+                    "not in",
+                    $goods_id_array
+                );
+            } else 
+                if ($type == "selected") {
+                    $condition["goods_id"] = array(
+                        "in",
+                        $goods_id_array
+                    );
+                }
+        }
+        
+        // 商品分类
+        if ($category_id_3 != "") {
+            $condition["category_id_3"] = $category_id_3;
+        } elseif ($category_id_2 != "") {
+            $condition["category_id_2"] = $category_id_2;
+        } elseif ($category_id_1 != "") {
+            $condition["category_id_1"] = $category_id_1;
+        }
+        
+        $list = $goods->getSelectGoodsList($page_index, $page_size, $condition, "sort asc,create_time desc", "goods_id,goods_name,stock,promotion_price,price");
+        return $list;
+    }
+
+    /**
+     * 删除已上传的视频
+     * 赵海雷
+     */
+    function delSelectedVideo()
+    {
+        $src = request()->post('src');
+        $res = 1;
+        if (! empty($src)) {
+            $res = unlink($src);
+        }
+        
+        return $res;
+    }
+
+    /**
+     * 批量处理
+     */
+    public function batchProcessingGoods()
+    {
+        if (request()->isAjax()) {
+            $info = array(
+                "price" => request()->post("price", 0),
+                "market_price" => request()->post("market_price", 0),
+                "cost_price" => request()->post("cost_price", 0),
+                "stock" => request()->post("stock", 0),
+                "catrgory_one" => request()->post("catrgory_one", 0),
+                "catrgory_two" => request()->post("catrgory_two", 0),
+                "catrgory_three" => request()->post("catrgory_three", 0),
+                "brand_id" => request()->post("brand_id", 0),
+                "goods_ids" => request()->post("goods_ids", "")
+            );
+            $goods = new GoodsService();
+            $res = $goods->batchProcessingGoods($info);
+            return $res;
+        }
+    }
+    
+    /**
+     * 添加虚拟商品（点卡添加）
+     */
+    public function ajaxAddVirtualGoods(){
+        
+        if(request()->isAjax()){
+            
+            $virtual_card_json = request()->post('virtual_card', '');
+            $goods_id = request()->post('goods_id', '');
+            $virtual_goods_type_id = request()->post('virtual_goods_type_id', '');
+            
+            $virtual_goods = new VirtualGoods();
+            $res = $virtual_goods->addBatchVirtualCard($virtual_goods_type_id, $goods_id, $virtual_card_json);
+            return AjaxReturn($res);
+        }
+    }
+    
+    /**
+     * 批量添加商品分类
+     */
+    public function batchAddgoodscategory(){
+        if(request()->isAjax()){
+            $content = request()->post("content", "");
+            $goodscate = new GoodsCategory();
+            $res = $goodscate -> batchAddgoodscategory($content);
+            return $res;
+        }
+    }
+    /**
+     * 单一获取规格数据
+     */
+    public function getGoodsSpecInfoQuery(){
+        $attr_id = request()->post("attr_id", 0);
+        $condition = array("attr_id" => $attr_id);
+        $goods = new GoodsService();
+        $res = $goods->getGoodsSpecInfoQuery($condition);
+        return $res;
     }
 }

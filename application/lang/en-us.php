@@ -312,7 +312,7 @@ return [
     'member_cash_available'          => 'Cash available',
     'member_cash_account'            => 'Cash account',
     'member_full_name'               => 'Name',
-    'member_sub_branch_information'  => 'Sub branch information',
+'member_sub_branch_information'  => 'Sub branch information',
     'member_bank_account'            => 'Bank account',
     'member_click_add'               => 'Add',
     'member_cash_withdrawal'         => 'Cash withdrawal',
@@ -1085,7 +1085,10 @@ return [
     'my_winning_records'                                                  => 'My winning records',
     'to_receive_the_prize'                                                => 'To receive the prize',
     'immediately_receive'                                                 => 'Immediately to receive',
-    'member_bank_max_length'                                              => 'The withdrawal account length exceeds the limit'
-    
+    'member_bank_max_length'                                              => 'The withdrawal account length exceeds the limit',
+    'member_waiting_share'                                                => 'Wating share',
+    'spell_group_zone'                                                    => 'Spell group zone',
+    'join_together'                                                       => 'Join together',
+    'spell_group_order'                                                   => 'Spell group order',
+    'local_distribution'                                                  => 'Local distribution'
 ];
-

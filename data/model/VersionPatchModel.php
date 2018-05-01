@@ -25,8 +25,10 @@ class VersionPatchModel extends BaseModel {
     protected $table = 'sys_version_patch';
     protected $rule = [
         'id'  =>  '',
+        'patch_log'  =>  'no_html_parse',
     ];
     protected $msg = [
         'id'  =>  '',
+        'patch_log'  =>  '',
     ];
 }

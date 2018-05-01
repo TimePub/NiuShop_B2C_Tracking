@@ -73,6 +73,40 @@ class Wchat extends BaseController
         $res = $config->setInstanceWchatConfig($this->instance_id, $appid, $appsecret, $token);
         return AjaxReturn($res);
     }
+    
+    /**
+     * 小程序账户设置
+     */
+    public function appletConfig()
+    {
+        $config = new Config();
+        // 获取当前域名
+        $domain_name = \think\Request::instance()->domain();
+        $url = $domain_name . \think\Request::instance()->root();
+        // 去除链接的https://头部
+        $url_top = substr($url, 8);
+        // 去除链接的尾部index.php
+        $url_top = str_replace('/index.php', '', $url_top);
+        $this->assign("url", $url_top);
+        $applet_config = $config->getInstanceAppletConfig($this->instance_id);
+        $this->assign('applet_config', $applet_config["value"]);
+        return view($this->style . 'Wchat/appletConfig');
+    }
+    
+    /**
+     * 修改小程序配置
+     * 2017年4月27日 11:03:30
+     *
+     * @return unknown
+     */
+    public function setInstanceAppletConfig()
+    {
+        $config = new Config();
+        $appid = str_replace(' ', '', request()->post('appid', ''));
+        $appsecret = str_replace(' ', '', request()->post('appsecret', ''));
+        $res = $config->setInstanceAppletConfig($this->instance_id, $appid, $appsecret);
+        return AjaxReturn($res);
+    }
 
     /**
      * 微信菜单
@@ -510,13 +544,13 @@ class Wchat extends BaseController
      */
     public function materialMessage()
     {
-        $type = request()->get('type', 0);
+        $type = request()->get('type', 1);
         $child_menu_list = array(
-            array(
+            /* array(
                 'url' => "wchat/materialMessage",
                 'menu_name' => "全部",
                 "active" => $type == 0 ? 1 : 0
-            ),
+            ), */
             array(
                 'url' => "wchat/materialMessage?type=1",
                 'menu_name' => "文本",
@@ -533,6 +567,11 @@ class Wchat extends BaseController
                 "active" => $type == 3 ? 1 : 0
             )
         );
+        $type_name_arr = [
+            '1' => '文本',
+            '2' => '单图文',
+            '3' => '多图文',
+        ];
         if (request()->isAjax()) {
             $type = request()->post('type', 0);
             $search_text = request()->post('search_text', '');
@@ -552,6 +591,7 @@ class Wchat extends BaseController
             return $list;
         }
         $this->assign('type', $type);
+        $this->assign('type_name',$type_name_arr[$type]);
         $this->assign('child_menu_list', $child_menu_list);
         return view($this->style . 'Wchat/materialMessage');
     }
@@ -616,6 +656,7 @@ class Wchat extends BaseController
             $res = $weixin->addWeixinMedia($title, $this->instance_id, $type, $sort, $content);
             return AjaxReturn($res);
         }
+        $this->assign('type',request()->get('type'));
         return view($this->style . 'Wchat/addMedia');
     }
 
@@ -847,5 +888,74 @@ class Wchat extends BaseController
             $this->assign("website_info", $website_info);
             return view($this->style . 'Wchat/keyConcernConfig');
         }
+    }
+    
+    /**
+     * 粉丝留言管理
+     */
+    public function fansMessageManage(){
+        
+        if(request()->post()){
+            
+            $weixin = new Weixin();
+            
+            $page_index = request()->post("page_index", 1);
+            $page_size = request()->post("page_size", PAGESIZE);
+            
+            $list = $weixin->getUserMessageList($page_index, $page_size, '', 'msg_id desc');
+     
+            return $list;
+         
+        }else{
+            $child_menu_list = $this->getMessageMenuList(1);
+            //$this->assign('child_menu_list',$child_menu_list);
+            
+            return view($this->style . 'Wchat/fansMessageManage');
+        } 
+    }
+    
+    /**
+     * 群发消息设置
+     */
+    public function sendGroupMessage(){
+        
+        if(request()->post()){
+            $group = request()->post('group');
+            $send_message = request()->post('send_message');
+            
+            return AjaxReturn(1);
+        }else{
+            $child_menu_list = $this->getMessageMenuList(2);
+            $this->assign('child_menu_list',$child_menu_list);
+            
+            return view($this->style . 'Wchat/sendGroupMessage');
+        }
+        
+    }
+    
+    /**
+     * 微信客服管理三级菜单
+     */
+    public function getMessageMenuList($menu_id){
+        $child_menu_list = array(
+            array(
+                "menu_id" => 1,
+                'url' => "Wchat/fansMessageManage",
+                'menu_name' => "粉丝留言",
+                "active" => 0
+            ),
+            array(
+                "menu_id" => 2,
+                'url' => "Wchat/sendGroupMessage",
+                'menu_name' => "群发消息",
+                "active" => 0
+            ),
+        );
+        foreach($child_menu_list as $k=>$v){
+            if($menu_id == $v['menu_id']){
+                $child_menu_list[$k]['active'] = 1;
+            }
+        }
+        return $child_menu_list;
     }
 }   

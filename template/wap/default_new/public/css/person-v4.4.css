@@ -72,9 +72,10 @@
 .order-detail-noLogistics{padding:0 15px;background:#fff;color:#333;}
 .order-detail-noLogistics .noLogistics-out{padding: 10px 0;border-bottom:1px solid #e3e3e3;}
 .order-detail-noLogistics .alert-no{color:#999;}
-.order-detail-remark {padding:0 15px;border-bottom:1px solid #e3e3e3;background:#fff;color:#333;}
-.order-detail-remark .remark-out {padding:10px 0; }
+.order-detail-remark {padding:0 15px;background:#fff;color:#333;}
+.order-detail-remark .remark-out {padding:10px 0; border-bottom:1px solid #e3e3e3;}
 .order-detail .list-myorder{margin:10px 0 0px 0;padding-top:0px;border-top:1px solid #e3e3e3;border-bottom:1px solid #e3e3e3;background:#fff;}
+.order-detail .distribution-info p{font-size: 12px;margin-bottom: 0;padding-left: 25px;}
 .order-detail .list-myorder .text{font-size:12px;overflow:hidden;}
 .order-detail .list-myorder .pro-name{color:#666;font-size:12px;}
 .order-detail .list-myorder .pro-pric{margin-top:5px;color:#333;font-size:12px;}

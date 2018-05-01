@@ -58,7 +58,7 @@ function getArticleList(class_id,page){
 						article_list_html +='<a href="'+__URL('APP_MAIN/Articlecenter/articlecontent?article_id='+data['data'][i]['article_id'])+'">'+data['data'][i]['title']+'</a>';
 					}
 				}else{
-					article_list_html+= '<p style="color:#939393;text-align:center;margin-top:100px;"><img src="__TEMP__/{$style}/public/images/wap_nodata.png" style="margin-bottom:20px;height:60px;"><br>该分类下暂时没有文章！</p>';
+					article_list_html+= '<p style="color:#939393;text-align:center;margin-top:100px;"><img src="__TEMP__/{$style}/public/images/wap_nodata.png" height="100"><br>该分类下暂时没有文章！</p>';
 				}
 				$('#article_list').html(article_list_html);
 				is_load =true;

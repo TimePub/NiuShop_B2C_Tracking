@@ -36,15 +36,22 @@
 			
 				<div class="p-img">
 					<a target="_blank" title="{$vo.goods_name}" href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$vo['goods_id'])}">
-						<img alt="" src="{:__IMG($vo['pic_cover_mid'])}">
+						<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($vo['pic_cover_mid'])}">
 					</a>
 					</div>
 					<div class="p-name">
 						<a target="_blank" title="{$vo.goods_name}" href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$vo['goods_id'])}">{$vo.goods_name}</a>
 					</div>
 					<div class="p-comm">
-						<span class="p-price second-color">￥{$vo.price}</span>
-						<!-- <a class="p-comm-num" href="" target="_blank">评论：0</a> -->
+						{in name="$vo.point_exchange_type" value="0,2"}
+							<span class="p-price second-color">￥{$vo.price}</span>
+						{else/}
+							{if $vo['point_exchange_type'] == 1 && $vo['promotion_price'] > 0}
+								<span class="p-price second-color">￥{$vo.promotion_price}+{$vo.point_exchange}积分</span>
+							{else/}
+								<span class="p-price second-color">{$vo.point_exchange}积分</span>
+							{/if}
+						{/in}
 					</div>
 				</li> 
 			{/volist}
@@ -59,15 +66,22 @@
 					<li>
 						<div class="p-img">
 							<a target="_blank" title="{$vo.goods_name}" href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$vo['goods_id'])}">
-								<img alt="{$vo.goods_name}" src="{:__IMG($vo['picture_info']['pic_cover_mid'])}">
+								<img alt="{$vo.goods_name}" src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($vo['pic_cover_mid'])}">
 							</a>
 						</div>
 						<div class="p-name">
 							<a target="_blank" title="{$vo.goods_name}" href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$vo['goods_id'])}">{$vo.goods_name}</a>
 						</div>
 						<div class="p-comm">
-							<span class="p-price money-color">￥{$vo.price}</span>
-							
+							{in name="$vo.point_exchange_type" value="0,2"}
+								<span class="p-price money-color">￥{$vo.price}</span>
+							{else/}
+								{if $vo['point_exchange_type'] == 1 && $vo['promotion_price'] > 0}
+									<span class="p-price money-color">￥{$vo.promotion_price}+{$vo.point_exchange}积分</span>
+								{else/}
+									<span class="p-price money-color">{$vo.point_exchange}积分</span>
+								{/if}
+							{/in}
 						</div>
 					</li>
 					{/volist}

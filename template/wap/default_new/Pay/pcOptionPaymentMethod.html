@@ -6,6 +6,7 @@
 <link type="text/css" rel="stylesheet" href="__TEMP__/{$style}/public/css/pay/pc_option_payment_common.css">
 <link type="text/css" rel="stylesheet" href="__TEMP__/{$style}/public/css/pay/pc_option_payment.css">
 <script src="__TEMP__/{$style}/public/js/jquery.js"></script>
+<script src="__STATIC__/js/load_bottom.js" type="text/javascript"></script>
 </head>
 <body>
 <div class="header container">
@@ -39,7 +40,7 @@
 					<div class="border border-mix"></div>
 				</div>
 				<div class="pay-way item-checked margin padding clearfix pays js-select-pay">
-					{if condition="$pay_config['wchat_pay_config']['is_use'] ==1 || $pay_config['ali_pay_config']['is_use'] == 1"}
+					{if condition="$pay_config['wchat_pay_config']['is_use'] ==1 || $pay_config['ali_pay_config']['is_use'] == 1 || $pay_config['union_pay_config']['is_use'] == 1"}
 						{if condition="$pay_config['wchat_pay_config']['is_use']==1"}
 						<div class="item" data-pay="wchat">
 							<i></i>
@@ -56,6 +57,14 @@
 							</a>
 						</div>
 						{/if}
+						{if condition="$pay_config['union_pay_config']['is_use']==1"}
+						<div class="item" data-pay="unionpay">
+							<i></i>
+							<a class="pic-center border-none" href="javascript:;">
+								<img src="__TEMP__/{$style}/public/images/pay/unionpay_card.png">
+							</a>
+						</div>
+						{/if}
 					{else/}
 						<span class="none_pays">{:lang('not_yet_open_payment_background')}</span>
 					{/if}
@@ -67,13 +76,8 @@
 		</div>
 	</div>
 
-	<div class="footer">
-		<div class="copyright">
-			<div class="ft-copyright">
-				<a href="javascript:;" target="_blank">{$title}{:lang('provide_technical_support')}</a>
-			</div>
-		</div>
-	</div>
+	{include file='wap/default_new/controlCopyRight'/}
+
 	<div class="mask-layer"></div>
 	<article class="mask-layer-dialog">
 		<header>
@@ -91,8 +95,10 @@
 	<input type="hidden" value="{$pay_value.create_time | getTimeStampTurnTime}" id="create_time" />
 <!-- 	<input type="hidden" value="<?php echo getTimeStampTurnTime($pay_value['create_time'] + ($shop_config['order_buy_close_time']*60)); ?>" id="buy_close_time" /> -->
 	<input type="hidden" value="{$shop_config['order_buy_close_time']}" id="buy_close_time" />
-	
+	{include file="wap/default_new/urlModel"/}
 <script>
+var APPMAIN='APP_MAIN';
+var STATIC = "__STATIC__";
 var interval = null;
 function countdown(){
 	var date = new Date($("#create_time").val().replace(/\-/g, "\/"));//订单创建时间
@@ -166,6 +172,10 @@ $(function() {
 			case "alipay":
 				//跳转到支付宝
 				url = '{:__URL('APP_MAIN/pay/alipay?no='.$pay_value['out_trade_no'])}';
+				break;
+			case "unionpay":
+				//跳转到银联卡
+				url = '{:__URL('APP_MAIN/pay/unionpay?no='.$pay_value['out_trade_no'])}';
 				break;
 			}
 			window.open(url);

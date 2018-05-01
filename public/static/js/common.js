@@ -25,7 +25,7 @@ function showTip(msg,flag){
 		$(".js-common-tip").removeClass("common-success common-warning common-error")
 		.addClass(curr_class)
 		.fadeIn(400)
-		.children().text(msg);
+		.find('.inner').text(msg);
 		setTimeout("$('.js-common-tip').fadeOut()",2000);
 	}
 }

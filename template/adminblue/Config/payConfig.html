@@ -5,28 +5,40 @@
 {block name="main"}
 <div class="set-style">
 	<dl>
-		<dt>应用ID[AppID]:</dt>
-		<dd><input id="APP_KEY" type="text" value="{$config['value']['appid']}" class="input-common" /></dd>
+		<dt>应用ID：</dt>
+		<dd>
+			<input id="APP_KEY" type="text" value="{$config['value']['appid']}" class="input-common long" />
+			<p class="hint"><i class="important-note">[AppID]</i>微信支付对应公众账号APPID</p>
+		</dd>
 	</dl>
 	<dl>
-		<dt>应用密钥[AppSecrect]:</dt>
-		<dd><input id="APP_SECRET" type="text" value="{$config['value']['appkey']}" class="input-common" /></dd>
+		<dt>应用密钥：</dt>
+		<dd>
+			<input id="APP_SECRET" type="text" value="{$config['value']['appkey']}" class="input-common long" />
+			<p class="hint"><i class="important-note">[AppSecrect]</i>微信支付对应公众账号APPS</p>
+		</dd>
 	</dl>
 		<dl>
-		<dt>支付专用签名串[paySignKey]:</dt>
-		<dd><input id="paySignKey" type="text" value="{$config['value']['mch_key']}" class="input-common" /></dd>
+		<dt>支付专用签名串：</dt>
+		<dd>
+			<input id="paySignKey" type="text" value="{$config['value']['mch_key']}" class="input-common long" />
+			<p class="hint"><i class="important-note">[paySignKey]</i>微信商户API密钥</p>
+		</dd>
 	</dl>
 	<dl>
-		<dt>微信支付商户号[MCHID]:</dt>
-		<dd><input id="MCHID" type="text" value="{$config['value']['mch_id']}" class="input-common" /></dd>
+		<dt>微信支付商户号：</dt>
+		<dd>
+			<input id="MCHID" type="text" value="{$config['value']['mch_id']}" class="input-common long" />
+			<p class="hint"><i class="important-note">[MCHID]</i>微信支付商户号</p>
+		</dd>
 	</dl>
 	<dl>
-		<dt>支付授权目录:</dt>
+		<dt>支付授权目录：</dt>
 		<dd><span class="text" style="background-color: white; border: none;min-width: 500px;display: inline-block;font-size: 13px;cursor: pointer;color:#468847;" id="empowerUrl" value="">{$root_url}</span></dd>
 	</dl>
 	
 	<dl>
-		<dt>apiclient_cert(绝对路径):</dt>
+		<dt>apiclient_cert：</dt>
 		<dd>
 			<input id="apiclient_cert" type="text" class="input-common w500" placeholder="请填写绝对路径"
 			{if condition="$original_road_refund_setting_info.apiclient_cert"} value="{$original_road_refund_setting_info.apiclient_cert}"{/if}>
@@ -34,7 +46,7 @@
 	</dl>
 	
 	<dl>
-		<dt>apiclient_key.pem(绝对路径):</dt>
+		<dt>apiclient_key.pem：</dt>
 		<dd>
 			<input id="apiclient_key" type="text" class="input-common w500" placeholder="请填写绝对路径"
 			{if condition="$original_road_refund_setting_info.apiclient_key"} value="{$original_road_refund_setting_info.apiclient_key}"{/if}>
@@ -55,25 +67,28 @@
 		<dd>
 			<p><input id="refund_is_use" type="checkbox" class="checkbox"
 			{if condition="$original_road_refund_setting_info.is_use"}checked="checked"{/if}/></p>
-			<span style="color: #FF9800;">需要配置微信支付同时配置好apiclient_cert和apiclient_key的绝对路径才可以进行后续操作</span>
+			<p class="hint">需要配置微信支付同时配置好apiclient_cert和apiclient_key的绝对路径才可以进行后续操作</p>
 		</dd>
 	</dl>
 	<!-- 原路退款设置结束 -->
 	
 	<!-- 转账设置 开始-->
-	<dl style="display: none;">
+	<dl style="display:none">
 		<dt>是否启用转账：</dt>
 		<dd>
 			<p><input id="transfer_is_use" type="checkbox" class="checkbox" 
 			{if condition="$transfer_accounts_setting_info.is_use"}checked="checked"{/if}/></p>
-			<span style="color: #FF9800;">需要配置微信支付同时配置好apiclient_cert和apiclient_key的绝对路径才可以进行后续操作</span>
+			<p class="hint">需要配置微信支付同时配置好apiclient_cert和apiclient_key的绝对路径才可以进行后续操作</p>
 		</dd>
 	</dl>
 		
 	<!-- 转账设置 结束-->
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="setConfigAjax()">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="setConfigAjax()">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
 	</dl>
 </div>
 <script>
@@ -126,10 +141,10 @@ function setConfigAjax(){
 		},
 		success:function (data) {
 			if (data["code"] > 0) {
-				showMessage('success', data["message"]);
+				showTip(data["message"],"success");
 				location.href=__URL("ADMIN_MAIN/config/paymentconfig");
 			}else{
-				showMessage('error', data["message"]);
+				showTip(data["message"],"error");
 			}
 		}
 	});

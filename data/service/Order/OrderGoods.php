@@ -33,6 +33,9 @@ use data\service\promotion\GoodsPreference;
 use data\model\NsOrderGoodsViewModel;
 use data\model\NsOrderGoodsExpressModel;
 use data\service\Order as OrderService;
+use data\model\NsPromotionGiftGoodsModel;
+use data\model\NsCustomerServiceRecordsModel;
+use data\model\NsCustomerServiceModel;
 // use think\Model;
 /**
  * 订单商品操作类
@@ -107,7 +110,202 @@ class OrderGoods extends BaseService
                 
                 $goods_promote = new GoodsPreference();
                 $sku_price = $goods_promote->getGoodsSkuPrice($goods_sku_info['sku_id']);
+                // 获取商品阶梯优惠后的价格
+                $sku_price = $goods_promote->getGoodsLadderPreferentialPrice($goods_sku_info['sku_id'], $goods_sku[1], $sku_price);
                 $goods_promote_info = $goods_promote->getGoodsPromote($goods_sku_info['goods_id']);
+                if (empty($goods_promote_info)) {
+                    $goods_info['promotion_type'] = 0;
+                    $goods_info['promote_id'] = 0;
+                }
+                if ($goods_sku_info['stock'] < $goods_sku[1] || $goods_sku[1] <= 0) {
+                    $this->order_goods->rollback();
+                    return LOW_STOCKS;
+                }
+                $give_point = $goods_sku[1] * $goods_info["give_point"];
+                
+                // 库存减少销量增加
+                $goods_calculate = new GoodsCalculate();
+                $goods_calculate->subGoodsStock($goods_sku_info['goods_id'], $goods_sku_info['sku_id'], $goods_sku[1], '');
+                $goods_calculate->addGoodsSales($goods_sku_info['goods_id'], $goods_sku_info['sku_id'], $goods_sku[1]);
+                $data_order_sku = array(
+                    'order_id' => $order_id,
+                    'goods_id' => $goods_sku_info['goods_id'],
+                    'goods_name' => $goods_info['goods_name'],
+                    'sku_id' => $goods_sku_info['sku_id'],
+                    'sku_name' => $goods_sku_info['sku_name'],
+                    'price' => $sku_price,
+                    'num' => $goods_sku[1],
+                    'adjust_money' => $adjust_money,
+                    'cost_price' => $goods_sku_info['cost_price'],
+                    'goods_money' => $sku_price * $goods_sku[1] - $adjust_money,
+                    'goods_picture' => $picture != 0 ? $picture : $goods_info['picture'], // 如果当前商品有SKU图片，就用SKU图片。没有则用商品主图
+                    'shop_id' => $this->instance_id,
+                    'buyer_id' => $this->uid,
+                    'goods_type' => $goods_info['goods_type'],
+                    'promotion_id' => $goods_info['promote_id'],
+                    'promotion_type_id' => $goods_info['promotion_type'],
+                    'point_exchange_type' => $goods_info['point_exchange_type'],
+                    'order_type' => 1, // 订单类型默认1
+                    'give_point' => $give_point
+                ); // 积分数量默认0
+                
+                if ($goods_sku[1] == 0) {
+                    $err = 1;
+                }
+                $order_goods = new NsOrderGoodsModel();
+                
+                $order_goods->save($data_order_sku);
+            }
+            if ($err == 0) {
+                $this->order_goods->commit();
+                return 1;
+            } elseif ($err == 1) {
+                $this->order_goods->rollback();
+                return ORDER_GOODS_ZERO;
+            }
+        } catch (\Exception $e) {
+            $this->order_goods->rollback();
+            return $e->getMessage();
+        }
+    }
+
+    /**
+     * 添加赠品的订单项
+     * 创建时间：2018年1月24日18:44:48
+     *
+     * @param unknown $order_id            
+     * @param unknown $goods_sku_list            
+     * @param number $adjust_money            
+     * @return string|number
+     */
+    public function addOrderGiftGoods($order_id, $goods_sku_list, $adjust_money = 0)
+    {
+        $this->order_goods->startTrans();
+        try {
+            $err = 0;
+            $goods_sku_list_array = explode(",", $goods_sku_list);
+            foreach ($goods_sku_list_array as $k => $goods_sku_array) {
+                
+                $goods_sku = explode(':', $goods_sku_array);
+                $goods_sku_model = new NsGoodsSkuModel();
+                $goods_sku_info = $goods_sku_model->getInfo([
+                    'sku_id' => $goods_sku[0]
+                ], 'sku_id,goods_id,cost_price,stock,sku_name,attr_value_items');
+                
+                // 如果当前商品有SKU图片，就用SKU图片。没有则用商品主图 2017年9月19日 15:46:38（王永杰）
+                $picture = $this->getSkuPictureBySkuId($goods_sku_info);
+                
+                $goods_model = new NsGoodsModel();
+                $goods_info = $goods_model->getInfo([
+                    'goods_id' => $goods_sku_info['goods_id']
+                ], 'goods_name,price,goods_type,picture,promotion_type,promote_id,point_exchange_type,give_point');
+                
+                $goods_promote = new GoodsPreference();
+                $sku_price = $goods_promote->getGoodsSkuPrice($goods_sku_info['sku_id']);
+                // 获取商品阶梯优惠后的价格
+                $sku_price = $goods_promote->getGoodsLadderPreferentialPrice($goods_sku_info['sku_id'], $goods_sku[1], $sku_price);
+                $goods_promote_info = $goods_promote->getGoodsPromote($goods_sku_info['goods_id']);
+                if (empty($goods_promote_info)) {
+                    $goods_info['promotion_type'] = 0;
+                    $goods_info['promote_id'] = 0;
+                }
+                if ($goods_sku_info['stock'] < $goods_sku[1] || $goods_sku[1] <= 0) {
+                    $this->order_goods->rollback();
+                    return LOW_STOCKS;
+                }
+                $give_point = $goods_sku[1] * $goods_info["give_point"];
+                
+                // 库存减少销量增加
+                $goods_calculate = new GoodsCalculate();
+                $goods_calculate->subGoodsStock($goods_sku_info['goods_id'], $goods_sku_info['sku_id'], $goods_sku[1], '');
+                $goods_calculate->addGoodsSales($goods_sku_info['goods_id'], $goods_sku_info['sku_id'], $goods_sku[1]);
+                
+                //查询赠品id
+                $gift_goods_model = new NsPromotionGiftGoodsModel();
+                $gift_goods_info = $gift_goods_model->getInfo(['goods_id'=>$goods_sku_info['goods_id']],"gift_id");
+                $gift_flag = 1;
+                if(!empty($gift_goods_info)){
+                    $gift_flag = $gift_goods_info['gift_id'];
+                }
+                
+                $data_order_sku = array(
+                    'order_id' => $order_id,
+                    'goods_id' => $goods_sku_info['goods_id'],
+                    'goods_name' => $goods_info['goods_name'],
+                    'sku_id' => $goods_sku_info['sku_id'],
+                    'sku_name' => $goods_sku_info['sku_name'],
+                    'price' => 0, // $sku_price,赠品商品价格为0
+                    'num' => $goods_sku[1],
+                    'adjust_money' => 0,//$adjust_money,
+                    'cost_price' => $goods_sku_info['cost_price'],
+                    'goods_money' => 0,//$sku_price * $goods_sku[1] - $adjust_money,
+                    'goods_picture' => $picture != 0 ? $picture : $goods_info['picture'], // 如果当前商品有SKU图片，就用SKU图片。没有则用商品主图
+                    'shop_id' => $this->instance_id,
+                    'buyer_id' => $this->uid,
+                    'goods_type' => $goods_info['goods_type'],
+                    'promotion_id' => $goods_info['promote_id'],
+                    'promotion_type_id' => $goods_info['promotion_type'],
+                    'point_exchange_type' => $goods_info['point_exchange_type'],
+                    'order_type' => 1, // 订单类型默认1
+                    'give_point' => $give_point,
+                    
+                    // 赠品id
+                    'gift_flag' => $gift_flag
+                );
+                
+                // 积分数量默认0
+                if ($goods_sku[1] == 0) {
+                    $err = 1;
+                }
+                $order_goods = new NsOrderGoodsModel();
+                $order_goods->save($data_order_sku);
+            }
+            if ($err == 0) {
+                $this->order_goods->commit();
+                return 1;
+            } elseif ($err == 1) {
+                $this->order_goods->rollback();
+                return ORDER_GOODS_ZERO;
+            }
+        } catch (\Exception $e) {
+            $this->order_goods->rollback();
+            return $e->getMessage();
+        }
+    }
+
+    /**
+     * 添加组合订单订单项
+     *
+     * @param unknown $order_id            
+     * @param unknown $goods_sku_list            
+     * @param number $adjust_money            
+     * @return string|number
+     */
+    public function addComboPackageOrderGoods($order_id, $goods_sku_list, $adjust_money = 0)
+    {
+        $this->order_goods->startTrans();
+        try {
+            $err = 0;
+            $goods_sku_list_array = explode(",", $goods_sku_list);
+            foreach ($goods_sku_list_array as $k => $goods_sku_array) {
+                
+                $goods_sku = explode(':', $goods_sku_array);
+                $goods_sku_model = new NsGoodsSkuModel();
+                $goods_sku_info = $goods_sku_model->getInfo([
+                    'sku_id' => $goods_sku[0]
+                ], 'sku_id,goods_id,cost_price,stock,sku_name,attr_value_items');
+                
+                // 如果当前商品有SKU图片，就用SKU图片。没有则用商品主图 2017年9月19日 15:46:38（王永杰）
+                $picture = $this->getSkuPictureBySkuId($goods_sku_info);
+                
+                $goods_model = new NsGoodsModel();
+                $goods_info = $goods_model->getInfo([
+                    'goods_id' => $goods_sku_info['goods_id']
+                ], 'goods_name,price,goods_type,picture,promotion_type,promote_id,point_exchange_type,give_point');
+                
+                $goods_promote = new GoodsPreference();
+                $sku_price = $goods_promote->getComboPackageGoodsSkuPrice($goods_sku_info['sku_id']);
+                $goods_promote_info = ""; // $goods_promote->getGoodsPromote($goods_sku_info['goods_id']);
                 if (empty($goods_promote_info)) {
                     $goods_info['promotion_type'] = 0;
                     $goods_info['promote_id'] = 0;
@@ -241,7 +439,7 @@ class OrderGoods extends BaseService
      * @param unknown $refund_type            
      * @param unknown $refund_require_money            
      * @param unknown $refund_reason            
-     * @return number|Exception|Ambigous <number, \think\false>
+     * @return number|Exception|Ambigous
      */
     public function orderGoodsRefundAskfor($order_id, $order_goods_id, $refund_type, $refund_require_money, $refund_reason)
     {
@@ -461,13 +659,13 @@ class OrderGoods extends BaseService
             if ($isStorage > 0) {
                 $goods_sku = new NsGoodsSkuModel();
                 $goods = new NsGoodsModel();
-                //商品sku表入库
+                // 商品sku表入库
                 $goods_sku->where([
                     "goods_id" => $goods_id,
                     "sku_id" => $sku_id
                 ])->setInc('stock', $storage_num);
-                //商品表入库
-                $goods ->where([
+                // 商品表入库
+                $goods->where([
                     "goods_id" => $goods_id
                 ])->setInc('stock', $storage_num);
             }
@@ -503,6 +701,9 @@ class OrderGoods extends BaseService
             $order_goods->refund_real_money = $refund_real_money; // 退款金额
             $order_goods->refund_balance_money = $refund_balance_money; // 退款余额
             $res = $order_goods->save();
+            //
+         
+          
             // 执行余额账户修正
             // 退款记录
             $this->addOrderRefundAction($order_goods_id, $status_id, 2, $this->uid);
@@ -512,7 +713,8 @@ class OrderGoods extends BaseService
             $order_info = $order_model->getInfo([
                 'order_id' => $order_id
             ], '*');
-            
+            $member_account = new MemberAccount();
+            $member_account->addMmemberConsum($order_info['shop_id'], $order_info['buyer_id'], ($refund_real_money+$refund_balance_money)*-1);
             $order = new Order();
             // 添加退款帐户记录
             if (empty($refund_remark)) {
@@ -571,7 +773,9 @@ class OrderGoods extends BaseService
         $order_info = $order_model->getInfo([
             'order_id' => $order_id
         ], '*');
+        
         $member_account = new MemberAccount();
+       
         if ($refund_balance_money > 0) {
             $member_account->addMemberAccountData($order_info['shop_id'], 2, $order_info['buyer_id'], 1, $refund_balance_money, 2, $order_id, '订单退款');
         }
@@ -661,7 +865,7 @@ class OrderGoods extends BaseService
         $order_goods = new NsOrderGoodsModel();
         $order_goods_info = $order_goods->getInfo([
             'order_goods_id' => $order_goods_id
-        ], 'order_id,sku_id,goods_money');
+        ], 'order_id,sku_id,goods_money,point_exchange_type');
         $order_goods_promotion = new NsOrderGoodsPromotionDetailsModel();
         $promotion_money = $order_goods_promotion->where([
             'order_id' => $order_goods_info['order_id'],
@@ -675,13 +879,18 @@ class OrderGoods extends BaseService
         $order = new NsOrderModel();
         $order_other_pay_money = $order->getInfo([
             'order_id' => $order_goods_info['order_id']
-        ], 'order_money,point_money,user_money,coin_money,user_platform_money,tax_money,shipping_money');
+        ], 'order_money,point_money,user_money,coin_money,user_platform_money,tax_money,shipping_money,pay_money');
         $all_other_pay_money = $order_other_pay_money['point_money'] + $order_other_pay_money['user_money'] + $order_other_pay_money['coin_money'] + $order_other_pay_money['user_platform_money'] - $order_other_pay_money['tax_money'];
         if ($all_other_pay_money != 0) {
             $other_pay = $money / ($order_other_pay_money['order_money'] - $order_other_pay_money['shipping_money'] - $order_other_pay_money['tax_money']) * $all_other_pay_money;
             $money = $money - round($other_pay, 2);
         }
         if ($money < 0) {
+            $money = 0;
+        }
+        
+        //兑换类型为 积分兑换
+        if($order_goods_info["point_exchange_type"]==2 && $order_other_pay_money['pay_money'] || $order_goods_info["point_exchange_type"]==3){
             $money = 0;
         }
         
@@ -760,65 +969,82 @@ class OrderGoods extends BaseService
             $order_goods_info['status_name'] = '';
             $order_goods_info['refund_info'] = '';
         }
+        $order_goods_info['refund_real_money'] = $this->orderGoodsRefundMoney($order_goods_id);
         return $order_goods_info;
     }
+
     /**
      * 获取出库单列表
      */
-    public function getShippingList($order_ids){
+    public function getShippingList($order_ids)
+    {
         $order_goods_view = new NsOrderGoodsViewModel();
         $condition = array(
-            'nog.order_id' => array("in",$order_ids),
-            'no.order_status' => array("neq",0)
+            'nog.order_id' => array(
+                "in",
+                $order_ids
+            ),
+            'no.order_status' => array(
+                "neq",
+                0
+            )
         );
-        $list = $order_goods_view -> getShippingList(1, 0, $condition, "");
-        foreach ($list as $v){
-            $res = $order_goods_view -> getOrderGoodsViewQuery(1, 0, [
-                'no.order_id' => array("in",$order_ids),
+        $list = $order_goods_view->getShippingList(1, 0, $condition, "");
+        foreach ($list as $v) {
+            $res = $order_goods_view->getOrderGoodsViewQuery(1, 0, [
+                'no.order_id' => array(
+                    "in",
+                    $order_ids
+                ),
                 'nog.sku_id' => $v["sku_id"]
             ], "");
             $v["order_list"] = $res;
         }
         return $list;
     }
+
     /**
      * 添加打印时临时物流信息
      */
-    public function addTmpExpressInformation($print_order_arr,$deliver_goods){
-        if(!empty($print_order_arr) && count($print_order_arr) > 0){
+    public function addTmpExpressInformation($print_order_arr, $deliver_goods)
+    {
+        if (! empty($print_order_arr) && count($print_order_arr) > 0) {
             $ns_order_goods = new NsOrderGoodsModel();
             $order_goods_express = new NsOrderGoodsExpressModel();
             $order = new OrderService();
             $ns_order_goods->startTrans();
             try {
-                foreach($print_order_arr as $order_print_info){
+                foreach ($print_order_arr as $order_print_info) {
                     $ns_order_goods->update([
                         "tmp_express_company" => $order_print_info["tmp_express_company_name"],
                         "tmp_express_company_id" => $order_print_info["tmp_express_company_id"],
                         "tmp_express_no" => $order_print_info["tmp_express_no"]
-                    ],[
+                    ], [
                         "order_id" => $order_print_info['order_id'],
-                        "order_goods_id" => array("in", explode(",",$order_print_info["order_goods_ids"]))
+                        "order_goods_id" => array(
+                            "in",
+                            explode(",", $order_print_info["order_goods_ids"])
+                        )
                     ]);
-                    //订单物流表
-                    if($order_print_info['is_devlier'] == 1){
-                        $order_goods_express -> update([
+                    // 订单物流表
+                    if ($order_print_info['is_devlier'] == 1) {
+                        $order_goods_express->update([
                             "express_company_id" => $order_print_info["tmp_express_company_id"],
                             "express_company" => $order_print_info["tmp_express_company_name"],
                             "express_name" => $order_print_info["tmp_express_company_name"],
                             "express_no" => $order_print_info["tmp_express_no"]
-                        ],[
+                        ], [
                             "order_id" => $order_print_info['order_id'],
                             "id" => $order_print_info['express_id']
                         ]);
                     }
-                    //订单发货
-                    if($order_print_info['is_devlier'] == 0 && $deliver_goods == 1){
-                        $order -> orderDelivery($order_print_info['order_id'], $order_print_info['order_goods_ids'], $order_print_info["tmp_express_company_name"], 1, $order_print_info['tmp_express_company_id'],  $order_print_info["tmp_express_no"]);
+                    // 订单发货
+                    if ($order_print_info['is_devlier'] == 0 && $deliver_goods == 1) {
+                        $order->orderDelivery($order_print_info['order_id'], $order_print_info['order_goods_ids'], $order_print_info["tmp_express_company_name"], 1, $order_print_info['tmp_express_company_id'], $order_print_info["tmp_express_no"]);
                     }
                 }
                 $ns_order_goods->commit();
-                 return $retval = array(
+                return $retval = array(
                     "code" => 1,
                     "message" => "操作成功"
                 );
@@ -826,13 +1052,376 @@ class OrderGoods extends BaseService
                 $ns_order_goods->rollback();
                 return $e->getMessage();
             }
-        }else{
+        } else {
             return $retval = array(
                 "code" => 0,
                 "message" => "操作失败"
             );
         }
-        
     }
     
+    /**
+     * 售后申请
+     *
+     */
+    public function orderGoodsCustomerServiceAskfor($order_goods_id, $refund_type, $refund_money, $refund_reason)
+    {
+        $customer_service = new NsCustomerServiceModel();
+        $customer_service->startTrans();
+        try {
+            $ns_order_goods = new NsOrderGoodsModel();
+            $order_goods_info = $ns_order_goods->getInfo(['order_goods_id'=>$order_goods_id], '*');
+            
+            $ns_order = new NsOrderModel();
+            $order_info = $ns_order->getInfo(['order_id'=>$order_goods_info['order_id']], '*');
+            // 添加售后记录
+            $data = array(
+                'goods_id' => $order_goods_info['goods_id'],
+                'order_id' => $order_goods_info['order_id'],
+                'order_no' => $order_info['order_no'],
+                'order_goods_id' => $order_goods_id,
+                'goods_name' => $order_goods_info['goods_name'],
+                'sku_id' => $order_goods_info['sku_id'],
+                'sku_name' => $order_goods_info['sku_name'],
+                'price' => $order_goods_info['price'],
+                'goods_picture' => $order_goods_info['goods_picture'],
+                'num' => $order_goods_info['num'],
+                'goods_money' => $order_goods_info['goods_money'],
+                'shop_id' => 0,
+                'buyer_id' => $order_goods_info['buyer_id'],
+                'order_type' => $order_goods_info['order_type'] ,
+                'refund_money' => $refund_money,
+                'refund_way' => $refund_type,
+                'refund_reason' => $refund_reason,
+                'audit_status' => 1,
+                'order_from' => $order_info['order_from'],
+                'receiver_province' => $order_info['receiver_province'],
+                'receiver_city' => $order_info['receiver_city'],
+                'receiver_district' => $order_info['receiver_district'],
+                'receiver_address' => $order_info['receiver_address'],
+                'receiver_mobile' => $order_info['receiver_mobile'],
+                'payment_type' => $order_info['payment_type'],
+                'fixed_telephone' => $order_info['fixed_telephone'],
+                'receiver_name' => $order_info['receiver_name'],
+                'user_name' => $order_info['user_name'],
+                'create_time' => time()
+            );
+            $customer_service->save($data);
+            // 售后记录
+            $status_id = OrderStatus::getRefundStatus()[0]['status_id'];
+            $this->addOrderCustomerServiceAction($order_goods_id, $status_id, 1, $this->uid);
+          
+            $customer_service->commit();
+            return 1;
+        } catch (\Exception $e) {
+            $customer_service->rollback();
+            return $e->getMessage();
+        }
+    }
+    
+    /**
+     * 添加售后日志
+     *
+     */
+    public function addOrderCustomerServiceAction($order_goods_id, $refund_status_id, $action_way, $uid)
+    {
+        $refund_status = OrderStatus::getRefundStatus();
+        foreach ($refund_status as $k => $v) {
+            if ($v['status_id'] == $refund_status_id) {
+                $refund_status_name = $v['status_name'];
+            }
+        }
+        $user = new UserModel();
+        $user_name = $user->getInfo([
+            'uid' => $uid
+        ], 'user_name');
+        $cs_records = new NsCustomerServiceRecordsModel();
+        $data_refund = array(
+            'order_goods_id' => $order_goods_id,
+            'refund_status' => $refund_status_id,
+            'action' => $refund_status_name,
+            'action_way' => $action_way,
+            'action_userid' => $uid,
+            'action_username' => $user_name['user_name'],
+            'action_time' => time()
+        );
+        $retval = $cs_records->save($data_refund);
+        return $retval;
+    }
+    /**
+     * 查询订单项售后详情
+     *
+     * @param unknown $order_goods_id
+     */
+    public function getCustomerServiceDetail($id, $order_goods_id)
+    {
+        // 查询基础信息
+        $customer_service = new NsCustomerServiceModel();
+        if($id>0){
+            $order_goods_info = $customer_service->getInfo(['order_goods_id'=>$order_goods_id, 'id'=>$id], '*');
+        }else{
+            $order_goods_info = $customer_service->getFirstData(['order_goods_id'=>$order_goods_id], 'create_time desc');
+        }
+        
+        if(!empty($order_goods_info)){
+            // 商品图片
+            $picture = new AlbumPictureModel();
+            $picture_info = $picture->get($order_goods_info['goods_picture']);
+            $order_goods_info['picture_info'] = $picture_info;
+            if ($order_goods_info['audit_status'] != 0) {
+                $order_refund_status = OrderStatus::getRefundStatus();
+                foreach ($order_refund_status as $k_status => $v_status) {
+            
+                    if ($v_status['status_id'] == $order_goods_info['audit_status']) {
+                        $order_goods_info['refund_operation'] = $v_status['refund_operation'];
+                        $order_goods_info['status_name'] = $v_status['status_name'];
+                    }
+                }
+                // 查询订单项的操作日志
+                $cs_records = new NsCustomerServiceRecordsModel();
+                $refund_info = $cs_records->all([
+                    'order_goods_id' => $order_goods_id
+                ]);
+                $order_goods_info['refund_info'] = $refund_info;
+            } else {
+                $order_goods_info['refund_operation'] = '';
+                $order_goods_info['status_name'] = '';
+                $order_goods_info['refund_info'] = '';
+            }
+            $order_goods_info['refund_real_money'] = $this->orderGoodsRefundMoney($order_goods_id);
+            
+        }else{
+            $order_goods_info = '';
+        }
+        return $order_goods_info;
+    }
+    /**
+     * 卖家同意买家退款申请  售后
+     */
+    public function orderGoodsCustomerAgree($id, $order_id, $order_goods_id)
+    {
+        $customer_service = new NsCustomerServiceModel();
+        $customer_service->startTrans();
+        try {
+    
+            // 退款信息
+            $refund_status = OrderStatus::getRefundStatus();
+            $customerServiceInfo = NsCustomerServiceModel::get($order_goods_id);
+            $refund_type = $customerServiceInfo->refund_type;
+            if ($refund_type == 1) { // 仅退款
+                $status_id = OrderStatus::getRefundStatus()[3]['status_id'];
+            } else { // 退货退款
+                $status_id = OrderStatus::getRefundStatus()[1]['status_id'];
+            }
+    
+            // 订单项退款操作
+            $customer_service = new NsCustomerServiceModel();
+            $order_goods_data = array(
+                'audit_status' => $status_id
+            );
+            $res = $customer_service->save($order_goods_data, [
+                'order_goods_id' => $order_goods_id,
+                'id' => $id
+            ]);
+    
+            // 退款记录
+    
+            $this->addOrderCustomerServiceAction($order_goods_id, $status_id, 2, $this->uid);
+            $customer_service->commit();
+            return 1;
+        } catch (\Exception $e) {
+            $customer_service->rollback();
+            return $e->getMessage();
+        }
+    }
+    
+    /**
+     * 卖家永久拒绝本退款 售后
+     */
+    public function orderCustomerRefuseForever($id, $order_id, $order_goods_id)
+    {
+        $customer_service = new NsCustomerServiceModel();
+        $customer_service->startTrans();
+        try {
+    
+            $status_id = OrderStatus::getRefundStatus()[5]['status_id'];
+            // 订单项退款操作
+            $customer_service = new NsCustomerServiceModel();
+            $order_goods_data = array(
+                'audit_status' => $status_id
+            );
+            $res = $customer_service->save($order_goods_data, [
+                'order_goods_id' => $order_goods_id,
+                'id' => $id
+            ]);
+    
+            // 退款记录
+            $this->addOrderCustomerServiceAction($order_goods_id, $status_id, 2, $this->uid);
+           
+            $customer_service->commit();
+            return 1;
+        } catch (\Exception $e) {
+            $customer_service->rollback();
+            return $e;
+        }
+    }
+    
+    /**
+     * 卖家拒绝本次退款 售后
+     */
+    public function orderCustomerRefuseOnce($id, $order_id, $order_goods_id)
+    {
+        $customer_service = new NsCustomerServiceModel();
+        $customer_service->startTrans();
+        try {
+            $status_id = OrderStatus::getRefundStatus()[7]['status_id'];
+    
+            // 订单项退款操作
+            $customer_service = new NsCustomerServiceModel();
+            $order_goods_data = array(
+                'audit_status' => $status_id
+            );
+            $res = $customer_service->save($order_goods_data, [
+                'order_goods_id' => $order_goods_id,
+                'id' => $id
+            ]);
+    
+            // 退款日志
+            $this->addOrderCustomerServiceAction($order_goods_id, $status_id, 2, $this->uid);
+            
+            $customer_service->commit();
+            return 1;
+        } catch (\Exception $e) {
+            $customer_service->rollback();
+            return $e;
+        }
+    }
+    
+    /**
+     * 买家退货  售后
+     */
+    public function orderGoodsCustomerExpress($id, $order_goods_id, $refund_shipping_company, $refund_shipping_code)
+    {
+        $customer_service = new NsCustomerServiceModel();
+        $customer_service->startTrans();
+        try {
+            $status_id = OrderStatus::getRefundStatus()[2]['status_id'];
+    
+            // 订单项退款操作
+            $customer_service = new NsCustomerServiceModel();
+            $order_goods_data = array(
+                'audit_status' => $status_id,
+                'refund_shipping_company' => $refund_shipping_company,
+                'refund_shipping_code' => $refund_shipping_code
+            );
+            $res = $customer_service->save($order_goods_data, [
+                'order_goods_id' => $order_goods_id,
+                'id' => $id
+            ]);
+    
+            // 退款记录
+            $this->addOrderCustomerServiceAction($order_goods_id, $status_id, 1, $this->uid);
+    
+            $customer_service->commit();
+            return 1;
+        } catch (\Exception $e) {
+            $customer_service->rollback();
+            return $e->getMessage();
+        }
+    }
+    
+    /**
+     * 卖家确认收货  售后
+     */
+    public function orderCustomerConfirmRecieve($id, $order_id, $order_goods_id, $storage_num, $isStorage, $goods_id, $sku_id)
+    {
+        $customer_service = new NsCustomerServiceModel();
+        $customer_service->startTrans();
+        try {
+            $status_id = OrderStatus::getRefundStatus()[3]['status_id'];
+    
+            // 订单项退款操作
+            $customer_service = new NsCustomerServiceModel();
+            $order_goods_data = array(
+                'audit_status' => $status_id
+            );
+            $res = $customer_service->save($order_goods_data, [
+                'order_goods_id' => $order_goods_id,
+                'id' => $id
+            ]);
+            
+            // 退款记录
+            $this->addOrderCustomerServiceAction($order_goods_id, $status_id, 2, $this->uid);
+            if ($isStorage > 0) {
+                $goods_sku = new NsGoodsSkuModel();
+                $goods = new NsGoodsModel();
+                // 商品sku表入库
+                $goods_sku->where([
+                    "goods_id" => $goods_id,
+                    "sku_id" => $sku_id
+                ])->setInc('stock', $storage_num);
+                // 商品表入库
+                $goods->where([
+                    "goods_id" => $goods_id
+                ])->setInc('stock', $storage_num);
+            }
+            $customer_service->commit();
+            return 1;
+        } catch (\Exception $e) {
+            $customer_service->rollback();
+            return $e;
+        }
+    }
+    
+    /**
+     * 卖家确认退款 售后
+     *
+     */
+    public function orderGoodsCustomerConfirmRefund($id, $order_id, $order_goods_id, $refund_real_money, $refund_balance_money, $refund_trade_no, $refund_way, $refund_remark)
+    {
+        $customer_service = new NsCustomerServiceModel();
+        $customer_service->startTrans();
+        try {
+            $status_id = OrderStatus::getRefundStatus()[4]['status_id'];
+    
+            // 订单项退款操作
+            $customer_service = new NsCustomerServiceModel();
+            $order_goods_data = array(
+                'audit_status' => $status_id,
+                'refund_money' => $refund_real_money, // 退款金额
+                'refund_balance_money' => $refund_balance_money,  // 退款余额
+                'audit_time' => time()
+            );
+            $res = $customer_service->save($order_goods_data, [
+                'order_goods_id' => $order_goods_id,
+                'id' => $id
+            ]);
+            // 执行余额账户修正
+            
+            // 退款记录
+            $this->addOrderCustomerServiceAction($order_goods_id, $status_id, 2, $this->uid);
+            $order_model = new NsOrderModel();
+    
+            // 订单添加退款金额、余额
+            $order_info = $order_model->getInfo([
+                'order_id' => $order_id
+            ], '*');
+    
+            $order = new Order();
+            // 添加退款帐户记录
+            if (empty($refund_remark)) {
+                $remark = "订单编号:" . $order_info['order_no'] . "，退款方式为:[" . OrderStatus::getPayType($refund_way) . "]，退款金额:" . $refund_real_money . "元，退款余额：" . $refund_balance_money . "元";
+            } else {
+                $remark = $refund_remark;
+            }
+            $order->addOrderCustomerAccountRecords($order_goods_id, $refund_trade_no, $refund_real_money, $refund_way, $order_info['buyer_id'], $remark);
+    
+            $customer_service->commit();
+    
+            return 1;
+        } catch (\Exception $e) {
+            $customer_service->rollback();
+            return $e->getMessage();
+        }
+    }
 }

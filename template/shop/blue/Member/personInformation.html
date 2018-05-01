@@ -1,37 +1,12 @@
 {extend name="shop/blue/base" /}
 {block name="resources"}
 <style type="text/css">
-img{
- 	max-height: 120px;
-}
-.img {
-	width: 120px;
-	height: 120px;
-	border: 1px solid #e6e6e6;
-	text-align: center;
-	line-height: 120px;
-}
-input::-webkit-outer-spin-button,input::-webkit-inner-spin-button {
-	-webkit-appearance: none;
-}
-input[type="number"]{
-	-moz-appearance: textfield;
-}
-.member-menu .user-info .logo {
-    height: 80px;
-	line-height:80px;
-    border-radius: 55px;
-    overflow: hidden;
-    text-align: center;
-    border: 1px solid #e6e6e6;
-}
-   
-
-.member-menu .user-info .logo img {
-    border-radius: 0;
-	 max-width: 100%;
-/*     max-height: 100%; */
-}
+img{max-height: 120px;}
+.img {width: 120px;height: 120px;border: 1px solid #e6e6e6;text-align: center;line-height: 120px;}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button {-webkit-appearance: none;}
+input[type="number"]{-moz-appearance: textfield;}
+.member-menu .user-info .logo {height: 80px;line-height:80px;border-radius: 55px;overflow: hidden;text-align: center;border: 1px solid #e6e6e6;}
+.member-menu .user-info .logo img {border-radius: 0;max-width: 100%;}
 </style>
 {/block}
 {block name="main"}
@@ -52,10 +27,10 @@ input[type="number"]{
 							<tr>
 								<td width="35%" align="right">{:lang('member_current_avatar')}</td>
 								<td width="65%" align="left">
-									{if condition="$member_img neq '' and $member_img neq '0'"}
-									<img src="{:__IMG($member_img)}" onClick="setTabCatGoods('tab',2,3)"/>
+									{if condition="$member_detail['user_info']['user_headimg'] neq '' and $member_detail['user_info']['user_headimg'] neq '0'"}
+									<img src="{:__IMG($default_headimg)}" class="lazy_load" data-original="{:__IMG($member_detail['user_info']['user_headimg'])}" onClick="setTabCatGoods('tab',2,3)"/>
 									{else /}
-									<img src="__TEMP__/{$style}/public/images/temp_default_user_portrait_0.png"/>
+									<img src="{:__IMG($default_headimg)}"/>
 									{/if}
 									<span></span>
 								</td>
@@ -63,21 +38,21 @@ input[type="number"]{
 							<tr>
 								<td width="35%" align="right"><span style="color:red;">*</span>&nbsp;&nbsp;{:lang('member_nickname')}</td>
 								<td width="65%" align="left">
-									<input type="text" name="user_name" value="{$member_info.user_info.nick_name}" size="25" class="inputBg" style="ime-mode:disabled" />
+									<input type="text" name="user_name" value="{$member_detail.user_info.nick_name}" size="25" class="inputBg" style="ime-mode:disabled" />
 									<span id="username_message" style="color:#E31939; display:none; width：30px;">{:lang('member_nicknames_cannot_empty')}</span>
 								</td>
 							</tr>
 							<tr>
 								<td width="35%" align="right"><span style="color:red;">*</span>&nbsp;&nbsp;{:lang('member_real_name')}</td>
 								<td width="65%" align="left">
-									<input type="text" name="real_name" value="{$member_info.user_info.real_name}" size="25" class="inputBg" style="ime-mode:disabled" />
+									<input type="text" name="real_name" value="{$member_detail.user_info.real_name}" size="25" class="inputBg" style="ime-mode:disabled" />
 									<span id="realname_message" style="color:#E31939; display:none;">{:lang('member_name_cannot_empty')}</span>
 								</td>
 							</tr>
 							<tr>
 								<td align="right">{:lang('member_date_of_birth')}</td>
 								<td width="65%" align="left">
-									<input type="date" name="birthday" value="{$member_info.user_info.birthday}" size="25" class="inputBg" style="ime-mode:disabled" />
+									<input type="date" name="birthday" value="{$member_detail.user_info.birthday}" size="25" class="inputBg" style="ime-mode:disabled" />
 									<span id="birthday_message" style="color:#E31939"></span>
 								</td>
 							</tr>
@@ -97,14 +72,14 @@ input[type="number"]{
 							<tr>
 								<td width="35%" align="right">{:lang('member_location_name')}</td>
 								<td width="65%" align="left">
-									<input type="text" name="location" value="{$member_info.user_info.location}" size="25" class="inputBg" style="ime-mode:disabled" />
+									<input type="text" name="location" value="{$member_detail.user_info.location}" size="25" class="inputBg" style="ime-mode:disabled" />
 									<span id="location_message" style="color:#E31939"></span>
 								</td>
 							</tr>
 							<tr>
 								<td width="35%" align="right">QQ</td>
 								<td width="65%" align="left">
-									<input type="number" name="user_qq" value="{$member_info.user_info.user_qq}" size="25" class="inputBg" style="ime-mode:disabled" />
+									<input type="number" name="user_qq" value="{$member_detail.user_info.user_qq}" size="25" class="inputBg" style="ime-mode:disabled" />
 									<span id="qq_message" style="color:#E31939"></span>
 								</td>
 							</tr>
@@ -123,7 +98,7 @@ input[type="number"]{
 					</form>
 				</div>
 				<div class="ncm-default-form" id="con_tab_2" style="display:none; color:red">
-					<form name="formEdit2" action="{:__URL('SHOP_MAIN/member/person')}" method="post" enctype="multipart/form-data" onsubmit="return isOk();">
+<!-- 					<form name="formEdit2" action="{:__URL('SHOP_MAIN/member/person')}" method="post" enctype="multipart/form-data" onsubmit="return isOk();"> -->
 						<table cellpadding="10">
 							<tr>
 								<td width="35%" align="right">{:lang('member_avatar_preview')}</td>
@@ -138,10 +113,10 @@ input[type="number"]{
 							<tr>
 								<td colspan="2" align="center">
 									<div class="img" id="preview">
-										{if condition="$member_img neq '' and $member_img neq '0'"}
-										<img src="{:__IMG($member_img)}" width="120px" height="120px"/>
+										{if condition="$member_detail['user_info']['user_headimg'] neq '' and $member_detail['user_info']['user_headimg'] neq '0'"}
+										<img src="{:__IMG($default_headimg)}" id="imguser_headimg" class="lazy_load" data-original="{:__IMG($member_detail['user_info']['user_headimg'])}" width="120px" height="120px"/>
 										{else /}
-										<img width="120px" height="120px" src="__TEMP__/{$style}/public/images/temp_default_user_portrait_0.png" />
+										<img width="120px" height="120px" id="imguser_headimg" src="{:__IMG($default_headimg)}" />
 										{/if}
 									</div>
 								</td>
@@ -151,7 +126,10 @@ input[type="number"]{
 								<td>
 									<div class="ncm-upload-btn">
 										<a href="javascript:void(0);">
-											<span><input type="file" name="user_headimg" class="file" onchange="preview(this)"></span>
+											<span>
+												<input type="file" name="file_upload" class="file" id="uploadImguser_headimg" onchange="imgUpload(this);">
+												<input type="hidden" id="user_headimg" value="{$member_detail['user_info']['user_headimg']}" />
+											</span>
 										</a>
 									</div>
 								</td>
@@ -160,12 +138,12 @@ input[type="number"]{
 								<td colspan="2" align="center">
 									<label class="submit-border">
 										<input name="act" type="hidden" value="act_edit_img" />
-										<input name="submit2" type="submit" class="common-btn main-btn" value="{:lang('member_confirm_change')}" />
+										<input name="submit2" type="submit" class="common-btn main-btn" onclick="saveImage()" value="{:lang('member_confirm_change')}" />
 									</label>
 								</td>
 							</tr>
 						</table>
-					</form>
+<!-- 					</form> -->
 				</div>
 			</div>
 		</div>
@@ -182,59 +160,37 @@ function isOk(){
 	return is_ok;
 }
 
-/**
- * 验证文件是否可以上传
- * 2017年7月11日 09:14:10 王永杰
- * @param file JS DOM文件对象
- */
-function validationFile(file) {
-	//var fileTypeArr = ['video/mp4','application/msword','application/x-msdownload', "text/plain"];
-	var fileTypeArr = ['image/jpeg','image/gif', 'image/jpg', 'image/png']
-	if(null == file){
-		return false;
-	}
-	if(!file.type){
-		$.msg("{:lang('member_file_type_not_valid')}");
-		return false;
-	}
-	var flag = true;
-	for(var i=0;i<fileTypeArr.length;i++){
-		if(file.type == fileTypeArr[i]){
-			flag = false;
-			break;
-		}
-	}
-	
-	if(flag){
-		$.msg("{:lang('member_file_type_not_valid')}");
-		return false;
-	}
-	
-	if(file.size > 5000000){
-		$.msg("{:lang('member_file_size')}");
-		return false;
-	}
-		
-	return true;
-}
-//预览个人头像
-function preview(file){
-	var prevDiv = document.getElementById('preview');
-	if(validationFile(file.files[0])){
-		if (file.files && file.files[0]){
-			var reader = new FileReader();
-			reader.onload = function(evt){
-				prevDiv.innerHTML = '<img src="' + evt.target.result + '" width="120xp" height="120px"/>';
-			}
-			reader.readAsDataURL(file.files[0]);
+//图片上传
+function imgUpload(event) {
+	var fileid = $(event).attr("id");
+	var data = { 'file_path' : UPLOADAVATOR };
+	var id = $(event).next().attr("id");
+	uploadFile(fileid,data,function(res){
+		if(res.code){
+			$("#img"+id).attr("src",__IMG(res.data));
+			$("#"+id).val(res.data);
+			showTip(res.message,"success");
 		}else{
-			prevDiv.innerHTML = '<div class="img" style="filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod=scale,src=\'' + file.value + '\'"></div>';
+			showTip(res.message,"error");
 		}
-		is_ok = true;
-	}else{
-		is_ok = false;
-	}
+	});
 }
+
+function saveImage(){
+	$.ajax({
+		url : "{:__URL('SHOP_MAIN/member/person')}",
+		type : "post",
+		data : { "user_headimg" : $("#user_headimg").val() },
+		success : function(res){
+			if(res.code>0){
+				location.reload();
+			}else{
+				$.msg(reg.message);
+			}
+		}
+	})
+}
+
 function setTabCatGoods(name,cursel,n){
 	for(i=1;i<=n;i++){
 		var menu=document.getElementById(name+i);
@@ -247,6 +203,7 @@ function setTabCatGoods(name,cursel,n){
 		}
 	}
 }
+
 $(document).ready(function(){
 	
 	//对表单进行优化,昵称，用户名，手机号,不能为空
@@ -273,7 +230,7 @@ $(document).ready(function(){
 		$("#formEdit").submit();
 	});
 
-	var sex = "{$member_info.user_info.sex}";
+	var sex = "{$member_detail.user_info.sex}";
 	if(sex == 1){
 		$("[checked]").removeAttr("checked");
 		$("#nan").attr("checked","checked");

@@ -459,6 +459,24 @@ strong,b {
 		no-repeat center;
 	background-size: 80% 80%;
 }
+/*核销台 图标*/
+.member_list ul li a i.icon_virtualGoods {
+	background: url(../images/member_icon/icon_virtualGoods.png)
+		no-repeat center;
+	background-size: 80% 80%;
+}
+/*拼团订单 图标*/
+.member_list ul li a i.icon_pintuan_orders {
+	background: url(../images/member_icon/icon_pintuan_orders.png)
+		no-repeat center;
+	background-size: 80% 80%;
+}
+/*我的拼团 图标*/
+.member_list ul li a i.icon_my_pintuan_orders {
+	background: url(../images/member_icon/icon_my_pintuan_orders.png)
+		no-repeat center;
+	background-size: 80% 80%;
+}
 
 .member_list ul li a span {
 	font-size: 12px;
@@ -467,4 +485,50 @@ strong,b {
 	padding: 0 5px;
 	overflow: hidden;
 	white-space: nowrap;
+}
+.member_menu_list{
+	margin: 10px 0 0 0;
+	padding: 0 10px;
+	background: #fff;
+}
+.member_menu_list ul{
+	width: 100%;
+}
+.member_menu_list ul li{
+	height: 25px;
+	line-height: 25px;
+	padding:10px 0 10px 25px;
+	border-bottom: 1px solid #eee;
+}
+.member_menu_list ul a:last-child li{
+	border-bottom: none;
+}
+/*预售订单*/
+.member_menu_list ul li.menu_icon_yushou_orders{
+	background: url(../images/member_icon/menu_icon_yushou_orders.png) no-repeat left;
+    background-size: 20px 20px;
+}
+
+/*拼团订单*/
+.member_menu_list ul li.menu_icon_pintuan_orders{
+	background: url(../images/member_icon/menu_pintuan_order.png) no-repeat left;
+    background-size: 20px 20px;
+}
+/*虚拟订单*/
+.member_menu_list ul li.menu_virtual_order{
+	background: url(../images/member_icon/menu_virtual_order.png) no-repeat left;
+    background-size: 20px 20px;
+	
+}
+.member_menu_list ul li span.menu-title{
+	font-size: 14px;
+	color: #333;
+}
+.member_menu_list ul li i.icon-more{
+	background: url(../images/member_icon/icon_more.png) no-repeat right;
+    background-size: auto 15px;
+    float: right;
+    display: inline-block;
+    width: 25px;
+    height: 25px;
 }

@@ -55,7 +55,8 @@ $(function(){
 				{foreach $recommend_goods_list as $k=>$v}
 				<li style="position:relative;overflow: hidden;">
 					<div>
-						<div><a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$v['goods_id'])}" target="_blank"><img src="{:__IMG($v['pic_cover_mid'])}"/></a></div>
+						<div><a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$v['goods_id'])}" target="_blank">
+							<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($v['pic_cover_mid'])}"/></a></div>
 						<div>
 							<div class="group-name-css">
 								<!-- <span>{$v['group_name']}</span> -->

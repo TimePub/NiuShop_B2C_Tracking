@@ -2,12 +2,12 @@
 {block name="resources"}
 <style>
 .Switch_FlatCircular {line-height: 30px;}
-.left_main{width: 23%;float: left;border:1px solid #E3E3E3;height: 524px;}
+.left_main{width: 23%;float: left;border:1px solid #E3E3E3;height: 400px;}
 .left_main ul{margin: 10px;}
 .leftcheckbox{float:right;}
 .left_main li{line-height:30px;padding:2px 6px;border:1px dotted #E3E3E3;margin-bottom: 10px;}
 .left_main ul a{color:#666;}
-.left_main a:hover{color:#11B9ED;}
+.left_main a:hover{color:#0059d6;}
 .right_main{width:75%;float:right;border:1px solid #E3E3E3;height: 400px;}
 .main-top{height: 30px;line-height: 30px;padding: 0 10px;color: #666;border-bottom: 1px solid #E3E3E3;margin-bottom: 15px;}
 .email_title{width:81px;line-height: 40px;float: left;padding-left: 10px;}
@@ -19,9 +19,8 @@ input[type="submit"], input.submit, a.submit {display: inline-block;}
 .right-item{width: 12%;}
 .itemlist{padding: 0 2px;margin: 5px;float:left;text-align: center;color:#666;}
 .title-item{height: 40px;border-top:1px solid #E3E3E3;color: #666;}
-.template-message{height: 40px;line-height: 40px;border: 1px solid #e5e5e5;border-bottom: none;}
-h1{width: 2px;height: 20px;float: left;background-color: #0072D2;}
-.active{color:#11B9ED !important;}
+.template-message{height: 20px;line-height: 20px;border-left:2px solid #126AE4;margin:10px 0px;padding-left:8px;}
+.active{color:#126AE4 !important;}
 .tab-pane{clear: both;content: '';}
 .msg{display: inline-block;width: 100%;color: #FF8400;height: 40px;line-height: 40px;padding-left: 10px;}
 .senditem{border: 1px solid #11B9ED;margin: 9px;border-radius: 3px;width:30%;}
@@ -33,7 +32,7 @@ input[type="text"]{vertical-align: middle;margin-bottom:0;}
 {block name="main"}
 <input type="hidden" id="curr_selectid" value="{$template_select.template_code}"/>
 <div class="set-style">
-<div class="template-message"><h1></h1><p style="width:90%;margin-left: 7px;">短信通知模板</p></div>
+<div class="template-message">短信通知模板</div>
 	<div class="tab-pane active">
 		<div class="left_main">
 			<ul>
@@ -69,10 +68,8 @@ input[type="text"]{vertical-align: middle;margin-bottom:0;}
 		</div>
 	</div>
 	<div class="save">
-		<input type="submit" value="保存" class="btn-common" style="margin-right: 20px;" onclick="template_submit();"/>
-		<a href="{:__url('ADMIN_MAIN/config/notifyindex')}">
-			<input type="button" value="返回" class="btn-common-cancle"/>
-		</a>
+		<button class="btn-common btn-big" onclick="template_submit();">保存</button>
+		<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
 	</div>
 </div>
 
@@ -170,10 +167,10 @@ function template_submit(){
 		async : false, // 让它同步执行
 		success: function (data) {
 			if (data["code"] > 0) {
-				showMessage('success', '提交成功');
+				showTip('提交成功','success');
 				window.location.href=__URL("ADMIN_MAIN/config/businessnotifytemplate?type=sms");
 			}else{
-				showMessage('error', '提交失败');
+				showTip('提交失败','error');
 			}
 		}
 	});

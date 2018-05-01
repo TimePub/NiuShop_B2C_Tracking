@@ -15,9 +15,9 @@
 			<!-- 评价人信息 -->
 			<div class="evaluation-userinfo">
 				{notempty name="goodsEvaluation.user_img"}
-				<img src="{$goodsEvaluation.user_img}" alt="" class="headimg">
+				<img src="{:__IMG($default_headimg)}" alt="" data-origina="{$goodsEvaluation.user_img}" class="headimg lazy_load">
 				{else/}
-				<img src="__TEMP__/{$style}/public/images/member_default.png" alt="" class="headimg">
+				<img src="{:__IMG($default_headimg)}" alt="" class="headimg">
 				{/notempty}
 				{if $goodsEvaluation.is_anonymous eq 1}
 					<span class="nickname">{$goodsEvaluation.member_name|cover_up_username}</span>
@@ -118,9 +118,9 @@ function getGoodsCommentsList(){
 							//评价人信息
 							html += '<div class="evaluation-userinfo">';
 								if(dataitem["user_img"] != "" && dataitem['user_img'] != undefined && dataitem['user_img'] != 0){
-									html += '<img src="'+__IMG(dataitem['user_img'])+'"  class="headimg">';
+									html += '<img src="{:__IMG($default_headimg)}"  class="headimg lazy_load" data-original="'+__IMG(dataitem['user_img'])+'" >';
 								}else{
-									html += '<img src="__TEMP__/{$style}/public/images/member_default.png" alt="" class="headimg">';
+									html += '<img src="{:__IMG($default_headimg)}" alt="" class="headimg">';
 								}
 								html += '<span class="nickname">'+ member_name +'</span>';
 								html += '<time class="evaluation-time">'+timeStampTurnTime(dataitem['addtime'])+'</time>';

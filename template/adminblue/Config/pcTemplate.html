@@ -1,13 +1,30 @@
 {extend name="adminblue/base" /}
 {block name="resources"}
 <link rel="stylesheet" href="ADMIN_CSS/pc_template.css" >
+<style>
+	.block-title{
+	    border-left: 2px solid #126AE4;
+	    padding-left: 5px;
+	    font-size: 14px;
+	    color: #333333;
+		margin: 10px 0;
+	    font-weight: bold;
+	    line-height: 20px;
+	}
+	.pc-template{
+		padding:0px;
+	}
+	.ns-main{
+		margin-top:0px;
+	}
+</style>
 {/block}
 {block name="main"}
 <article class="pc-template">
 
 	{foreach name="$template_list" item="template" key="k"}
 	{if condition="$template.folder == $use_template"}
-	<div class="title">当前使用模板</div>
+	<div class="block-title">当前使用模板</div>
 	<div class="template-list js-curr-use">
 		<ul>
 			<li style="background-color: {$template.bgcolor}">
@@ -21,7 +38,7 @@
 	</div>
 	{/if}
 	{/foreach}
-	<div class="title">可使用模板</div>
+	<div class="block-title">可使用模板</div>
 	<div class="template-list">
 		<ul>
 			{foreach name="$template_list" item="template" key="k"}

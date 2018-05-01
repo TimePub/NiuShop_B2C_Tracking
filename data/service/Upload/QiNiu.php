@@ -16,12 +16,16 @@
  */
 namespace data\service\Upload;
 require_once 'data/extend/path_to_sdk/autoload.php';
+require_once 'data/extend/path_to_sdk/src/Qiniu/Config.php';
+require_once 'data/extend/path_to_sdk/src/Qiniu/Storage/BucketManager.php';
 
 use data\service\Upload\UploadParam;
 use think\Request;
 
 use data\extend\path_to_sdk\src\Qiniu\Auth;
 use data\extend\path_to_sdk\src\Qiniu\Storage\UploadManager;
+use Qiniu\Config;
+use data\extend\path_to_sdk\src\Qiniu\Storage\BucketManager;
 /**
  * 功能说明：七牛云存储上传
  */
@@ -75,5 +79,35 @@ class QiNiu extends UploadParam{
                 //返回图片的完整URL
                 return ["code"=>true,"path"=>$this->QiniuUrl."/". $key,"domain"=>$this->QiniuUrl, "bucket"=>$this->Bucket];
             }
+    }
+    
+    /**
+     * 删除七牛图片
+     * @param unknown $key
+     */
+    public function deleteQiNiuImage($key,$daomin){
+        $config = $this->getQiniuConfig();
+        //Access Key 和 Secret Key
+        $accessKey = $config["Accesskey"];
+        $secretKey = $config["Secretkey"];
+        //要上传的空间
+        $bucket = $config["Bucket"];
+        //构建鉴权对象
+        $auth = new Auth($accessKey, $secretKey);
+        //
+        $qiniu_config = new Config();
+        //实例化资源管理类
+        $bucketManager = new BucketManager($auth, $qiniu_config->zone);
+       
+        $daomin .= '/';
+        $key = str_replace($daomin, '', $key);
+        
+        $err = $bucketManager->delete($bucket, $key);
+
+        if($err == null){
+            return array('code' => 1, 'message' => '删除成功');
+        }else{
+            return array('code' => 0, 'message' => $err->message());
+        }   
     }
 }

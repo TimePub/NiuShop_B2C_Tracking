@@ -10,11 +10,12 @@ function initProvince(obj,callBack){
 		dataType : "json",
 		success : function(data) {
 			if (data != null && data.length > 0) {
-				var str = "";
+				var str = "<option value='0'>请选择省</option>";
 				for (var i = 0; i < data.length; i++) {
 					str += '<option value="'+data[i].province_id+'">'+data[i].province_name+'</option>';
 				}
-				$(obj).append(str);
+				$('#provinceSelect').html(str);
+				$('#provinceSelect').selectric();
 				if(callBack != undefined){
 					callBack();
 				}
@@ -46,6 +47,7 @@ function getProvince(obj,second,index) {
 						}
 					}
 					$(second).html(str);
+					$('#citySelect').selectric();
 				}
 			}
 		});

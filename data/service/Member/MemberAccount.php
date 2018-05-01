@@ -50,6 +50,17 @@ class MemberAccount extends BaseService
             'uid' => $uid,
             'shop_id' => $shop_id
         ], '*');
+        if(empty($acount_info)){
+            $insert_data = array(
+                'uid' => $uid,
+                'shop_id' => $shop_id
+            );
+            $account_statistics->save($insert_data);
+            $acount_info = $account_statistics->getInfo([
+                'uid' => $uid,
+                'shop_id' => $shop_id
+            ], '*');
+        }
         $data = array(
             'member_cunsum' => $acount_info['member_cunsum'] + $consum
         );
@@ -57,6 +68,12 @@ class MemberAccount extends BaseService
             'uid' => $uid,
             'shop_id' => $shop_id
         ]);
+        try {
+            $user_service = new User();
+            $user_service->updateUserLevel($shop_id, $uid);
+        } catch (\Exception $e) {
+            Log::write($e->getMessage());
+        }
         return $retval;
     }
 
@@ -74,19 +91,7 @@ class MemberAccount extends BaseService
      */
     public function addMemberAccountData($shop_id, $account_type, $uid, $sign, $number, $from_type, $data_id, $text)
     {
-        if ($account_type == 1) {
-            $point_config = new NsPointConfigModel();
-            $config_info = $point_config->getInfo([
-                'shop_id' => $shop_id
-            ], 'is_open');
-            /*
-             * if($config_info['is_open'] == 0)
-             * {
-             * //店铺关闭了积分兑换余额功能
-             * return CLOSE_POINT;
-             * }
-             */
-        }
+  
         if (empty($uid)) {
             return 1;
         }
@@ -166,7 +171,7 @@ class MemberAccount extends BaseService
                 }
                 try {
                     $user_service = new User();
-                    // $user_service->updateUserLevel($shop_id, $uid);
+                    $user_service->updateUserLevel($shop_id, $uid);
                 } catch (\Exception $e) {
                     Log::write($e->getMessage());
                 }
@@ -419,7 +424,35 @@ class MemberAccount extends BaseService
             }
         }
     }
-
+    
+    /**
+     * 获取会员账户所有产生方式名称
+     */
+    public static function getMemberAccountRecordsNameList(){
+        $list = [
+            ['type_id'  => 1,'type_name'=> '商城订单'],
+            ['type_id'  => 2,'type_name'=> '订单退还'],
+            ['type_id'  => 3,'type_name'=> '兑换'],
+            ['type_id'  => 4,'type_name'=> '充值'],
+            ['type_id'  => 5,'type_name'=> '签到'],
+            ['type_id'  => 6,'type_name'=> '分享'],
+            ['type_id'  => 7,'type_name'=> '注册'],
+            ['type_id'  => 8,'type_name'=> '提现'],
+            ['type_id'  => 9,'type_name'=> '提现退还'],
+            ['type_id'  => 10,'type_name'=> '调整'],
+            ['type_id'  => 11,'type_name'=> '参与营销游戏消耗积分'],
+            ['type_id'  => 19,'type_name'=> '点赞'],
+            ['type_id'  => 20,'type_name'=> '评论'],
+    
+        ];
+        return $list;
+    }
+    
+    /**
+     * 获取会员账户产生方式名称
+     * @param unknown $from_type
+     * @return string
+     */
     public static function getMemberAccountRecordsName($from_type)
     {
         switch ($from_type) {
@@ -455,6 +488,9 @@ class MemberAccount extends BaseService
             case 10:
                 $type_name = '调整';
                 break;
+            case 11:
+                $type_name = '参与营销游戏消耗积分';
+                break;
             case 19:
                 $type_name = '点赞';
                 break;
@@ -467,6 +503,49 @@ class MemberAccount extends BaseService
         }
         return $type_name;
     }
+    
+    /**
+     * 获取会员账户所有记录类型名称
+     */
+    public static function getMemberAccountRecordsTypeNameList(){
+        $list = [
+            ['type_id'=>1,'type_name'=>'积分'],
+            ['type_id'=>2,'type_name'=>'余额'],
+            ['type_id'=>3,'type_name'=>'购物币'],
+        ];
+        return $list;
+    }
+    
+    /**
+     * 获取会员账户记录类型名称
+     * @param unknown $account_type
+     * @return string
+     */
+    public static function getMemberAccountRecordsTypeName($account_type)
+    {
+        switch($account_type)
+        {
+             
+            case 1:
+                $type_name = '积分';
+                break;
+            case 2:
+                $type_name = '余额';
+                break;
+            case 3:
+                $type_name = '购物币';
+                break;
+            default:
+                $type_name = '';
+                break;
+        }
+        return $type_name;
+    
+    }
+    
+    
+    
+    
 /**
  * 余额兑换为积分
  *

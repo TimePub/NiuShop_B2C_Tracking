@@ -18,6 +18,7 @@ namespace app\wap\controller;
 use data\extend\ThinkOauth as ThinkOauth;
 use data\extend\WchatOauth;
 use data\service\Config as WebConfig;
+use data\service\promotion\PromoteRewardRule;
 use data\service\Goods as GoodsService;
 use data\service\Member as Member;
 use data\service\Shop;
@@ -27,6 +28,8 @@ use data\service\Weixin;
 use think\Controller;
 use think\Session;
 use think\Cookie;
+use think\Request;
+use data\service\Platform;
 \think\Loader::addNamespace('data', 'data/');
 
 /**
@@ -45,10 +48,12 @@ class Login extends Controller
     public $style;
 
     public $logo;
-
+    
     protected $instance_id;
 
     protected $shop_name;
+    
+    protected $uid;
     
     // 验证码配置
     public $login_verify_code;
@@ -70,6 +75,7 @@ class Login extends Controller
         $this->logo = $web_info['logo'];
         $this->shop_name = $this->user->getInstanceName();
         $this->instance_id = 0;
+        $this->uid = $this->user->getSessionUid();
         
         // 是否开启验证码
         $web_config = new WebConfig();
@@ -93,26 +99,29 @@ class Login extends Controller
         if (! checkTemplateIsExists("wap", $use_wap_template['value'])) {
             $this->error("模板配置有误，请联系商城管理员");
         }
-        $this->style = "wap/" . $use_wap_template['value']."/";
+        $this->style = "wap/" . $use_wap_template['value'] . "/";
         $this->assign("style", "wap/" . $use_wap_template['value']);
     }
-    
+
     /**
      * 判断wap端是否开启
      */
-    public function determineWapWhetherToOpen(){
+    public function determineWapWhetherToOpen()
+    {
         $this->web_site = new WebSite();
         $web_info = $this->web_site->getWebSiteInfo();
-        if($web_info['wap_status'] == 3 && $web_info['web_status'] == 1){
+        if ($web_info['wap_status'] == 3 && $web_info['web_status'] == 1) {
             Cookie::set("default_client", "shop");
-            $this->redirect(__URL(\think\Config::get('view_replace_str.SHOP_MAIN')."/shop"));
-        }else if ($web_info['wap_status'] == 2) {
-            webClose($web_info['close_reason']);
-        }else if(($web_info['wap_status'] == 3 && $web_info['web_status'] == 3)||($web_info['wap_status'] == 3 && $web_info['web_status'] == 2)){
-            webClose($web_info['close_reason']);
-        }
+            $this->redirect(__URL(\think\Config::get('view_replace_str.SHOP_MAIN') . "/shop"));
+        } else 
+            if ($web_info['wap_status'] == 2) {
+                webClose($web_info['close_reason']);
+            } else 
+                if (($web_info['wap_status'] == 3 && $web_info['web_status'] == 3) || ($web_info['wap_status'] == 3 && $web_info['web_status'] == 2)) {
+                    webClose($web_info['close_reason']);
+                }
     }
-    
+
     /**
      * 检测微信浏览器并且自动登录
      */
@@ -151,6 +160,19 @@ class Login extends Controller
                             $info = $wchat_oauth->get_oauth_member_info($token);
                             
                             $result = $this->user->registerMember('', '123456', '', '', '', '', $token['openid'], $info, $wx_unionid);
+                            if ($result) {
+                                // 注册成功送优惠券
+                                $Config = new WebConfig();
+                                $integralConfig = $Config->getIntegralConfig($this->instance_id);
+                                if ($integralConfig['register_coupon'] == 1) {
+                                    $rewardRule = new PromoteRewardRule();
+                                    $res = $rewardRule->getRewardRuleDetail($this->instance_id);
+                                    if ($res['reg_coupon'] != 0) {
+                                        $member = new Member();
+                                        $retval = $member->memberGetCoupon($this->uid, $res['reg_coupon'], 2);
+                                    }
+                                }
+                            }
                         } elseif ($retval == USER_LOCK) {
                             // 锁定跳转
                             $redirect = __URL(__URL__ . "/wap/login/userlock");
@@ -164,6 +186,19 @@ class Login extends Controller
                         $info = $wchat_oauth->get_oauth_member_info($token);
                         
                         $result = $this->user->registerMember('', '123456', '', '', '', '', $token['openid'], $info, $wx_unionid);
+                        if ($result) {
+                            // 注册成功送优惠券
+                            $Config = new WebConfig();
+                            $integralConfig = $Config->getIntegralConfig($this->instance_id);
+                            if ($integralConfig['register_coupon'] == 1) {
+                                $rewardRule = new PromoteRewardRule();
+                                $res = $rewardRule->getRewardRuleDetail($this->instance_id);
+                                if ($res['reg_coupon'] != 0) {
+                                    $member = new Member();
+                                    $retval = $member->memberGetCoupon($this->uid, $res['reg_coupon'], 2);
+                                }
+                            }
+                        }
                     } elseif ($retval == USER_LOCK) {
                         // 锁定跳转
                         $redirect = __URL(__URL__ . "/wap/login/userlock");
@@ -231,7 +266,10 @@ class Login extends Controller
         $_SESSION['bund_pre_url'] = '';
         if (! empty($_SERVER['HTTP_REFERER'])) {
             $pre_url = $_SERVER['HTTP_REFERER'];
-            if (strpos($pre_url, 'login')) {
+            if (!strpos($pre_url, 'login') === false) {
+                $pre_url = '';
+            }
+            if (!strpos($pre_url, 'admin') === false) {
                 $pre_url = '';
             }
             $_SESSION['login_pre_url'] = $pre_url;
@@ -251,6 +289,12 @@ class Login extends Controller
         }
         $this->assign("loginCount", $loginCount);
         $this->assign("loginConfig", $loginConfig);
+        
+        //wap端注册广告位
+        $platform = new Platform();
+        $register_adv = $platform -> getPlatformAdvPositionDetailByApKeyword("wapLogAndRegAdv");
+        $this->assign("register_adv", $register_adv['adv_list'][0]);
+        
         return view($this->style . 'Login/login');
     }
 
@@ -434,6 +478,17 @@ class Login extends Controller
                         $_SESSION['qq_info'] = json_encode($data);
                         $result = $this->user->registerMember('', '123456', '', '', $token['openid'], json_encode($data), '', '', '');
                         if ($result > 0) {
+                            // 注册成功送优惠券
+                            $Config = new WebConfig();
+                            $integralConfig = $Config->getIntegralConfig($this->instance_id);
+                            if ($integralConfig['register_coupon'] == 1) {
+                                $rewardRule = new PromoteRewardRule();
+                                $res = $rewardRule->getRewardRuleDetail($this->instance_id);
+                                if ($res['reg_coupon'] != 0) {
+                                    $member = new Member();
+                                    $retval = $member->memberGetCoupon($this->uid, $res['reg_coupon'], 2);
+                                }
+                            }
                             if (! empty($_SESSION['login_pre_url'])) {
                                 $this->redirect($_SESSION['login_pre_url']);
                             } else
@@ -468,6 +523,17 @@ class Login extends Controller
                 $_SESSION['wx_info'] = json_encode($data);
                 $result = $this->user->registerMember('', '123456', '', '', '', '', '', json_encode($data), $token['unionid']);
                 if ($result > 0) {
+                    // 注册成功送优惠券
+                    $Config = new WebConfig();
+                    $integralConfig = $Config->getIntegralConfig($this->instance_id);
+                    if ($integralConfig['register_coupon'] == 1) {
+                        $rewardRule = new PromoteRewardRule();
+                        $res = $rewardRule->getRewardRuleDetail($this->instance_id);
+                        if ($res['reg_coupon'] != 0) {
+                            $member = new Member();
+                            $retval = $member->memberGetCoupon($this->uid, $res['reg_coupon'], 2);
+                        }
+                    }
                     if (! empty($_SESSION['login_pre_url'])) {
                         $this->redirect($_SESSION['login_pre_url']);
                     } else {
@@ -514,6 +580,17 @@ class Login extends Controller
         } else {
             $result = $this->user->registerMember($user_name, $password, $email, $mobile, $qq_openid, $qq_info, $wx_openid, $wx_info);
             if ($result > 0) {
+                // 注册成功送优惠券
+                $Config = new WebConfig();
+                $integralConfig = $Config->getIntegralConfig($this->instance_id);
+                if ($integralConfig['register_coupon'] == 1) {
+                    $rewardRule = new PromoteRewardRule();
+                    $res = $rewardRule->getRewardRuleDetail($this->instance_id);
+                    if ($res['reg_coupon'] != 0) {
+                        $member = new Member();
+                        $retval = $member->memberGetCoupon($this->uid, $res['reg_coupon'], 2);
+                    }
+                }
                 $this->user->qqLogin($qq_openid);
             }
         }
@@ -536,24 +613,34 @@ class Login extends Controller
             $mobile = request()->post('mobile', '');
             $sendMobile = Session::get('sendMobile');
             if (empty($mobile)) {
-                $retval = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
+                $retval_id = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
             } else {
                 if ($sendMobile == $mobile) {
-                    $retval = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
-                } else 
-                    if (empty($user_name)) {
-                        $retval = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
-                    }
+                    $retval_id = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
+                } elseif (empty($user_name)) {
+                    $retval_id = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
+                }
             }
-            if ($retval > 0) {
+            if ($retval_id > 0) {
                 // 微信的会员绑定
                 if (empty($user_name)) {
                     $user_name = $mobile;
                 }
                 $this->wchatBindMember($user_name, $password, $bind_message_info);
+                // 注册成功送优惠券
+                $Config = new WebConfig();
+                $integralConfig = $Config->getIntegralConfig($this->instance_id);
+                if ($integralConfig['register_coupon'] == 1) {
+                    $rewardRule = new PromoteRewardRule();
+                    $res = $rewardRule->getRewardRuleDetail($this->instance_id);
+                    if ($res['reg_coupon'] != 0) {
+                        $member = new Member();
+                        $retval = $member->memberGetCoupon($retval_id, $res['reg_coupon'], 2);
+                    }
+                }
             }
+            return AjaxReturn($retval_id);
             
-            return AjaxReturn($retval);
         } else {
             $this->getWchatBindMemberInfo();
             $config = new WebConfig();
@@ -585,6 +672,11 @@ class Login extends Controller
             
             $this->assign("loginCount", $loginCount);
             $this->assign("loginConfig", $loginConfig);
+            
+            //wap端注册广告位
+            $platform = new Platform();
+            $register_adv = $platform -> getPlatformAdvPositionDetailByApKeyword("wapLogAndRegAdv");
+            $this->assign("register_adv", $register_adv['adv_list'][0]);
             
             return view($this->style . 'Login/register');
         }
@@ -851,6 +943,7 @@ class Login extends Controller
         @imagefttext($dests, 23, 0, "10px" * 2, $name_top_size + 50, $bg, "public/static/font/Microsoft.ttf", "电话号码：" . $shop_phone);
         @imagefttext($dests, 23, 0, "10px" * 2, $name_top_size + 100, $bg, "public/static/font/Microsoft.ttf", "店铺地址：" . $live_store_address);
         header("Content-type: image/jpeg");
+        ob_clean();
         imagejpeg($dests);
     }
 
@@ -914,7 +1007,7 @@ class Login extends Controller
         $flag = isset($flag) ? $flag : "shop";
         $goods_id = isset($goods_id) ? $goods_id : "";
         
-        $share_logo = 'http://' . $_SERVER['HTTP_HOST'] . config('view_replace_str.__UPLOAD__') . '/' . $this->logo; // 分享时，用到的logo，默认是平台logo
+        $share_logo = Request::instance()->domain() . config('view_replace_str.__UPLOAD__') . '/' . $this->logo; // 分享时，用到的logo，默认是平台logo
         $shop = new Shop();
         $config = $shop->getShopShareConfig($shop_id);
         
@@ -977,6 +1070,7 @@ class Login extends Controller
                 $share_content['share_nick_name'] = $current_user;
                 break;
             case "goods":
+                
                 // 商品分享
                 $goods = new GoodsService();
                 $goods_detail = $goods->getGoodsDetail($goods_id);
@@ -984,32 +1078,34 @@ class Login extends Controller
                 $share_content["share_contents"] = $config["goods_param_1"] . "￥" . $goods_detail["price"] . ";" . $config["goods_param_2"];
                 $share_content['share_nick_name'] = $current_user;
                 if (count($goods_detail["img_list"]) > 0) {
-                    $share_logo = 'http://' . $_SERVER['HTTP_HOST'] . config('view_replace_str.__UPLOAD__') . '/' . $goods_detail["img_list"][0]["pic_cover_mid"]; // 用商品的第一个图片
+                    $share_logo = Request::instance()->domain() . config('view_replace_str.__UPLOAD__') . '/' . $goods_detail["img_list"][0]["pic_cover_mid"]; // 用商品的第一个图片
                 }
                 break;
             case "qrcode_shop":
+                
                 // 二维码分享
                 if (! empty($user_info)) {
                     $share_content["share_title"] = $shop_name . "二维码分享";
                     $share_content["share_contents"] = $config["qrcode_param_1"] . ";" . $config["qrcode_param_2"];
                     $share_content['share_nick_name'] = '分享人：' . $user_info["nick_name"];
                     if (! empty($user_info['user_headimg'])) {
-                        $share_logo = 'http://' . $_SERVER['HTTP_HOST'] . config('view_replace_str.__UPLOAD__') . '/' . $user_info['user_headimg'];
+                        $share_logo = Request::instance()->domain() . config('view_replace_str.__UPLOAD__') . '/' . $user_info['user_headimg'];
                     } else {
-                        $share_logo = 'http://' . $_SERVER['HTTP_HOST'] . config('view_replace_str.__TEMP__') . '/wap/' . NS_TEMPLATE . '/public/images/member_default.png';
+                        $share_logo = Request::instance()->domain() . config('view_replace_str.__TEMP__') . '/wap/' . NS_TEMPLATE . '/public/images/member_default.png';
                     }
                 }
                 break;
             case "qrcode_my":
+                
                 // 二维码分享
                 if (! empty($user_info)) {
                     $share_content["share_title"] = $shop_name . "二维码分享";
                     $share_content["share_contents"] = $config["qrcode_param_1"] . ";" . $config["qrcode_param_2"];
                     $share_content['share_nick_name'] = '分享人：' . $user_info["nick_name"];
                     if (! empty($user_info['user_headimg'])) {
-                        $share_logo = 'http://' . $_SERVER['HTTP_HOST'] . config('view_replace_str.__UPLOAD__') . '/' . $user_info['user_headimg'];
+                        $share_logo = Request::instance()->domain() . config('view_replace_str.__UPLOAD__') . '/' . $user_info['user_headimg'];
                     } else {
-                        $share_logo = 'http://' . $_SERVER['HTTP_HOST'] . config('view_replace_str.__TEMP__') . '/wap/' . NS_TEMPLATE . '/public/images/member_default.png';
+                        $share_logo = Request::instance()->domain() . config('view_replace_str.__TEMP__') . '/wap/' . NS_TEMPLATE . '/public/images/member_default.png';
                     }
                 }
                 break;
@@ -1107,17 +1203,19 @@ class Login extends Controller
                 'code' => - 1,
                 'message' => "发送失败"
             ];
-        }else if($result["code"] != 0) {
-            return $result = [
-                'code' => $result["code"],
-                'message' => $result["message"]
-            ];
-        }else if($result["code"] == 0) {
-            return $result = [
-                'code' => 0,
-                'message' => "发送成功"
-            ];
-        }
+        } else 
+            if ($result["code"] != 0) {
+                return $result = [
+                    'code' => $result["code"],
+                    'message' => $result["message"]
+                ];
+            } else 
+                if ($result["code"] == 0) {
+                    return $result = [
+                        'code' => 0,
+                        'message' => "发送成功"
+                    ];
+                }
     }
 
     /**
@@ -1139,17 +1237,19 @@ class Login extends Controller
                 'code' => - 1,
                 'message' => "发送失败"
             ];
-        }else if($result["code"] != 0) {
-            return $result = [
-                'code' => $result["code"],
-                'message' => $result["message"]
-            ];
-        }else if($result["code"] == 0) {
-            return $result = [
-                'code' => 0,
-                'message' => "发送成功"
-            ];
-        }
+        } else 
+            if ($result["code"] != 0) {
+                return $result = [
+                    'code' => $result["code"],
+                    'message' => $result["message"]
+                ];
+            } else 
+                if ($result["code"] == 0) {
+                    return $result = [
+                        'code' => 0,
+                        'message' => "发送成功"
+                    ];
+                }
     }
 
     /**
@@ -1172,10 +1272,6 @@ class Login extends Controller
         }
     }
 
-    
-    /**
-     * 忘记密码
-     */
     public function findPasswd()
     {
         if (request()->isAjax()) {

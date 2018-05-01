@@ -59,9 +59,22 @@ input::-webkit-inner-spin-button{
 	float: left;
 	color: red;
 }
+.header-table{
+    margin-bottom: 0;
+    border: 1px solid #ddd;
+    border-bottom: 0;
+    max-width: calc(100% - 2px);
+}
+.table-border-row tr td:first-child{
+	border-left: 1px solid #e5e5e5;
+}
+.body-table{
+    border: solid #ddd;
+    border-width: 0 1px 0 1px;
+}
 </style>
 <!-- 打印发货单 -->
-<div id="prite-send" class="modal hide fade" data-backdrop="static" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true" style="margin-left:-536px;border-radius: 0;">
+<div id="prite-send" class="modal hide fade" data-backdrop="static" role="dialog" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true" style="margin-left:-536px;border-radius: 0;">
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 		<h3>打印发货单</h3>
@@ -69,14 +82,14 @@ input::-webkit-inner-spin-button{
 	<div class="modal-body" style="height: 282px; overflow: auto;">
 		<div class="ordercontent">
 			<div class="data-body-head">
-				<table class="table table-border-row" style="margin-bottom: 0;">
+				<table class="table table-border-row header-table" style="margin-bottom: 0;">
 					<colgroup>
 						<col style="width: 25%">
 						<col style="width: 37%">
 						<col style="width: 18%">
 						<col style="width: 20%">
 					</colgroup>
-					<tr style="background: #eee;">
+					<tr style="background: #F2F6FC;">
 						<th>订单编号</th>
 						<th>商品名称</th>
 						<th>快递公司</th>
@@ -114,13 +127,13 @@ input::-webkit-inner-spin-button{
 	</div>
 	<a id="invoicePrintingURL" style="display: none;" target="_blank"></a>
 	<div class="modal-footer">
-		<button class="btn btn-primary" id="invoicePrinPreview" aria-hidden="true">打印预览</button>
-		<button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+		<button class="btn-common" id="invoicePrinPreview" aria-hidden="true">打印预览</button>
+		<button class="btn-common-cancle btn-big" data-dismiss="modal" aria-hidden="true">关闭</button>
 	</div>
 </div>
 
 <!-- 打印出库单 -->
-<div id="print-billOfSales" class="modal hide fade" tabindex="-1"  aria-labelledby="myModalLabel" aria-hidden="true" style="margin-left:-536px;border-radius: 0;" data-backdrop="static">
+<div id="print-billOfSales" class="modal hide fade" role="dialog" tabindex="-1"  aria-labelledby="myModalLabel" aria-hidden="true" style="margin-left:-536px;border-radius: 0;" data-backdrop="static">
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 		<h3>打印出库单</h3>
@@ -128,7 +141,7 @@ input::-webkit-inner-spin-button{
 	<div class="modal-body" style="height: 282px; overflow: auto;">
 		<div class="ordercontent">
 			<div class="data-body-head">
-				<table class="table table-border-row" style="margin-bottom: 0;">
+				<table class="table table-border-row header-table" style="margin-bottom: 0;">
 					<colgroup>
 						<col style="width: 29%">
 						<col style="width: 15%">
@@ -137,7 +150,7 @@ input::-webkit-inner-spin-button{
 						<col style="width: 15%">
 						<col style="width: 15%">
 					</colgroup>
-					<tr style="background: #eee;">
+					<tr style="background: #F2F6FC;border-bottom:1px solid #ddd">
 						<th>商品名称</th>
 						<th>sku名称</th>
 						<th style="text-align: center;">出库量</th>
@@ -148,7 +161,7 @@ input::-webkit-inner-spin-button{
 				</table>
 			</div>
 			<div class="data-table-body" style="height: 240px;">
-				<table>
+				<table class="body-table"> 
 					<colgroup>
 						<col style="width: 29%">
 						<col style="width: 15%">
@@ -179,13 +192,13 @@ input::-webkit-inner-spin-button{
 	</div>
 	<a id="invoicePrintingURL" style="display: none;" target="_blank"></a>
 	<div class="modal-footer">
-		<button class="btn btn-primary" onclick="printpreviewOfInvoice();" aria-hidden="true">打印预览</button>
-		<button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+		<button class="btn-common" onclick="printpreviewOfInvoice();" aria-hidden="true">打印预览</button>
+		<button class="btn-common-cancle btn-big" data-dismiss="modal" aria-hidden="true">关闭</button>
 	</div>
 </div>
 
 <!-- 打印快递单-->
-<div id="prite-send-express" class="modal hide fade" tabindex="-1"  aria-labelledby="myModalLabel" aria-hidden="true" style="margin-left:-536px;border-radius: 0;" data-backdrop="static">
+<div id="prite-send-express" class="modal hide fade" role="dialog" tabindex="-1"  aria-labelledby="myModalLabel" aria-hidden="true" style="margin-left:-536px;border-radius: 0;" data-backdrop="static">
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 		<h3>打印快递单</h3>
@@ -195,7 +208,7 @@ input::-webkit-inner-spin-button{
 			<div class="control-group">
 				<label class="control-label" for="express_select"><span class="color-red">*</span>选择快递</label>
 				<div class="controls">
-					<select id="express_select" class="input-large">
+					<select id="express_select" class="select-common">
 					{volist name="expressList" id="vo"}
 					<option value="{$vo.co_id}">{$vo.company_name}</option>
 					{/volist}
@@ -207,8 +220,8 @@ input::-webkit-inner-spin-button{
 		</form> 
 		<div class="ordercontent">
 			<div class="data-body-head">
-				<table class="table table-border-row" style="margin-bottom: 0;">
-					<tr style="background: #eee;">
+				<table class="table table-border-row header-table" style="margin-bottom: 0;border: 1px solid #ddd;border-bottom: 0;">
+					<tr style="background: #F2F6FC;">
 						<th style="width: 17.5%">订单编号</th>
 						<th style="width: 28%">商品名称</th>
 						<th style="width: 6%">已发货</th>
@@ -219,7 +232,7 @@ input::-webkit-inner-spin-button{
 				</table>
 			</div>
 			<div class="data-table-body">
-				<table class="table table-border-row">
+				<table class="table table-border-row body-table">
 					<tbody id="InvoiceList-express" colspan="3">
 						
 					</tbody>
@@ -230,12 +243,13 @@ input::-webkit-inner-spin-button{
 	<a id="invoicePrintingURL" style="display: none;" target="_blank"></a>
 	<div class="modal-footer">
 		<span class="tips">提示：<span style="color: #777;">选中的订单项运单号可实现自增,已发货的订单可修改快递公司和运单号</span></span>
-		<button class="btn btn-primary" id="expressPrinPreview" aria-hidden="true">打印预览</button>
-		<button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+		<button class="btn-common" id="expressPrinPreview" aria-hidden="true">打印预览</button>
+		<button class="btn-common-cancle btn-big" data-dismiss="modal" aria-hidden="true">关闭</button>
 	</div>
 </div>
+
 <!-- 批量发货 -->
-<div id="not-shipped-order-list" class="modal hide fade" tabindex="-1"  aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" style="margin-left:-536px;border-radius: 0;">
+<div id="not-shipped-order-list" role="dialog" class="modal hide fade" tabindex="-1"  aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" style="margin-left:-536px;border-radius: 0;">
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 		<h3>批量发货</h3>
@@ -245,7 +259,7 @@ input::-webkit-inner-spin-button{
 			<div class="control-group">
 				<label class="control-label" for="express_select"><span class="color-red">*</span>选择快递</label>
 				<div class="controls">
-					<select id="express_select_shipping" class="input-large">
+					<select id="express_select_shipping" class="select-common">
 					{volist name="expressList" id="vo"}
 					<option value="{$vo.co_id}">{$vo.company_name}</option>
 					{/volist}
@@ -257,8 +271,8 @@ input::-webkit-inner-spin-button{
 		</form> 
 		<div class="ordercontent">
 			<div class="data-body-head">
-				<table class="table table-border-row" style="margin-bottom: 0;">
-					<tr style="background: #eee;">
+				<table class="table table-border-row header-table">
+					<tr style="background: #F2F6FC;">
 						<th style="width: 17.5%">订单编号</th>
 						<th style="width: 32.5%">商品名称</th>
 						<th style="width: 15%">快递公司</th>
@@ -267,7 +281,7 @@ input::-webkit-inner-spin-button{
 				</table>
 			</div>
 			<div class="data-table-body" >
-				<table class="table table-border-row">
+				<table class="table table-border-row body-table">
 					<tbody id="notShippedOrderList">
 						
 					</tbody>
@@ -276,8 +290,8 @@ input::-webkit-inner-spin-button{
 		</div>
 	</div>
 	<div class="modal-footer">
-		<button class="btn btn-primary" id="confirm_delivery" aria-hidden="true">确认发货</button>
-		<button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+		<button class="btn-common" id="confirm_delivery" aria-hidden="true">确认发货</button>
+		<button class="btn-common-cancle btn-big" data-dismiss="modal" aria-hidden="true">关闭</button>
 	</div>
 </div>
 
@@ -532,13 +546,13 @@ function showExpress() {
 					if(item['is_devlier'] == 0){
 						str += '<td style="width: 15%"><div class="cell data_express_company express_company_empty" data_express_company_id="' + item['express_company_id'] + '" order_id="'+ item['order_id'] +'">' + item['express_company_name'] + '</div></td>';
 						str += '<td style="width: 18%">';
-						str += '<div class="cell"><input type="text" style="margin-bottom: 0;width: 150px;" value="' + item['express_no'] + '" onkeyup="this.value=this.value.replace(/\\D/g,\'\')" maxlength="15" class="express_no_empty">';
+						str += '<div class="cell"><input type="text" class="input-common middle express_no_empty" style="margin-bottom: 0;width: 150px;" value="' + item['express_no'] + '" onkeyup="this.value=this.value.replace(/\\D/g,\'\')" maxlength="15" >';
 						str += '<input type="checkbox" class="is_Increment" id="is_Increment_'+ i +'" checked ><label for="is_Increment_'+ i +'"></label>';
 					}else{
 					//已发货
 						str += '<td style="width: 15%"><div class="cell cell_' + item['order_id'] + ' data_express_company"  data_express_company_id="' + item['express_company_id'] + '" order_id="'+ item['order_id'] +'" >' + item['express_company_name'] + '</div></td>';
 						str += '<td style="width: 18%">';
-						str += '<div class="cell"><input type="text" style="margin-bottom: 0;width: 150px;" value="' + item['express_no'] + '" onkeyup="this.value=this.value.replace(/\\D/g,\'\')" maxlength="15">';
+						str += '<div class="cell"><input type="text" class="input-common middle" style="margin-bottom: 0;width: 150px;" value="' + item['express_no'] + '" onkeyup="this.value=this.value.replace(/\\D/g,\'\')" maxlength="15">';
 						str += '<input type="checkbox" class="is_Increment" data_order_id="'+ item['order_id']+'" id="is_Increment_'+ i +'"><label for="is_Increment_'+  i +'"></label>';
 					}
 					str += '</div></td></tr>';
@@ -715,7 +729,7 @@ function showNotShippingOrderList(){
 						}
 						str += '<td style="width: 15%"><div class="cell data_express_company express_company_empty" data_express_company_id="' + item['express_company_id'] + '" order_id="'+ item['order_id'] +'">' + item['express_company_name'] + '</div></td>';
 						str += '<td style="width: 18%">';
-						str += '<div class="cell"><input type="text" style="margin-bottom: 0;width: 150px;" value="' + item['express_no'] + '" onkeyup="this.value=this.value.replace(/\\D/g,\'\')" maxlength="15" class="express_no_empty">';
+						str += '<div class="cell"><input type="text" style="margin-bottom: 0;width: 150px;" value="' + item['express_no'] + '" onkeyup="this.value=this.value.replace(/\\D/g,\'\')" maxlength="15" class="express_no_empty input-common middle">';
 						str += '</div></td></tr>';
 					}
 				}

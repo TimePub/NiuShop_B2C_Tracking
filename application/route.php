@@ -11,6 +11,12 @@ use think\Request;
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
+$root_url = \think\Request::instance()->url(true);
+$upload_url = \think\Request::instance()->domain() . \think\Request::instance()->root().'/upload';
+if(strpos($root_url,$upload_url) !==false)
+{
+    exit();
+}  
 /*****************************************************************************************************设置后台登录模块**********************************************************************************/
 //检测后台系统模块
      if(ADMIN_MODULE != 'admin')
@@ -21,13 +27,12 @@ use think\Request;
             Route::rule('','admin/index/index');
           
         });
-            Route::group('admin',function(){
-                Route::rule(':controller/:action','shop/:controller/:action');
-                Route::rule(':controller','shop/:controller/index');
-                Route::rule('','shop/index/index');
-            
-            });
+        Route::group('admin',function(){
+            Route::rule(':controller/:action','shop/:controller/:action');
+            Route::rule(':controller','shop/:controller/index');
+            Route::rule('','shop/index/index');
         
+        });
     }
    
     

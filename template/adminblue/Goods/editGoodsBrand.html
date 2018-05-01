@@ -8,31 +8,33 @@
 <style type="text/css">
 .error {padding-left: 5px !important;}
 </style>
-{/block} {block name="main"}
+{/block} 
+{block name="main"}
+<div class="space-10"></div>
 <div class="set-style">
 	<input type="hidden" value="{$brand_info.brand_id}" id="brand_id" />
 	<dl>
-		<dt><span class="color-red">*</span>品牌名称:</dt>
+		<dt><span class="color-red">*</span>品牌名称：</dt>
 		<dd>
 			<input id="brand_name" type="text" value="{$brand_info.brand_name}" placeholder="请输入品牌名称" class="input-common"/>
 			<span class="error">请输入品牌名称</span>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span class="color-red">*</span>品牌首字母:</dt>
+		<dt><span class="color-red">*</span>品牌首字母：</dt>
 		<dd>
-			<input id="brand_initial" type="text" value="{$brand_info.brand_initial}" placeholder="请输入品牌首字母" class="input-common"/>
+			<input id="brand_initial" type="text" value="{$brand_info.brand_initial}" placeholder="请输入品牌首字母" class="input-common harf"/>
 			<span class="error">请输入品牌首字母</span>
 		</dd>
 	</dl>
 	<dl>
-		<dt>是否推荐</dt>
+		<dt>是否推荐：</dt>
 		<dd>
 			<input id="brand_recommend" type="checkbox" class="checkbox" {if condition="$brand_info.brand_recommend == 1" }checked="checked" {/if} />
 		</dd>
 	</dl>
-	<dl>
-		<dt><span class="color-red"></span>商品分类</dt>
+	<dl style="display: none;">
+		<dt><span class="color-red"></span>商品分类：</dt>
 		<dd>
 			<!-- <div class="col-sm-2 category_name">
 				<span>{$brand_info['category_name']}</span>
@@ -58,54 +60,49 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>图片:</dt>
+		<dt>图片：</dt>
 		<dd>
-			<div class="class-logo">
-				<p>
-				{if condition="$brand_info['brand_pic'] eq ''"}
-					<img id="imgbrand_pic">
-				{else/}
-					<img id="imgbrand_pic" src="{:__IMG($brand_info['brand_pic'])}">
-				{/if}
-				</p>
+			<div class="upload-btn-common">
+				<div>
+					<input class="input-file" name="file_upload" id="uploadBrand_pic" type="file" onchange="imgUpload(this);" title="上传">
+					<input type="hidden" id="brand_pic" value="{$brand_info['brand_pic']}" />
+				</div>
+				<input type="text" id="text_brand_pic" class="input-common" readonly="readonly" value="{if condition="$brand_info.brand_pic"}{$brand_info.brand_pic}{/if}" />
+				<em>上传</em>
+				
+				<img id="preview_brand_pic" src="__STATIC__/blue/img/upload-common-select.png" data-html="true" data-container="body" data-placement="top" data-trigger="manual" {if condition="$brand_info.brand_pic"}data-src="{:__IMG($brand_info.brand_pic)}"{/if}/>
+
 			</div>
-			
-			<div class="upload-btn">
-				<span>
-					<input class="input-file" name="file_upload" id="uploadImg1" type="file" onchange="imgUpload(this);">
-					<input type="hidden" id="brand_pic" value="{$brand_info.brand_pic}" />
-				</span>
-				<p><i class="fa fa-cloud-upload"></i>上传图片</p>
-			</div>
-			<p class="hint"><span style="color: orange;">建议使用宽200像素*高60像素内的GIF或PNG透明图片；点击下方"提交"按钮后生效。</span></p>
+			<p class="hint">
+				<span>建议使用<i class="important-note">宽200</i>像素-<i class="important-note">高60</i>像素内的<i class="important-note">GIF</i>或<i class="important-note">PNG</i>透明图片；点击下方"保存"按钮后生效。</span>
+			</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>品牌推荐广告图</dt>
+		<dt>品牌推荐广告图：</dt>
 		<dd>
-			<div class="class-logo">
-				<p>
-				{if condition="$brand_info['brand_ads'] eq ''"}
-					<img id="imgbrand_ads" class="imglogo" />
-				{else/}
-					<img id="imgbrand_ads" class="imglogo" src="{:__IMG($brand_info.brand_ads)}" />
-				{/if}
-				</p>
-			</div>
-			
-			<div class="upload-btn">
-				<span>
-					<input class="input-file" name="file_upload" id="uploadImg2" type="file" onchange="imgUpload(this);">
+			<div class="upload-btn-common">
+				<div>
+					<input class="input-file" name="file_upload" id="uploadBrand_ads" type="file" onchange="imgUpload(this);" title="上传">
 					<input type="hidden" id="brand_ads" value="{$brand_info.brand_ads}" />
-				</span>
-				<p><i class="fa fa-cloud-upload"></i>上传图片</p>
+				</div>
+				<input type="text" id="text_brand_ads" class="input-common" readonly="readonly" value="{if condition="$brand_info.brand_ads"}{$brand_info.brand_ads}{/if}" />
+				<em>上传</em>
+				
+				<img id="preview_brand_ads" src="__STATIC__/blue/img/upload-common-select.png" data-html="true" data-container="body" data-placement="top" data-trigger="manual" {if condition="$brand_info.brand_ads"}data-src="{:__IMG($brand_info.brand_ads)}"{/if}/>
+
 			</div>
-			<p class="hint"><span style="color: orange;">建议使用宽200像素*高60像素内的GIF或PNG透明图片；点击下方"提交"按钮后生效。</span></p>
+			<p class="hint">
+				<span>建议使用<i class="important-note">宽200</i>像素-<i class="important-note">高60</i>像素内的<i class="important-note">GIF</i>或<i class="important-note">PNG</i>透明图片；点击下方"保存"按钮后生效。</span>
+			</p>
 		</dd>
 	</dl>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="editGoodsBrand();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="editGoodsBrand();">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);">返回</button>
+		</dd>
 	</dl>
 </div>
 <script>
@@ -142,28 +139,6 @@ function validation() {
 		brand_initial.next("span").hide();
 	}
 
-// 	if (category_id_1.val() == 0 ) {
-// 		category_id_1.val("{$brand_info['category_id_1']}");
-// 		if (category_id_1.val() == 0 ) {
-// 			category_id_1.parent().children("span").show();
-// 		}
-// 		return false;
-// 	} else {
-// 		category_id_1.parent().children("span").hide();
-// 	}
-	/* if (brand_pic.val() == "") {
-		brand_pic.parent().parent().parent().children("span").show();
-		return false;
-	} else {
-		brand_pic.parent().parent().parent().children("span").hide();
-	}
-
-	if (brand_ads.val() == "") {
-		brand_ads.parent().parent().parent().children("span").show();
-			return false;
-	} else {
-		brand_ads.parent().parent().parent().children("span").hide();
-	} */
 	return true;
 }
 
@@ -214,9 +189,10 @@ function editGoodsBrand() {
 		},
 		success : function(data) {
 			if (data["code"] > 0) {
-				showMessage('success', "商品品牌修改成功","{:__URL('ADMIN_MAIN/goods/goodsbrandlist')}");
+				showTip("商品品牌修改成功","success");
+				location.href = "{:__URL('ADMIN_MAIN/goods/goodsbrandlist')}";
 			} else {
-				showMessage('error', "商品品牌修改失败");
+				showTip("商品品牌修改失败","error");
 				flag = false;
 			}
 		}
@@ -226,12 +202,13 @@ function editGoodsBrand() {
 //图片上传
 function imgUpload(event) {
 	var fileid = $(event).attr("id");
-	var str = $(event).next().attr("id");
+	var id = $(event).next().attr("id");
 	var data = { 'file_path' : UPLOADGOODSBRAND };
 	uploadFile(fileid,data,function(res){
 		if(res.code){
-			$("#img"+str).attr("src",__IMG(res.data));
-			$("#"+str).val(res.data);
+			$("#"+id).val(res.data);
+			$("#text_" + id).val(res.data);
+			$("#preview_" + id).attr("data-src",__IMG(res.data));
 			showTip(res.message,"success");
 		}else{
 			showTip(res.message,"error");

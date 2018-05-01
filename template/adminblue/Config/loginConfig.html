@@ -1,34 +1,38 @@
 {extend name="adminblue/base" /}
 {block name="main"}
 {if condition="$type == 'qq'"}
+<div class="span1"></div>
 <div class="set-style">
 	<dl>
-		<dt>APP_ID:</dt>
-		<dd><input id="APP_KEY" type="text" value="{$qq_config['value']['APP_KEY']}" class="input-common" /></dd>
+		<dt>APP_ID：</dt>
+		<dd><input id="APP_KEY" type="text" value="{$qq_config['value']['APP_KEY']}" class="input-common long" /></dd>
 	</dl>
 	<dl>
-		<dt>APP_KEY:</dt>
-		<dd><input id="APP_SECRET" type="text" value="{$qq_config['value']['APP_SECRET']}" class="input-common" /></dd>
+		<dt>APP_KEY：</dt>
+		<dd><input id="APP_SECRET" type="text" value="{$qq_config['value']['APP_SECRET']}" class="input-common long" /></dd>
 	</dl>
 	<dl>
-		<dt>是否启用:</dt>
+		<dt>是否启用：</dt>
 		<dd>
 			<input id="is_use" type="checkbox" class="checkbox" {if condition="$qq_config.is_use=='1'"}checked="checked"{/if}/>
 		</dd>
 	</dl>
 	<dl>
-		<dt>申请域名:</dt>
+		<dt>申请域名：</dt>
 		<dd>
 			{$qq_config['value']['AUTHORIZE']}
 		</dd>
 	</dl>
 	<dl>
-		<dt>回调域名:</dt>
+		<dt>回调域名：</dt>
 		<dd>{$qq_config['value']['CALLBACK']}</dd>
 	</dl>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common" onclick="setConfigAjax();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="setConfigAjax();" >保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
 	</dl>
 </div>
 <input type ="hidden" id="AUTHORIZE" value="{$qq_config['value']['AUTHORIZE']}">
@@ -55,9 +59,10 @@ function setConfigAjax(){
 		},
 		success:function (data) {
 			if (data["code"] > 0) {
-				showMessage('success', data["message"],"{:__URL('ADMIN_MAIN/config/partylogin')}");
+				showTip(data["message"],'success');
+				location.href = "{:__URL('ADMIN_MAIN/config/partylogin')}";
 			}else{
-				showMessage('error', data["message"]);
+				showTip(data["message"],'error');
 			}
 		}
 	});
@@ -66,33 +71,36 @@ function setConfigAjax(){
 {else/}
 <div class="set-style">
 	<dl>
-		<dt>APP_KEY:</dt>
-		<dd><input id="APP_KEY" type="text" value="{$wchat_config['value']['APP_KEY']}" class="input-common" /></dd>
+		<dt>APP_KEY：</dt>
+		<dd><input id="APP_KEY" type="text" value="{$wchat_config['value']['APP_KEY']}" class="input-common long" /></dd>
 	</dl>
 	<dl>
-		<dt>APP_SECRET:</dt>
-		<dd><input id="APP_SECRET" type="text" value="{$wchat_config['value']['APP_SECRET']}" class="input-common" /></dd>
+		<dt>APP_SECRET：</dt>
+		<dd><input id="APP_SECRET" type="text" value="{$wchat_config['value']['APP_SECRET']}" class="input-common long" /></dd>
 	</dl>
 	<dl>
-		<dt>是否启用:</dt>
+		<dt>是否启用：</dt>
 		<dd>
 			<input id="is_use" type="checkbox" class="checkbox" {if condition="$wchat_config.is_use=='1'"}checked="checked"{/if}/>
 		</dd>
 	</dl>
 	<dl>
-		<dt>申请域名:</dt>
+		<dt>申请域名：</dt>
 		<dd>
 		{$wchat_config['value']['AUTHORIZE']}
-		<p style="color:#999999;">(申请<a href="https://open.weixin.qq.com/">微信开放平台</a> 网站应用,授权回调域:{php}echo $_SERVER['HTTP_HOST'];{/php})</p>
+		<p class="hint">(申请<a href="https://open.weixin.qq.com/" target="_blank">微信开放平台</a> 网站应用,授权回调域:{php}echo $_SERVER['HTTP_HOST'];{/php})</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>回调域名:</dt>
+		<dt>回调域名：</dt>
 		<dd>{$wchat_config['value']['CALLBACK']}</dd>
 	</dl>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common" onclick="setConfigAjax();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="setConfigAjax();" >保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
 	</dl>
 </div>
 <input type ="hidden" id="AUTHORIZE" value="{$wchat_config['value']['AUTHORIZE']}">
@@ -119,9 +127,10 @@ function setConfigAjax(){
 		},
 		success:function (data) {
 			if (data["code"] > 0) {
-				showMessage('success', data["message"],"{:__URL('ADMIN_MAIN/config/partylogin')}");
+				showTip(data["message"],'success');
+				location.href = "{:__URL('ADMIN_MAIN/config/partylogin')}";
 			}else{
-				showMessage('error', data["message"]);
+				showTip(data["message"],'error');
 			}
 		}
 	});

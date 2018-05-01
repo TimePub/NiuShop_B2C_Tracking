@@ -272,11 +272,12 @@
 	border-right: solid 1px #d8d8d8;
 	color: #999;
 	float: left;
-	text-align: center;
+	text-align: left;
+	margin-left: 5px;
 }
 
 .act-list ul li .info .price strong {
-	font-size: 20px;
+	font-size: 16px;
 }
 
 .act-list ul li .info .price .jifen {

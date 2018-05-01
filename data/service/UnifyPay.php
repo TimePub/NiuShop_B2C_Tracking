@@ -22,6 +22,8 @@ namespace data\service;
 use data\service\BaseService as BaseService;
 use data\api\IUnifyPay;
 use data\model\NsOrderPaymentModel;
+use data\model\NsMemberBalanceWithdrawModel;
+use data\model\UserModel;
 use data\service\Pay\WeiXinPay;
 use data\service\Pay\AliPay;
 use data\service\Config;
@@ -29,6 +31,8 @@ use app\wap\controller\Assistant;
 use data\service\niubusiness\NbsBusinessAssistant;
 use think\Log;
 use think\Cache;
+use data\service\Pay\PayParam;
+use data\service\Pay\UnionPay;
 
 class UnifyPay extends BaseService implements IUnifyPay
 {
@@ -38,7 +42,7 @@ class UnifyPay extends BaseService implements IUnifyPay
         parent::__construct();
     }
     /**
-     * (non-PHPdoc)
+     * 支付状态设计：0待支付，1已支付  -1已关闭
      * @see \data\api\IUnifyPay::createOutTradeNo()
      */
      public function createOutTradeNo()
@@ -66,9 +70,11 @@ class UnifyPay extends BaseService implements IUnifyPay
         $config = new Config();
         $wchat_pay = $config->getWpayConfig($instance_id);
         $ali_pay = $config->getAlipayConfig($instance_id);
+        $union_pay = $config ->getUnionpayConfig($instance_id);
         $data_config = array(
             'wchat_pay_config' => $wchat_pay,
-            'ali_pay_config'   => $ali_pay
+            'ali_pay_config'   => $ali_pay,
+            'union_pay_config' => $union_pay
         );
         return $data_config;
     }
@@ -172,6 +178,11 @@ class UnifyPay extends BaseService implements IUnifyPay
                     $member = new Member();
                     $member->payMemberRecharge($out_trade_no, $pay_type);
                     break;
+                case 5: //预售订单支付
+                    
+                    $order = new Order();
+                    $order->presellOrderOnLinePay($out_trade_no, $pay_type);
+                    break;
                 default:
                     break;
             }
@@ -218,11 +229,55 @@ class UnifyPay extends BaseService implements IUnifyPay
     public function modifyNo($out_trade_no, $new_no)
     {
         $pay = new NsOrderPaymentModel();
+        $this->closePaymentPartyInterface($out_trade_no);
         $data = array(
             "out_trade_no" => $new_no
         );
         $retval = $pay->where(['out_trade_no' => $out_trade_no])->update($data);
         return $retval;
+    }
+    /**
+     * 关闭订单(数据库操作)
+     * @param unknown $out_trade_no
+     * @return unknown
+     */
+    public function closePayment($out_trade_no)
+    {
+        $pay = new NsOrderPaymentModel();
+        $data = array(
+            'pay_status' => -1
+        );
+        $retval = $pay->save($data,['out_trade_no' => $out_trade_no]);
+        return $retval;
+    }
+    /**
+     * 关闭第三方接口
+     * @param unknown $out_trade_no
+     */
+    public function closePaymentPartyInterface($out_trade_no)
+    {
+        //检测已开通接口
+        $data = $this->getPayInfo($out_trade_no);
+        if(!empty($data))
+        {
+            if($data['pay_type'] == 1)
+            {
+                //微信支付
+                $weixin_pay = new WeiXinPay();
+                $weixin_pay->setOrderClose($out_trade_no);
+            
+            }elseif ($data['pay_type'] == 2)
+            {
+                //支付宝支付
+                $ali_pay = new AliPay();
+                $ali_pay->setOrderClose($out_trade_no);
+            
+            }elseif($data['pay_type'] == 3)
+            {
+                //银联卡支付
+            }
+        }
+      
     }
     /**
      * 修改支付价格
@@ -239,9 +294,12 @@ class UnifyPay extends BaseService implements IUnifyPay
 	/* (non-PHPdoc)
      * @see \data\api\IUnifyPay::wchatPay()
      */
-    public function wchatPay($out_trade_no, $trade_type, $red_url)
+    public function wchatPay($out_trade_no, $trade_type, $red_url, $applet_openid="")
     {
         $data = $this->getPayInfo($out_trade_no);
+        //修改支付信息
+        $pay = new NsOrderPaymentModel();
+        $pay->save(['pay_type' => 1], ['out_trade_no' => $out_trade_no]);
         if($data < 0)
         {
             return $data;
@@ -257,10 +315,9 @@ class UnifyPay extends BaseService implements IUnifyPay
             $openid = '';
             $product_id = $out_trade_no;
         }
-        if($trade_type == 'MWEB')
-        {
-            $openid = '';
-            $product_id = $out_trade_no;
+      
+        if($trade_type== 'APPLET'){
+            $openid=$applet_openid;
         }
         
         $retval = $weixin_pay->setWeiXinPay($data['pay_body'], $data['pay_detail'], $data['pay_money']*100, $out_trade_no, $red_url, $trade_type, $openid, $product_id);
@@ -280,6 +337,8 @@ class UnifyPay extends BaseService implements IUnifyPay
         {
             return $data;
         }
+        $pay = new NsOrderPaymentModel(); 
+        $pay->save(['pay_type' => 2], ['out_trade_no' => $out_trade_no]);
         $ali_pay = new AliPay();
         $retval = $ali_pay->setAliPay($out_trade_no, $data['pay_body'], $data['pay_detail'], $data['pay_money'], 3, $notify_url, $return_url, $show_url);
         return $retval;
@@ -342,5 +401,34 @@ class UnifyPay extends BaseService implements IUnifyPay
         return $retval;
     }
     
+    public function enterprisePayment(){
+        $weixin_pay = new WeiXinPay();
+        $openid = 'oPgfq0rrpqNxgT9MHF1YRttD5oyI';
+        $partner_trade_no = '201801041030004';
+        $amount = '500';
+        $re_user_name = '高伟';
+        $desc = '转账到个人零钱';
+        $retval = $weixin_pay->EnterprisePayment($openid, $partner_trade_no, $amount, $re_user_name, $desc);
+        return $retval;
+    }
+    /**
+     * 获取提现转账所需要的信息
+     * @param unknown $withdraw_id
+     */
+    public function getMemberWithdrawDetail($withdraw_id){
+        $member_balance_withdraw = new NsMemberBalanceWithdrawModel();
+        $retval = $member_balance_withdraw->getInfo([
+            'id' => $withdraw_id
+        ], '*');
+        if (! empty($retval)) {
+            $user = new UserModel();
+            $userinfo = $user->getInfo([
+                'uid' => $retval['uid']
+            ]);
+            $retval['openid'] = $userinfo["wx_openid"];
+        }
+        return $retval;
+    }
 
+    
 }

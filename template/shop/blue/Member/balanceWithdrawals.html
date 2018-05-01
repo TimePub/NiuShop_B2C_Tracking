@@ -5,73 +5,19 @@ td{padding:10px;border: 1px Black; width:46px;}
 table{background-color:#eeeeee;border:0;width:100%;}
 .integral_title{display:block;font-size:18px;text-align:center;padding:20px;}
 .user-right .tabmenu .tab li {border-bottom: 2px #ff6600 solid;} 
-.Withdrawals{
-	width:10%;float:left;padding:5px 10px;
-}
-.Withdrawals-right{
-	width:85%;float:left;padding:5px 10px;
-}
-.commision-total{
-	line-height:30px;
-}
-.extract{
-	width: 100%;
-	overflow: hidden;
-	margin:10px 0;
-}
-.commision-right{
-	width: 28%;
-	line-height: 25px;
-	float: left;
-	text-align: left;
-	border: 2px solid #ddd;
-	padding: 5px;
-	margin:10px;
-	margin-left:0px; 
-}
-.commision-right.active{
-	border:2px dashed #0689e1;
-}
-.commision-right-btn{
-	line-height: 25px;
-	float: left;
-	text-align: left;
-	padding: 5px;
-}
-.tip-text{
-	float: right;
-	color: #DD997F;
-}  
-.btn-style{
-	width: 7%;
-	line-height: 30px;
-	text-align: center;
-	background: red;
-	margin-left:100px;
-	margin-top: 12px;
-	margin-bottom: 12px;
-}
-.horn-text{
-	width: 50%;
-	margin-left: 100px;
-	color: #DD997F;
-}
-.modal-content{
-	width: 472px;
-	left: 254px;
-}
-.commision-right-money{
-	line-height: 25px;
-	float: left;
-	text-align: left;
-	border: 1px solid #e5e5e5;
-	padding: 5px;
-}
-.show-box{
-	height: 25px;
-	padding-left: 5px;
-	border: 1px solid #ddd;
-}
+.Withdrawals{width:10%;float:left;padding:5px 10px;}
+.Withdrawals-right{width:85%;float:left;padding:5px 10px;}
+.commision-total{line-height:30px;}
+.extract{width: 100%;overflow: hidden;margin:10px 0;}
+.commision-right{width: 28%;line-height: 25px;float: left;text-align: left;border: 2px solid #ddd;padding: 5px;margin:10px 10px 10px 0;height:110px;}
+.commision-right.active{border:2px dashed #0689e1;}
+.commision-right-btn{line-height: 25px;float: left;text-align: left;padding: 5px;}
+.tip-text{float: right;color: #DD997F;}
+.btn-style{width: 7%;line-height: 30px;text-align: center;background: red;margin-bottom: 12px;margin:12px 0 12px 100px;}
+.horn-text{width: 50%;margin-left: 100px;color: #DD997F;}
+.modal-content{width: 472px;left: 254px;}
+.commision-right-money{line-height: 25px;float: left;text-align: left;border: 1px solid #e5e5e5;padding: 5px;}
+.show-box{height: 25px;padding-left: 5px;border: 1px solid #ddd;}
 </style>
 {/block}
 {block name="main"}
@@ -96,14 +42,29 @@ table{background-color:#eeeeee;border:0;width:100%;}
 					<div style="width: 80%;float:left;">
 						{foreach name="account_list" item="vo" key='k'}
 						<div class="commision-right">
-							<div style="width:20%;float:right;text-align: center;margin-top: -8px;margin-right: -8px;">
+							<div style="width:20%;float:right;text-align: center;margin:-5px -5px 0 0;">
 								<a href="javascript:;" onclick="updatebankinfo({$vo.id},{$shop_id});" title="{:lang('edit')}"><img src="__TEMP__/{$style}/public/images/edit-cash.png" style="margin-right: 10px;" /></a>
 								<a href="JavaScript:;" onclick="deletecash({$vo.id});"><img src="__TEMP__/{$style}/public/images/delete-cash.png" /></a>
 							</div>
 							<div style="margin-top: 10px;">
-								<span>{:lang('member_full_name')}：{$vo.realname}</span><br/>
+								<span>{:lang('member_real_name')}：{$vo.realname}</span><br/>
+								<span>{:lang('member_account_type')}：{$vo.account_type_name}</span><br/>
+								{switch name="$vo.account_type"}
+								
+								{case value="1"}
 								<span>{:lang('member_sub_branch_information')}：{$vo.branch_bank_name}</span><br/>
-								<span>{:lang('member_bank_account')}：{$vo.account_number}</span>
+								<span>{:lang('cash_account')}：{$vo.account_number}</span>
+								{/case}
+								
+								{case value="2"}
+								<!--微信 -->
+								{/case}
+								
+								{case value="3"}
+								<span>{:lang('cash_account')}：{$vo.account_number}</span>
+								{/case}
+								
+								{/switch}
 							</div>
 							<input type="hidden" value="{$vo.id}" class="bank_account_id"/>
 						</div>  
@@ -147,31 +108,34 @@ table{background-color:#eeeeee;border:0;width:100%;}
 								<div class="modal-infp-style">
 									<table>
 										<tr>
-											<td style="width:20%">{:lang('member_full_name')}：</td>
+											<td style="width:20%;text-align: right;">{:lang('member_real_name')}：</td>
 											<td colspan='3'>
 												<input type="text" placeholder="{:lang('member_enter_your_real_name')}" id="realname" class="show-box"/>
 											</td>
 										</tr>
 										<tr>
-											<td>{:lang('cell_phone_number')}：</td>
+											<td style="text-align: right;">{:lang('member_phone_number')}：</td>
 											<td colspan='3'><input type="text" placeholder="{:lang('member_enter_your_phone_number')}" id="mobile" class="show-box"></td>
 										</tr>
 										<tr>
-											<td>{:lang('member_account_type')}:</td>
+											<td style="text-align: right;">{:lang('member_account_type')}：</td>
 											<td colspan='3'>
-												<select id="bank_type" class="inputBg">
-													<option value="{:lang('member_bank_card')}" >{:lang('member_bank_card')} </option>
-													<option value="{:lang('member_alipay')}" style="display:none;">{:lang('member_alipay')}</option>
+												<select id="account_type" class="inputBg">
+													{foreach name="$withdraw_account" item="vo"}
+													{if condition="$vo.is_checked"}
+													<option value="{$vo.value}" data-account-type-name="{$vo.name}">{$vo.name}</option>
+													{/if}
+													{/foreach}
 												</select>
 											</td>
 										</tr>
-										<tr>
-											<td>{:lang('member_sub_branch_information')}:</td>
+										<tr data-flag="branch_bank_name">
+											<td style="text-align: right;">{:lang('member_sub_branch_information')}：</td>
 											<td colspan='3'><input type="text" placeholder="{:lang('member_input_sub_branch_information')}" id="branch_bank_name" class="show-box"/></td>
 										</tr>
-										<tr>
-											<td>{:lang('member_bank_account')}:</td>
-											<td colspan='3'><input type="text" placeholder="{:lang('member_input_bank_account')}" id="account_number" class="show-box" onkeyup="value=value.replace(/[^\d+(\.\d+)?]/g,'')"/></td>
+										<tr data-flag="account_number">
+											<td style="text-align: right;">{:lang('cash_account')}：</td>
+											<td colspan='3'><input type="text" placeholder="{:lang('please_enter_your_cash_account')}" id="account_number" class="show-box"/></td>
 										</tr>
 									</table>
 									<input type="hidden" value="{$shop_id}" id="shop_id"/>
@@ -200,12 +164,48 @@ $(function(){
 	$(".js-bread-crumb").attr("href",'{:__URL('SHOP_MAIN/member/balancewithdrawlist')}');
 	$(".js-bread-crumb").text("{:lang('member_cash_register')}");
 	$(".js-bread-crumb").parent().append('<span class="crumbs-arrow">&gt;</span><a href="{:__URL('SHOP_MAIN/member/balancewithdrawals')}">{:lang('member_balance_withdrawal')}</a>');
+	
+	$("#account_type").change(function(){
+		switch(parseInt($("#account_type").find("option:selected").val())){
+			case 1:
+				
+				//银行卡
+				$(".modal-infp-style tr[data-flag='branch_bank_name']").show();
+				$(".modal-infp-style tr[data-flag='account_number']").show();
+				
+				break;
+				
+			case 2:
+				
+				//微信
+				$(".modal-infp-style tr[data-flag='branch_bank_name']").hide();
+				$(".modal-infp-style tr[data-flag='account_number']").hide();
+				
+				break;
+				
+			case 3:
+				
+				//支付宝
+				$(".modal-infp-style tr[data-flag='branch_bank_name']").hide();
+				$(".modal-infp-style tr[data-flag='account_number']").show();
+				
+				break;
+		}
+	});
+	
 });
 
 function add_banck(){
-	 $("#add_banck").show();
-	 $("#myModalLabel").text("{:lang('member_add_account')}");
-	 $("#butSubmit").text("{:lang('add')}");
+	$("#add_banck").show();
+	$("#myModalLabel").text("{:lang('member_add_account')}");
+	$("#butSubmit").text("{:lang('add')}");
+	$("#accountid").val("");
+	$("#realname").val("");
+	$("#mobile").val("");
+	$("#account_type").val(1);
+	$("#account_number").val("");
+	$("#branch_bank_name").val("");
+	$("#account_type").change();
 }
 
 $(".close").click(function(){
@@ -227,7 +227,7 @@ function deletecash(id){
 		type: "post",
 		success: function (res) {
 			$.msg(res.message);
-			 if (res.code == 1) {
+			if (res.code == 1) {
 				window.location.reload();
 			}
 		}
@@ -241,12 +241,39 @@ function updatebankinfo(id,shop_id){
 		data: { "id": id ,"shop_id" : shop_id},
 		type: "post",
 		success: function (data) {
-			var id = $("#accountid").val(data['id']);
-			var realname = $("#realname").val(data['realname']);
-			var mobile = $("#mobile").val(data['mobile']);
-			var bank_type = $("#bank_type").val(data['bank_type']);
-			var account_number = $("#account_number").val(data['account_number']);
-			var branch_bank_name = $("#branch_bank_name").val(data['branch_bank_name']);
+			$("#accountid").val(data['id']);
+			$("#realname").val(data['realname']);
+			$("#mobile").val(data['mobile']);
+			$("#account_type").val(data['account_type']);
+			$("#account_number").val(data['account_number']);
+			$("#branch_bank_name").val(data['branch_bank_name']);
+			$("#account_type").change();
+			/* switch(parseInt(data['account_type'])){
+			case 1:
+				
+				//银行卡
+				$(".modal-infp-style tr[data-flag='branch_bank_name']").show();
+				$(".modal-infp-style tr[data-flag='account_number']").show();
+				
+				break;
+				
+			case 2:
+				
+				//微信
+				$(".modal-infp-style tr[data-flag='branch_bank_name']").hide();
+				$(".modal-infp-style tr[data-flag='account_number']").hide();
+				
+				break;
+				
+			case 3:
+				
+				//支付宝
+				$(".modal-infp-style tr[data-flag='branch_bank_name']").hide();
+				$(".modal-infp-style tr[data-flag='account_number']").show();
+				
+				break;
+			} */
+			
 			$("#add_banck").show();
 			$("#myModalLabel").text("{:lang('member_balance_recharge')}");
 			$("#butSubmit").text("{:lang('member_preservation')}");
@@ -260,7 +287,8 @@ function save(){
 	var shop_id = $("#shop_id").val();
 	var realname = $("#realname").val();
 	var mobile = $("#mobile").val();
-	var bank_type = $("#bank_type").val();
+	var account_type = $("#account_type").val();
+	var account_type_name = $("#account_type").find("option:selected").attr("data-account-type-name");
 	var account_number = $("#account_number").val();
 	var branch_bank_name = $("#branch_bank_name").val();
 	if(realname==''){
@@ -273,34 +301,58 @@ function save(){
 		$("#mobile").focus();
 		return false;
 	}
-	if(branch_bank_name==''){
-		$.msg("{:lang('member_branch_cannot_empty')}");
-		$("#branch_bank_name").focus();
-		return false;
+	if(parseInt(account_type) == 1){
+		if(branch_bank_name==''){
+			$.msg("{:lang('member_branch_cannot_empty')}");
+			$("#branch_bank_name").focus();
+			return false;
+		}
 	}
-	if(account_number==''){
-		$.msg("{:lang('member_bank_cannot_empty')}");
-		$("#account_number").focus();
-		return false;
+	if(parseInt(account_type) != 2){
+		if(account_number==''){
+			$.msg("{:lang('member_bank_cannot_empty')}");
+			$("#account_number").focus();
+			return false;
+		}
+		if(account_number.length>30){
+			$.msg("{:lang('member_bank_max_length')}");
+			$("#account_number").focus();
+			return false;
+		}
 	}
-	var reg = /^\d{16,19}$/;
+
+	switch(parseInt(account_type)){
+	case 2:
+		//微信不需要这些数据
+		account_number = "";
+		branch_bank_name = "";
+		break;
+	case 3:
+		//支付宝不需要这些数据
+		branch_bank_name = "";
+		break;
+	}
+	
+	/* var reg = /^\d{16,19}$/;
 	if(!(reg.test(account_number))){
 		$.msg("{:lang('member_bank_account_incorrectly')}");
 		$("#account_number").focus();
 		return false;
-	}
+	} */
+	
 	if(id !=''){
 		$.ajax({
 			type : "post",
 			url : "{:__URL('SHOP_MAIN/member/updatebanckaccount')}",
 			dataType : "json",
 			data : {
-				"realname":realname,
-				"mobile":mobile,
-				"bank_type":bank_type,
-				"account_number":account_number,
+				"realname" : realname,
+				"mobile" : mobile,
+				"account_type" : account_type,
+				'account_type_name' : account_type_name,
+				"account_number" : account_number,
 				"id" : id,
-				"branch_bank_name":branch_bank_name
+				"branch_bank_name" : branch_bank_name
 			},
 			success : function(data) {
 				if(data['code']>0){
@@ -314,11 +366,12 @@ function save(){
 			url : "{:__URL('SHOP_MAIN/member/addaccount')}",
 			dataType : "json",
 			data : {
-				"realname":realname,
-				"mobile":mobile,
-				"bank_type":bank_type,
-				"account_number":account_number,
-				"branch_bank_name":branch_bank_name
+				"realname" : realname,
+				"mobile" : mobile,
+				"account_type" : account_type,
+				'account_type_name' : account_type_name,
+				"account_number" : account_number,
+				"branch_bank_name" : branch_bank_name
 			},
 			success : function(data) {
 				if(data['code']>0){

@@ -4,15 +4,24 @@
  */
 function getAttribute(goods_id){
 	var sku_attribute = new Array();
-	$("input[name='goods_sku"+goods_id+"']").each(function(){
-		var obj = new Object();
-		obj.sku = $(this).val();
-		obj.stock = $(this).attr("stock");
-		obj.price = $(this).attr("price");
-		obj.skuid = $(this).attr("skuid");
-		obj.skuname = $(this).attr("skuname");
-		sku_attribute.push(obj);
-	});
+	$.ajax({
+		url : __URL(SHOPMAIN+"/goods/getGoodsSkuListAjax"),
+		type : "post",
+		data : { "goods_id" : goods_id },
+		async : false,
+		success : function(res){
+			if(res.length > 0){
+				var is_add_promotion = $(".goodsId"+goods_id).val();
+				var sku_list_html = "";
+				for (var i = 0; i < res.length; i++) {
+					sku_attribute.push(res[i]);
+					var item = res[i];
+					sku_list_html += '<input type="hidden" name="goods_sku'+goods_id+'" value="'+item['attr_value_items']+'" stock="'+item['stock']+'" skuid="'+item['sku_id']+'" skuname="'+item['sku_name']+'" price="'+item['price']+'">';
+				}
+				$("#sku_list").html(sku_list_html);
+			}
+		}
+	})
 	return sku_attribute;
 }
 
@@ -64,9 +73,9 @@ function ShowGoodsAttribute(goods_id,goods_name,pic_id,obj,max_buy,state){
 				}else{
 					
 					//没有SKU直接取
-					$("#hidden_skuname").val(sku_attribute[0].skuname);
+					$("#hidden_skuname").val(sku_attribute[0].sku_name);
 					$("#hidden_sku_price").val(sku_attribute[0].price);
-					$("#hidden_skuid").val(sku_attribute[0].skuid);
+					$("#hidden_skuid").val(sku_attribute[0].sku_id);
 					addToCart();
 				}
 			}

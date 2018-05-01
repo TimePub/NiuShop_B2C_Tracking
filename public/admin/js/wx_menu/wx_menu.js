@@ -270,7 +270,7 @@ $(function() {
 			flag = testMenu($(this).val(),"sub_menu");
 		}
 		if(!flag){
-			$(".js_titleEorTips").text("字数超过上限");
+			$(".js_titleEorTips").text("名称不能为空或者字数超过上限");
 			$(".js_titleEorTips").fadeIn(500);
 			$(".js_titleEorTips").removeClass("dn");
 			$(this).attr("data-flag","-1");//错误
@@ -380,25 +380,19 @@ $(function() {
 	 * 删除菜单
 	 */
 	$("#jsDelBt").click(function(){
-		$("#wxDelDialog").fadeIn();//弹出框
-		$("#maskLayer").fadeIn(300);
 		var menu_name = $(this).attr("data-menuname");
-		$(".dialog_bd p").text("删除后“" +menu_name+ "”菜单下设置的内容将被删除");
-	});
-	
-	/**
-	 * 弹出框按钮事件
-	 */
-	$(".js_btn").click(function(){
-		switch($(this).text()){
-		case "确定":
-			deleteWeixinMenu($("#jsDelBt").attr("data-menuid"));
-			break;
-		case "取消":
-			break;
-		}
-		$("#wxDelDialog").fadeOut();
-		$("#maskLayer").fadeOut(300);
+		$( "#dialog" ).dialog({
+			buttons: {
+				"确定": function() {
+					deleteWeixinMenu($("#jsDelBt").attr("data-menuid"));
+					$(this).dialog('close');
+				},
+				"取消,#f5f5f5,#666": function() {
+					$(this).dialog('close');
+				},
+			},
+			contentText:"删除后“" +menu_name+ "”菜单下设置的内容将被删除，确定要执行该操作吗？",
+		});
 	});
 	
 	/**

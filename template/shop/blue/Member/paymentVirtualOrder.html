@@ -97,8 +97,8 @@
 					<span>&nbsp;&nbsp;&nbsp;&nbsp;{:lang('member_coupons')}</span>
 					<select style="margin-left: 12px;padding: 0 10px;width: 250px;height: 25px;border:1px solid #ddd;" id="coupon">
 						<option value="0">{:lang('member_no_coupons')}</option>
-						{foreach name="coupon_list" item="coupon"}
-							<option data-money="{$coupon['money']}" value="{$coupon['coupon_id']}">{:lang('member_full')}{$coupon['at_least']}{:lang('member_reduce')}{$coupon['money']}{:lang('element')}&nbsp;-&nbsp;{$coupon['coupon_name']}</option>
+						{foreach name="coupon_list" item="coupon" key="k"}
+							<option data-money="{$coupon['money']}" value="{$coupon['coupon_id']}" {if condition="$k==0"}selected="selected"{/if}>{:lang('member_full')}{$coupon['at_least']}{:lang('member_reduce')}{$coupon['money']}{:lang('element')}&nbsp;-&nbsp;{$coupon['coupon_name']}</option>
 						{/foreach}
 					</select>
 				</div>

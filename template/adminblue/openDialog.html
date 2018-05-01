@@ -17,7 +17,7 @@ function showMessage(type, message,url,time){
 	if(type == 'success'){
 		$( "#dialog").dialog({
 			buttons: {
-				"确定,#51A351": function() {
+				"确定,#0059d6,#fff": function() {
 					$(this).dialog('close');
 				}
 			},
@@ -31,7 +31,7 @@ function showMessage(type, message,url,time){
 	if(type == 'error'){
 		$( "#dialog").dialog({
 			buttons: {
-				"确定,#e57373": function() {
+				"确定,#0059d6,#fff": function() {
 					$(this).dialog('close');
 				}
 			},
@@ -50,7 +50,7 @@ function showConfirm(content){
 				$(this).dialog('close');
 				return 1;
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 				return 0;
 			}

@@ -2,16 +2,17 @@
 {block name="resources"}
 <style>
 .table-logo{display:inline-block;width:75px;float:left;}
-.table-pay{display:inline-block;width:590px;overflow:hidden;margin-top: 7px;}
-.table-desc{display:inline-block;width:590px;overflow:hidden;}
+.table-pay{display:inline-block;margin-top: 7px;}
+.table-desc{display:inline-block;}
+.pay-start,.pay-close{margin-left:0px!important;}
 </style>
 {/block}
 {block name="main"}
 <table class="table-class">
 	<colgroup>
-		<col width="70%">
-		<col width="15%">
-		<col width="15%">
+		<col width="83%">
+		<col width="7%">
+		<col width="10%">
 	</colgroup>
 	<thead>
 		<tr class="table-title" style="background: white;z-index: 10;border: 1px solid #E3E3E3;">
@@ -25,7 +26,7 @@
 		<tr>
 			<td>
 				<div class="table-logo"><img src="__ROOT__/{$pay_obj.logo}"/></div>
-				<span class="table-pay">{$pay_obj.pay_name}</span>
+				<span class="table-pay">{$pay_obj.pay_name}</span><br/>
 				<span class="table-desc">{$pay_obj.desc}</span> 
 			</td>
 			{if condition="$pay_obj.is_use eq 1"}
@@ -36,8 +37,10 @@
 			<td style="text-align: center;line-height:59px;">
 			{if condition="$pay_obj.key eq 'WPAY'"}
 				<a href="{:__URL('ADMIN_MAIN/config/payconfig','type=wchat')}">配置</a>
-			{else/}
+			{elseif condition="$pay_obj.key eq 'ALIPAY'"}
 				<a href="{:__URL('ADMIN_MAIN/config/payaliconfig')}">配置</a>
+			{else/}
+				<a href="{:__URL('ADMIN_MAIN/config/unionpayconfig')}">配置</a>
 			{/if}
 			</td>
 		</tr>
@@ -69,9 +72,9 @@ function set_status(type,event){
 					$(event).attr('status', 1);
 					$(event).find('img').attr('src', 'ADMIN_IMG/checked.png');
 				}
-				showMessage('success', data["message"]);
+				showTip(data["message"],"success");
 			}else{
-				showMessage('error', data["message"]);
+				showTip(data["message"],"error");
 			}
 		}
 	});

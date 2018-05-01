@@ -39,7 +39,6 @@
 
 #albumList {
 	border-top: 1px solid #E5E5E5;
-	margin: 0 10px;
 }
 
 #albumList li {
@@ -150,7 +149,7 @@
 }
 
 #albumList li dl dd a:hover {
-	color: #1C8FEF;
+	color: #0059d6;
 }
 
 #albumList>li:hover .buttons {

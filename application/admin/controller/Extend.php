@@ -19,7 +19,6 @@ use data\model\ModuleModel;
 use data\service\Extend as ExtendService;
 use data\service\WebSite;
 use think\Db;
-use think\Request;
 
 /**
  * 扩展模块控制器
@@ -68,7 +67,7 @@ class Extend extends BaseController
         if (request()->isAjax()) {
             $page_index = request()->post('page_index', 1);
             $page_size = request()->post('page_size', 0);
-            $list = $this->extend->getHooksList($page_index, $page_size);
+            $list = $this->extend->getHooksList($page_index, $page_size,'','id desc');
             return $list;
         }
         return view($this->style . "Extend/hooksList");

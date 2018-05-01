@@ -6,12 +6,46 @@
 <input type="hidden" id="hidden_sort" value="{$goods_info.sort}" />
 <input type="hidden" id="hidden_goods_brand_id" value="{$goods_info.brand_info.brand_id}" />
 <input type="hidden" id="hidden_goods_brand_name" value="{$goods_info.brand_info.brand_name}" />
+{if condition="$goods_info.goods_type == 0"}
+<input type="hidden" id="virtual_goods_type_id" value="{$virtual_goods_type_info.virtual_goods_type_id}" />
 {else/}
+<input type="hidden" id="virtual_goods_type_id" value="0" />
+{/if}
+<script>
+$specObj = eval('{$goods_info.goods_spec_format}');//SKU数据
+var sku_list = eval('{$goods_info.sku_list}');//SKU数据
+var goods_attribute_list = eval('{$goods_info.goods_attribute_list}');
+var province_id = '{$goods_info.province_id}';
+var city_id = '{$goods_info.city_id}';
+var sku_picture_array_str = '{$sku_picture_array_str}';
+$(function(){
+	
+	//初始化规格图片记录数组
+	var groupIdArray = eval('{$goods_info.goods_group_list}');
+	var $selDiv = $("#productcategory-selected");
+	var $lis = $("#procategory li");
+	var html = "";
+	for (var $i = 0; $i < groupIdArray.length; $i++) {
+		var groupId = groupIdArray[$i]["group_id"];
+		var name = groupIdArray[$i]["group_name"];
+		html += "<span class='label' id='" + groupId + "' group_name='"+ name +"'>" + name + "<i class='categoryclose'></i></span>";
+	}
+	$selDiv.append(html);
+	ue.ready(function() {
+		ue.setContent('{$goods_info.description}', false);
+	});
+});
+</script>
+{else/}
+<input type="hidden" id="virtual_goods_type_id" value="0" />
 <input type="hidden" id="hidQRcode" value="1" />
-<input type="hidden" id="hidden_qrcode" value="" />
+<input type="hidden" id="hidden_qrcode" />
 <input type="hidden" id="hidden_sort" value="0" />
 <input type="hidden" id="hidden_goods_brand_id" value="0" />
-<input type="hidden" id="hidden_goods_brand_name" value="" />
+<input type="hidden" id="hidden_goods_brand_name" />
+<script>
+var sku_list = null;
+</script>
 {/if}
 <script type="text/javascript">
 //扩展分类个数
@@ -19,6 +53,10 @@ var extent_sort = 0;
 //当前可搜索的下拉选项框
 var curr_searchable_select = null;
 $(function(){
+	
+	//将分页克隆到点卡库存列表弹出框中
+	$(".point-card-inventory-management-popup footer").append($("#turn-ul").clone());
+	$(".ns-main>#turn-ul").remove();
 
 	//可搜索的商品品牌下拉选项框
 	curr_searchable_select = $('#brand_id').searchableSelect();
@@ -32,6 +70,7 @@ $(function(){
 		initProvince("#provinceSelect",function(){
 			//编辑商品时，加载数据
 			$("#provinceSelect").find("option[value='"+province_id+"']").attr("selected",true);
+			$('#provinceSelect').selectric();
 			getProvince("#provinceSelect",'#citySelect',city_id);
 		});
 
@@ -52,17 +91,6 @@ $(function(){
 			showTip("复制成功",'success');
 		}
 		}]
-	});
-
-	$(".searchable-select-input").live("keyup",function(){
-		if($(this).val().length>100){
-			showTip("查询限制在100个字符以内","warning");
-			return;
-		}
-		if($(this).attr("data-value") != $(this).val()){
-			$(this).attr("data-value",$(this).val());
-			getGoodsBrandList($(".searchable-select-holder").text(),$(this).val());
-		}
 	});
 })
 
@@ -87,8 +115,8 @@ function PopUpCallBack(id, src, upload_type, spec_id, spec_value_id) {
 							html +='<img src="'+ __IMG(srcArr[i]) +'">';
 							html +='<input type="hidden" class="sku_upload_img_id" spec_id="'+ spec_id +'" spec_value_id="'+ spec_value_id +'" value="'+idArr[i]+'">';
 							html +='<div class="black-bg hide">'; 
-								html +='<div class="sku-off-box">&times;</div>'; 
-							html +='</div>'; 
+								html +='<div class="sku-off-box">&times;</div>';
+							html +='</div>';
 						html +='</div>'; 
 						//将规格图片记录存入临时数组
 						var pic_id = idArr[i];
@@ -176,10 +204,14 @@ function getGoodsBrandList(brand_name,search_name){
 		}
 	});
 }
+
 //添加阶梯优惠
 $(".add_ladder_preference").click(function(){
 	var laddre_length = $(".ladder_preference_content .ladder_preference").length;
-	var html = '<div class="ladder_preference"><input type="number" class="input-common ladder" value="0"><input type="number" class="input-common preference" value="0"><a href="javascript:;" class="delete_preference">删除</a></div>';
+	var html = '<div class="ladder_preference">';
+		html += '<input type="number" class="input-common short ladder" value="0">';
+		html += '<input type="number" class="input-common short preference" value="0">';
+		html += '<a href="javascript:;" class="delete_preference">删除</a></div>';
 	var prev_obj = $("#ladder_preference").prev();
 	if(laddre_length <= 9){
 		if(prev_obj.find(".ladder").val() != undefined &&　prev_obj.find(".preference").val() != undefined){
@@ -196,15 +228,16 @@ $(".add_ladder_preference").click(function(){
 
 $(".ladder_preference_content .ladder_preference .delete_preference").live("click",function(){
 	$(this).parent().remove();
-})
+});
+
 /**
  * 删除已选择的视频
  */
-function del_video(){
+function del_video(event){
 	
 	// 通过ajax用php删除文件
 	var src = $("#video_url").val();
-	if(src!= ""){ 
+	if(src!= ""){
 		
 		$("#my-video ").attr('src', "");
 		$("#my-video").attr('poster','__STATIC__/blue/img/vs.png');
@@ -221,9 +254,17 @@ function del_video(){
 				//console.log(res);
 			}
 		}); */
-		
-	} 
-	
-	
+	}
+	event.stopPropagation();
 }
+$(window).scroll(function(){
+	var srcoll_top = $(window).scrollTop();
+	$(".goods-nav.fixed").css("max-width",($(".ncsc-form-goods").width() - 5)+'px');
+	if(srcoll_top > 50){
+		$(".goods-nav").addClass('fixed');
+	}else{
+		$(".goods-nav").removeClass('fixed');
+	}
+})
+
 </script>

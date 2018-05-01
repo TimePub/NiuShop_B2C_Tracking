@@ -21,10 +21,10 @@ a {
 }
 
 .currentPage {
-	border-top: 1px solid #00c0ff !important;
-	border-bottom: 1px solid #00c0ff !important;
+	border-top: 1px solid #126AE4 !important;
+	border-bottom: 1px solid #126AE4 !important;
 	color: #fff !important;
-	background: #00C0FF !important;
+	background: #126AE4 !important;
 	cursor: default !important;
 }
 
@@ -927,7 +927,7 @@ input.input-error {
 .daohang_no {
 	/* border: 1px solid #E3E3E3;
 	border-right: 0px;
-	border-bottom: 2px solid #00C0FF; */
+	border-bottom: 2px solid #126AE4; */
 	background: #ffffff;
 	font: lighter 14px/33px "microsoft yahei";
 	color: #fff;
@@ -940,11 +940,11 @@ input.input-error {
 }
 
 .daohang_no:hover {
-	background: #00C0FF;
+	background: #126AE4;
 	color: #fff;
 	text-decoration: none;
-	/* border-left: 1px solid #00C0FF;*/
-	border-top: 1px solid #00C0FF;
+	/* border-left: 1px solid #126AE4;*/
+	border-top: 1px solid #126AE4;
 }
 
 #myTab a {

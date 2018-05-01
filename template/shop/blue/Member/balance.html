@@ -5,10 +5,7 @@ td{padding:10px;border: 1px Black; width:46px;}
 table{background-color:#eeeeee;border:0;width:100%;}
 .integral_title{display:block;font-size:18px;text-align:center;padding:20px;}
 .member-main .tabmenu .tab li {border-bottom: 2px #ff6600 solid;} 
-.modal-content{
-	width: 350px;
-	left: 302px;
-}
+.modal-content{width: 350px;left: 302px;}
 </style>
 {/block}
 {block name="main"}
@@ -135,7 +132,7 @@ function calculateRecharge(){
 				window.location.href = __URL("APP_MAIN/pay/getpayvalue?out_trade_no="+pay_no);
 			}else{
 				is_submint = false;
-				showBox("{:lang('member_recharge_failed')}");
+				$.msg("{:lang('member_recharge_failed')}");
 			}
 		}
 	});

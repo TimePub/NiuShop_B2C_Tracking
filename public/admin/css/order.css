@@ -346,7 +346,6 @@ body .modal.fade {
     text-align: left;
     font-size: 12px;
 }
-.mod-table{margin-top:15px;-webkit-box-shadow: 0 0 1px 0 rgba(0,0,0,0.2);padding:15px;}
 .step-region{margin-bottom: 15px;border: 1px solid #e5e5e5;}
 .ui-step {margin:0;padding: 14px 0 8px 0;zoom: 1;}
 .ui-step li {float: left;position: relative;-webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;text-align: center;}

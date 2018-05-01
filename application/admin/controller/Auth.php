@@ -66,10 +66,102 @@ class Auth extends BaseController
                     'url' => "auth/authgrouplist",
                     'menu_name' => "权限组",
                     "active" => 0
+                ),
+                array(
+                    'url' => "auth/authLog",
+                    'menu_name' => "操作日志",
+                    "active" => 0
                 )
             );
             $this->assign("child_menu_list", $child_menu_list);
             return view($this->style . 'Auth/userList');
+        }
+    }
+
+    /**
+     * 获取用户日志列表
+     */
+    public function authLog(){
+        if(request()->isAjax()){
+            $start_date = request()->post('start_date') == "" ? 0 : getTimeTurnTimeStamp(request()->post('start_date'));
+            $end_date = request()->post('end_date') == "" ? 0 : getTimeTurnTimeStamp(request()->post('end_date'));
+            $page_index = request()->post("page_index", 1);
+            $page_size = request()->post("page_size", PAGESIZE);
+            $user_name = request()->post("search_text", "");
+            
+            if ($start_date != 0 && $end_date != 0) {
+                $condition["create_time"] = [
+                    [
+                        ">",
+                        $start_date
+                    ],
+                    [
+                        "<",
+                        $end_date
+                    ]
+                ];
+            } elseif ($start_date != 0 && $end_date == 0) {
+                $condition["create_time"] = [
+                    [
+                        ">",
+                        $start_date
+                    ]
+                ];
+            } elseif ($start_date == 0 && $end_date != 0) {
+                $condition["create_time"] = [
+                    [
+                        "<",
+                        $end_date
+                    ]
+                ];
+            }
+            if(!empty($user_name)){
+                $condition["user_name"] = [
+                    [
+                        "like",
+                        "%$user_name%"
+                    ]
+                ];
+            }
+            
+            $list =  $this->user->getUserLogList($page_index, $page_size, $condition, "create_time desc");
+            return $list;
+            //print(json_encode($list));exit;
+        }
+
+        $child_menu_list = array(
+                array(
+                    'url' => "auth/userlist",
+                    'menu_name' => "用户列表",
+                    "active" => 0
+                ),
+                array(
+                    'url' => "auth/authgrouplist",
+                    'menu_name' => "权限组",
+                    "active" => 0
+                ),
+                array(
+                    'url' => "auth/authLog",
+                    'menu_name' => "操作日志",
+                    "active" => 1
+                )
+            );
+        $this->assign("child_menu_list", $child_menu_list);
+        return view($this->style. "Auth/authLog");
+    }
+    
+    /**
+     * 删除 操作记录
+     */
+    public function deleteLog()
+    {
+
+        if (request()->isAjax()) {
+            $id = request()->post("id", "");
+            if(!empty($id)){
+                $res = $this->user->deleteAuthLog($id);
+            }
+            return AjaxReturn($res);
         }
     }
 
@@ -147,6 +239,11 @@ class Auth extends BaseController
                     'url' => "auth/authgrouplist",
                     'menu_name' => "权限组",
                     "active" => 1
+                ),
+                array(
+                    'url' => "auth/authLog",
+                    'menu_name' => "操作日志",
+                    "active" => 0
                 )
             );
             $this->assign("child_menu_list", $child_menu_list);

@@ -40,13 +40,13 @@ $('.category-wrap .slide-aside').click(function() {
 	if ($('.category-wrap .aside').width() == 0) {
 		$(this).removeClass('left');
 		$('.category-wrap .aside').animate({
-			'width': 210
+			'width': 180
 		}, 500);
 		$('.category-wrap .aside-inner').show().animate({
-			'width': 210
+			'width': 180
 		}, 500);
 		$('.category-wrap .main').removeClass('main1210').animate({
-			'padding-left': 225
+			'padding-left': 195
 		}, 500);
 		$('.category-wrap .main').find('.item:nth-child(5n)').removeClass('last');
 		$('.category-wrap .main').find('.item:nth-child(4n)').addClass('last');
@@ -122,6 +122,7 @@ $('.browse-history .browse-history-tab .tab-span').mouseover(function() {
 	}, 500);
 	$('.browse-history-other').find('a').eq($(this).index()).removeClass('none').siblings('a').addClass('none');
 	$('.browse-history-inner ul').eq($(this).index()).removeClass('none').siblings('ul').addClass('none');
+	img_lazyload();	
 })
 
 function toggleGoods(goods_id, sku_id, obj) {
@@ -134,7 +135,6 @@ function toggleGoods(goods_id, sku_id, obj) {
 				$(obj).children().next().html("已收藏");
 
 			}
-
 		
 			if ($(obj).parent().attr("class") == "action") {
 				if ($(obj).html() == "已收藏") {
@@ -153,33 +153,33 @@ $(function(){
 		var num01=0;
 		var num = $(this).find('.img-main li').length;
 		if(num > 5){ 
-			$(this).find('.img-scroll').addClass('scrolled'); 
+			$(this).find('.img-scroll').addClass('scrolled');
 			$(this).find('.img-main').width(34*num);
 			$(this).find('.img-next').click(function(){
-				 num01++;
-				 $(this).siblings('.img-prev').removeClass('disabled');	
-				 if(num01==(num-5)){
-					$(this).addClass('disabled');	
-				 }
-				 if(num01>(num-5)){
-					num01=num-5;
-				 }
-				 if(num<6){
-					num01=0;
-					$(this).addClass('disabled');	
-					$(this).siblings('.img-prev').addClass('disabled');	
+				num01++;
+				$(this).siblings('.img-prev').removeClass('disabled');
+				if(num01==(num-5)){
+					$(this).addClass('disabled');
 				}
-				$(this).siblings('.img-wrap').find('.img-main').animate({left:-num01*34},200);	 
-			 })
-			$(this).find('.img-prev').click(function(){
-				 num01--;
-				 if(num01==0){
-					$(this).siblings('.img-next').removeClass('disabled');	 
-					$(this).addClass('disabled');	 
-				 }
-				 if(num01<0){ 
+				if(num01>(num-5)){
+					num01=num-5;
+				}
+				if(num<6){
 					num01=0;
-				 }
+					$(this).addClass('disabled');
+					$(this).siblings('.img-prev').addClass('disabled');
+				}
+				$(this).siblings('.img-wrap').find('.img-main').animate({left:-num01*34},200);
+			})
+			$(this).find('.img-prev').click(function(){
+				num01--;
+				if(num01==0){
+					$(this).siblings('.img-next').removeClass('disabled');
+					$(this).addClass('disabled');
+				}
+				 if(num01<0){
+					num01=0;
+				}
 				$(this).siblings('.img-wrap').find('.img-main').animate({left:-num01*34},200);	 
 			})
 		}

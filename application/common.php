@@ -24,6 +24,9 @@ use data\extend\Barcode;
 // error_reporting(E_ERROR | E_WARNING | E_PARSE);
 // 去除警告错误
 error_reporting(E_ALL ^ E_NOTICE);
+//是否支持拼团
+define('IS_SUPPORT_PINTUAN', 0);
+define('IS_SUPPORT_O2O', 0);
 define("PAGESIZE", Config::get('paginate.list_rows'));
 define("PAGESHOW", Config::get('paginate.list_showpages'));
 define("PICTURESIZE", Config::get('paginate.picture_page_size'));
@@ -50,9 +53,20 @@ define("BAR_CODE", UPLOAD . '/barcode');
 
 // 商品视频存放路径
 define("GOODS_VIDEO_PATH", UPLOAD . '/goods_video');
+
 // 系统默认图
 define("UPLOAD_WEB_COMMON", UPLOAD . '/web_common/');
+
 urlRoute();
+
+//商家服务小图标
+define("UPLOAD_ICO", UPLOAD . '/upload_ico/');
+
+//存放文件
+define("UPLOAD_FILE", UPLOAD . '/upload_file/');
+
+//水印图片
+define("UPLOAD_WATERMARK",UPLOAD.'/upload_watermark/');
 
 /**
  * 配置pc端缓存
@@ -385,12 +399,15 @@ function get_city_by_ip()
     $result = file_get_contents($url, false, $context);
     if (! empty($result)) {
         $res = json_decode($result, true);
+        
         if (! empty($res)) {
-            
-            if (count($res['province']) == 0) {
+            if (empty($res['province'])) {
                 $res['province'] = '北京市';
             }
             if (! empty($res['province']) && $res['province'] == "局域网") {
+                $res['province'] = '北京市';
+            }
+            if(count($res['province']) == 0){
                 $res['province'] = '北京市';
             }
             if (count($res['city']) == 0) {
@@ -558,6 +575,8 @@ function save_weixin_img($local_path, $weixin_path)
     $weixin_path_a = str_replace("https://", "http://", $weixin_path);
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $weixin_path_a);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); //不验证证书
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); //不验证证书
     curl_setopt($ch, CURLOPT_TIMEOUT, 5);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     $r = curl_exec($ch);
@@ -1411,7 +1430,6 @@ function getBarcode($content)
     return $path;
 }
 
-
 /**
  * 过滤特殊符号
  * 创建时间：2018年1月30日15:39:32
@@ -1428,4 +1446,17 @@ function ihtmlspecialchars($string) {
             str_replace(array('&', '"', '<', '>'), array('&amp;', '&quot;', '&lt;', '&gt;'), $string));
     }
     return $string;
+}
+
+/**
+ * 获取网址前缀
+ * 创建时间：2018年3月20日14:55:39
+ * @return string
+ */
+function getBaseUrl()
+{
+    $server_name = $_SERVER['SERVER_NAME'] == "localhost" ? "127.0.0.1" : $_SERVER['SERVER_NAME'];
+    $http_type = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https://' : 'http://';
+    $base_url = $http_type . $server_name . getUploadPath();
+    return $base_url;
 }

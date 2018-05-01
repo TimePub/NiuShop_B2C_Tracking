@@ -19,9 +19,11 @@ use data\extend\ThinkOauth as ThinkOauth;
 use data\service\Config as Config;
 use data\service\Member as Member;
 use data\service\WebSite as WebSite;
+use data\service\promotion\PromoteRewardRule;
 use think\Controller;
 use think\Session;
 use think\Cookie;
+use data\service\Platform;
 \think\Loader::addNamespace('data', 'data/');
 
 /**
@@ -126,14 +128,14 @@ class Login extends Controller
                     return $retval;
                 }
             }
-            if (trim($username) == "" || trim($username) == undefined) {
+            if (trim($username) == "") {
                 $retval = [
                     'code' => 0,
                     'message' => "账号不能为空"
                 ];
                 return $retval;
             }
-            if (trim($password) == "" || trim($password) == undefined) {
+            if (trim($password) == "") {
                 $retval = [
                     'code' => 0,
                     'message' => "密码不能为空"
@@ -190,7 +192,7 @@ class Login extends Controller
         $this->assign("title_before", "用户登录");
         return view($this->style . 'Login/login');
     }
-
+    
     /*
      * 吴奇
      * 首页登录
@@ -236,7 +238,7 @@ class Login extends Controller
         }
         return $retval;
     }
-
+    
     /*
      * 吴奇
      * 2017/2/8 14:30
@@ -260,18 +262,18 @@ class Login extends Controller
                 $mobile_code = request()->post('mobile_code', '');
                 $verification_code = Session::get('mobileVerificationCode');
                 if ($mobile_code == $verification_code && ! empty($verification_code)) {
-                    $retval = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
+                    $retval_id = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
                     $result = true;
                 } else {
-                    $retval = "";
+                    $retval_id = 0;
                     $result = false;
                 }
             } else {
-                $retval = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
+                $retval_id = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
                 $result = true;
             }
             
-            if ($retval > 0 && $result) {
+            if ($retval_id > 0 && $result) {
                 if (! empty($_SESSION['login_pre_url'])) {
                     $retval = [
                         'code' => 1,
@@ -282,6 +284,17 @@ class Login extends Controller
                         'code' => 2,
                         'url' => 'index/index'
                     ];
+                }
+                // 注册成功送优惠券
+                $Config = new Config();
+                $integralConfig = $Config->getIntegralConfig($this->instance_id);
+                if ($integralConfig['register_coupon'] == 1) {
+                    $rewardRule = new PromoteRewardRule();
+                    $res = $rewardRule->getRewardRuleDetail($this->instance_id);
+                    if ($res['reg_coupon'] != 0) {
+                        $member = new Member();
+                        $retval = $member->memberGetCoupon($retval_id, $res['reg_coupon'], 2);
+                    }
                 }
                 $this->success("注册成功", __URL(__URL__ . "/index"));
             } else {
@@ -311,6 +324,12 @@ class Login extends Controller
         $this->assign("web_info", $web_info);
         $this->assign("is_enable", $is_enable);
         $this->assign("title_before", "手机注册");
+        
+        //pc端注册广告位
+        $platform = new Platform();
+        $register_adv = $platform -> getPlatformAdvPositionDetailByApKeyword("pcRegisterAdv");
+        $this->assign("register_adv", $register_adv['adv_list'][0]);
+        
         return view($this->style . "Login/mobile");
     }
 
@@ -434,8 +453,8 @@ class Login extends Controller
             return $exist;
         }
         if (request()->isPost()) {
-            $min = 1;
-            $max = 1000000000;
+            // $min = 1;
+            // $max = 1000000000;
             $password = request()->post('password', '');
             $email = request()->post('email', '');
             $mobile = '';
@@ -447,7 +466,7 @@ class Login extends Controller
             if ($this->notice['noticeEmail'] == 1) {
                 // 开启的话进行验证
                 if ($email_code == $verification_code && ! empty($verification_code)) {
-                    $retval = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
+                    $retval_id = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
                     $result = true;
                 } else {
                     $retval = "";
@@ -455,10 +474,20 @@ class Login extends Controller
                 }
             } else {
                 // 未开启直接进行注册
-                $retval = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
+                $retval_id = $member->registerMember($user_name, $password, $email, $mobile, '', '', '', '', '');
                 $result = true;
             }
-            if ($retval > 0) {
+            if ($retval_id > 0) {
+                // 注册成功送优惠券
+                $Config = new Config();
+                $integralConfig = $Config->getIntegralConfig($this->instance_id);
+                if ($integralConfig['register_coupon'] == 1) {
+                    $res = $rewardRule->getRewardRuleDetail($this->instance_id);
+                    if ($res['reg_coupon'] != 0) {
+                        $member = new Member();
+                        $retval = $member->memberGetCoupon($retval_id, $res['reg_coupon'], 2);
+                    }
+                }
                 $this->success("注册成功", __URL(__URL__ . "/index"));
             } else {
                 $error_array = AjaxReturn($retval);
@@ -481,6 +510,12 @@ class Login extends Controller
         
         $this->assign("web_info", $web_info);
         $this->assign("title_before", "邮箱注册");
+        
+        //pc端注册广告位
+        $platform = new Platform();
+        $register_adv = $platform -> getPlatformAdvPositionDetailByApKeyword("pcRegisterAdv");
+        $this->assign("register_adv", $register_adv['adv_list'][0]);
+        
         return view($this->style . "Login/email");
     }
 
@@ -493,18 +528,27 @@ class Login extends Controller
             return $exist;
         }
         if (request()->isPost()) {
-            $min = 10000000000;
-            $max = 19999999999;
+            // $min = 10000000000;
+            // $max = 19999999999;
             $member = new Member();
             $password = request()->post('password', '');
             // $email = rand($min, $max) . '@qq.com';
             // $mobile = rand($min, $max);
             $user_name = request()->post("username", '');
             
-            $retval = $member->registerMember($user_name, $password, '', '', '', '', '', '', '');
-            
-            if ($retval > 0) {
+            $retval_id = $member->registerMember($user_name, $password, '', '', '', '', '', '', '');
+            if ($retval_id > 0) {
                 // $this->success("注册成功", __URL__."/index");
+                // 注册成功送优惠券
+                $Config = new Config();
+                $integralConfig = $Config->getIntegralConfig($this->instance_id);
+                if ($integralConfig['register_coupon'] == 1) {
+                    $rewardRule = new PromoteRewardRule();
+                    $res = $rewardRule->getRewardRuleDetail($this->instance_id);
+                    if ($res['reg_coupon'] != 0) {
+                        $retval = $member->memberGetCoupon($retval_id, $res['reg_coupon'], 2);
+                    }
+                }
                 $redirect = __URL(__URL__ . '/index');
                 $this->redirect($redirect);
             } else {
@@ -528,6 +572,12 @@ class Login extends Controller
         $this->assign("email_info", $email_info);
         $this->assign("web_info", $web_info);
         $this->assign("title_before", "普通注册");
+        
+        //pc端注册广告位
+        $platform = new Platform();
+        $register_adv = $platform -> getPlatformAdvPositionDetailByApKeyword("pcRegisterAdv");
+        $this->assign("register_adv", $register_adv['adv_list'][0]);
+        
         return view($this->style . 'Login/register');
     }
 
@@ -552,7 +602,7 @@ class Login extends Controller
         }
         return $retval;
     }
-
+    
     /*
      * 以下为找回密码页面
      */

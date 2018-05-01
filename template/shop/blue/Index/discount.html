@@ -60,7 +60,7 @@
 		<li>
 			<a class="scope" href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$vo['goods_id'])}" title="{$vo.goods_name}">
 				<div class="p-img">
-					<img alt="" src="{:__IMG($vo['picture']['pic_cover_big'])}">
+					<img alt="" src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($vo['picture']['pic_cover_mid'])}">
 <!-- 					<div class="brand-time"> -->
 <!-- 						<em class="time"> -->
 <!-- 							<span class="settime" starttime="{$vo.start_time}" endtime="{$vo.end_time}" ></span> -->
@@ -71,12 +71,13 @@
 						<span class="g-name">{$vo.goods_name}</span>
 					</div>
 				</div>
-				<div class="goods-price"><span class="sale">{:lang('promotional_price')}<em>￥{$vo.promotion_price}</em>{:lang('element')}</span><span class="depreciate"><i class="fa fa-down"></i>{:lang('straight_down')}：¥{$vo.sale_down}</span></div>
+				<div class="goods-price"><span class="sale">{:lang('promotional_price')}<em>{$vo.display_price}</em></span>
+					<!-- <span class="depreciate"><i class="fa fa-down"></i>{:lang('straight_down')}：¥{$vo.sale_down}</span> -->
+				</div>
 <!-- 				</div> -->
 				<div class="brand-info">
 					<div class="b-price clearfix">
 						<div class="price fl">
-							
 						</div>
 						<div class="fr">
 							<span class="buyer"></span>

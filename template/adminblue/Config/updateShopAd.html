@@ -13,7 +13,7 @@
 {block name="main"}
 <div class="set-style">
 	<dl>
-		<dt>图片:</dt>
+		<dt>图片：</dt>
 		<dd>
 			<div class="class-logo"><p><img id="imgLogo"src="{:__IMG($info['ad_image'])}"></p></div>
 			<div class="upload-btn">
@@ -27,14 +27,14 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>链接地址:</dt>
+		<dt>链接地址：</dt>
 		<dd>
 			<p><input id="link_url" type="text" value="{$info['link_url']}" class="input-common"></p>
 			<p class="error">请输入链接地址</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>类型:</dt>
+		<dt>类型：</dt>
 		<dd>
 			<p><select id="type">
 				<option value="0" {if condition="$info['type'] eq 0"}selected="selected"{/if}>PC端</option>
@@ -44,14 +44,14 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>背景色:</dt>
+		<dt>背景色：</dt>
 		<dd>
-			<p><input id="background" type="color" value="{$info['background']}" class="input-common"></p>
+			<p><input id="background" type="color" value="{$info['background']}" class="input-common-color"></p>
 			<p class="error">请选择类型</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>排序:</dt>
+		<dt>排序：</dt>
 		<dd>
 			<p><input id="sort" type="text" value="{$info['sort']}" class="input-common"></p>
 			<p class="error">请输入序号</p>

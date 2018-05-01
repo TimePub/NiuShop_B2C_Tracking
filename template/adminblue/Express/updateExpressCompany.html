@@ -3,7 +3,7 @@
 {block name="main"}
 <div class="set-style">
 	<dl>
-		<dt><span class="required">*</span>物流公司名称:</dt>
+		<dt><span class="required">*</span>物流公司名称：</dt>
 		<dd>
 			<p>
 				<input id="company_name" type="text" value="{$expressCompany.company_name}" class="input-common">
@@ -13,56 +13,60 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt><span class="required">*</span>物流公司编号:</dt>
+		<dt><span class="required">*</span>物流公司编号：</dt>
 		<dd>
 			<p><input id="express_no" type="text" value="{$expressCompany.express_no}" class="input-common"></p>
 			<p class="error">请输入物流公司编号</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>联系电话:</dt>
+		<dt>联系电话：</dt>
 		<dd>
 			<p><input id="phone" type="text" value="{$expressCompany.phone}" class="input-common"></p>
 			<p class="error">联系电话格式不正确</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>物流公司logo:</dt>
+		<dt>物流公司logo：</dt>
 		<dd>
-			<div class="class-logo">
-				<p><img id="imglogo" src="{:__IMG($expressCompany.express_logo)}"></p>
-			</div>
-			<div class="upload-btn">
-				<span>
-					<input class="input-file" name="file_upload" id="uploadImg" type="file" onchange="imgUpload(this);">
-					<input type="hidden" id="logo" value="{$expressCompany.express_logo}" />
-				</span>
-				<p><i class="fa fa-cloud-upload"></i>上传图片</p>
+			<div class="upload-btn-common">
+				<div>
+					<input class="input-file" name="file_upload" id="uploadLogo" type="file" onchange="imgUpload(this);" title="上传">
+					<input type="hidden" id="logo" value="{$expressCompany.express_logo}">
+				</div>
+				
+				<input type="text" id="text_logo" class="input-common" readonly="readonly" value="{$expressCompany.express_logo}">
+				<em>上传</em>								
+				<img id="preview_logo" src="__STATIC__/blue/img/upload-common-select.png" data-src="{:__IMG($expressCompany.express_logo)}" data-html="true" data-container="body" data-placement="top" data-trigger="manual" data-original-title="" title="">
 			</div>
 			<p class="hint">
-				<span style="color: orange;">建议使用宽100像素-高100像素内的GIF或PNG透明图片；点击下方"提交"按钮后生效。</span>
+				建议使用<i class="important-note">宽100</i>像素-<i class="important-note">高100</i>像素内的<i class="important-note">GIF</i>或<i class="important-note">PNG</i>透明图片；点击下方"保存"按钮后生效。
 			</p>
+			<p class="error">请上传图片</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>排序:</dt>
+		<dt>排序：</dt>
 		<dd>
-			<p><input id="orders" type="number" value="{$expressCompany.orders}" class="input-common"></p>
+			<p><input id="orders" type="number" value="{$expressCompany.orders}" class="input-common harf"></p>
 			<p class="error">请输入排列序号</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>是否启用物流:</dt>
+		<dt>是否启用物流：</dt>
 		<dd><input id="is_enabled" type="checkbox" class="checkbox" {if condition="$expressCompany.is_enabled eq 1"}checked="checked"{/if} /></dd>
 	</dl>
 	
 	<dl>
-		<dt>是否设置为默认:</dt>
+		<dt>是否设置为默认：</dt>
 		<dd><input id="is_default" type="checkbox" class="checkbox" {if condition="$expressCompany.is_default eq 1"}checked="checked"{/if}/></dd>
 	</dl>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="updataExpressCompanyAjax();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="updataExpressCompanyAjax();">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
 	</dl>
 
 </div>
@@ -126,25 +130,10 @@ function updataExpressCompanyAjax() {
 		},
 		success : function(data) {
 			if (data['code'] > 0) {
-				$("#dialog").dialog({
-					buttons : {
-						"确定" : function() {
-							$(this).dialog('close');
-						}
-					},
-					contentText : data["message"],
-					time : 1,
-					timeHref : "{:__URL('ADMIN_MAIN/express/expresscompany')}",
-				});
+				showTip(data["message"],'success');
+				location.href = __URL(ADMINMAIN + '/express/expresscompany');
 			} else {
-				$("#dialog").dialog({
-					buttons : {
-						"确定,#e57373" : function() {
-							$(this).dialog('close');
-						}
-					},
-					contentText : data["message"]
-				});
+				showTip(data["message"],'error');
 			}
 		}
 	});

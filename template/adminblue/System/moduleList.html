@@ -1,4 +1,4 @@
-{extend name="adminblue/base" /}
+ {extend name="adminblue/base" /}
 {block name="main"}
 <div class="options-btn">
 	<button class="btn-common btn-small" onclick="addModule()">添加模块</button>
@@ -9,18 +9,18 @@
 <input type="hidden" id="pid" value="0" />
 <table class="table-class">
 	<colgroup>
-		<col style="width: 1%;">
-		<col style="width: 5%;">
-		<col style="width: 50%;">
-		<col style="width: 10%;">
+		<col style="width: 2%;">
+		<col style="width: 77%;">
+		<col style="width: 7%;">
+		<col style="width: 4%;">
 		<col style="width: 10%;">
 	</colgroup>
 	<thead>
 		<tr class="row-selected">
 			<th></th>
-			<th>排序</th>
 			<th align="left">模块名</th>
 			<th>是否是菜单</th>
+			<th>排序</th>
 			<th>操作</th>
 		</tr>
 	</thead>
@@ -29,17 +29,18 @@
 	<tr class="pid_0" style="height: 30px;">
 		<td>
 			{if condition="$v1['sub_menu'] neq array()"}
-			<a href="javascript:;" onclick="tab_switch({$v1['module_id']})" class="tab_jia_{$v1['module_id']}" style="display: block;"><i class="fa fa-plus-circle"></i></a>
-			<a href="javascript:;" onclick="tab_switch({$v1['module_id']})" class="tab_jian_{$v1['module_id']}" style="display: none;"><i class="fa fa-minus-circle"></i></a>
+			<a href="javascript:;" onclick="tab_switch({$v1['module_id']})" class="tab_jia_{$v1['module_id']}" style="display: block;">[+]</a>
+			<a href="javascript:;" onclick="tab_switch({$v1['module_id']})" class="tab_jian_{$v1['module_id']}" style="display: none;">[-]</a>
 			{/if}
 		</td>
-		<td style="text-align: center;">
-			<input onkeyup="value=value.replace(/[^\d+(\.\d+)?]/g,'')" type="text" class="sort input-common input-common-sort" fieldid="{$v1['module_id']}" fieldname="sort" value="{$v1['sort']}" size="1">
-		</td>
+		
 		<td>
 			<input type="text" fieldid="{$v1['module_id']}" class="input-common" fieldname="module_name" value="{$v1['module_name']}">
 		</td>
 		<td style="text-align: center;">{$v1['is_menu'] ? '是' : '否'}</td>
+		<td style="text-align: center;">
+			<input onkeyup="value=value.replace(/[^\d+(\.\d+)?]/g,'')" type="text" class="sort input-common input-common-sort" fieldid="{$v1['module_id']}" fieldname="sort" value="{$v1['sort']}" size="1">
+		</td>
 		<td style="text-align: center;">
 			<a href="{:__URL('ADMIN_MAIN/system/editmodule','module_id='.$v1['module_id'])}">修改</a>
 			<a href="javascript:void(0);" onclick="delModule({$v1['module_id']})">删除</a>
@@ -49,18 +50,19 @@
 		<tr class="pid_{$v1['module_id']}" style="height: 30px; display: none;">
 			<td>
 				{if condition="$v2['sub_menu'] neq array()"}
-				<a href="javascript:void(0)" onclick="tab_switch({$v2['module_id']})" class="tab_jian_{$v2['module_id']} tab_jian_{$v1['module_id']}" style="display: block;"><i class="fa fa-minus-circle"></i></a>
-				<a href="javascript:void(0)" onclick="tab_switch({$v2['module_id']})" class="tab_jia_{$v2['module_id']} tab_jia_{$v1['module_id']}" style="display: none;"><i class="fa fa-plus-circle"></i></a>
+				<a href="javascript:void(0)" onclick="tab_switch({$v2['module_id']})" class="tab_jian_{$v2['module_id']} tab_jian_{$v1['module_id']}" style="display: block;">[-]</a>
+				<a href="javascript:void(0)" onclick="tab_switch({$v2['module_id']})" class="tab_jia_{$v2['module_id']} tab_jia_{$v1['module_id']}" style="display: none;">[+]</a>
 				{/if}
 			</td>
-			<td style="text-align: center;">
-				<input onkeyup="value=value.replace(/[^\d+(\.\d+)?]/g,'')" type="text" class="sort input-common input-common-sort" fieldid="{$v2['module_id']}" fieldname="sort" value="{$v2['sort']}" size="1">
-			</td>
+			
 			<td>
 				<span style="color: #ccc;">|——</span>
 				<input type="text" fieldid="{$v2['module_id']}" fieldname="module_name" class="input-common" value="{$v2['module_name']}">
 			</td>
 			<td style="text-align: center;">{$v2['is_menu'] ? '是' : '否'}</td>
+			<td style="text-align: center;">
+				<input onkeyup="value=value.replace(/[^\d+(\.\d+)?]/g,'')" type="text" class="sort input-common input-common-sort" fieldid="{$v2['module_id']}" fieldname="sort" value="{$v2['sort']}" size="1">
+			</td>
 			<td style="text-align: center;">
 				<a href="{:__URL('ADMIN_MAIN/system/editmodule','module_id='.$v2['module_id'])}">修改</a>
 				<a href="javascript:void(0);" onclick="delModule({$v2['module_id']})">删除</a>
@@ -69,14 +71,15 @@
 			{foreach name="v2['sub_menu']" item="v3"}
 			<tr class="pid_{$v2['module_id']} pid_{$v1['module_id']}" style="height: 30px; display: none;">
 				<td></td>
-				<td style="text-align: center;">
-					<input type="text" class="sort input-common input-common-sort" fieldid="{$v3['module_id']}" fieldname="sort" value="{$v3['sort']}" size="1">
-				</td>
+				
 				<td>
 					<span style="color: #ccc;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|——</span>
 					<input type="text" fieldid="{$v3['module_id']}" class="input-common" fieldname="module_name" value="{$v3['module_name']}">
 				</td>
 				<td style="text-align: center;">{$v3['is_menu'] ? '是' : '否'}</td>
+				<td style="text-align: center;">
+					<input type="text" class="sort input-common input-common-sort" fieldid="{$v3['module_id']}" fieldname="sort" value="{$v3['sort']}" size="1">
+				</td>
 				<td style="text-align: center;">
 					<a href="{:__URL('ADMIN_MAIN/system/editmodule','module_id='.$v3['module_id'])}">修改</a>
 					<a href="javascript:void(0);" onclick="delModule({$v3['module_id']})">删除</a>
@@ -168,21 +171,15 @@ function delModule(module_id){
 					dataType: 'json',
 					success:function (data) {
 						if(data['code'] > 0){
+							showTip(data["message"],'success');
 							location.href = __URL("ADMIN_MAIN/system/modulelist");
 						}else{
-							$("#dialog").dialog({
-								buttons: {
-									"确定": function() {
-										$(this).dialog('close');
-									}
-								},
-								contentText:data['message']
-							})
+							showTip(data["message"],'error');
 						}
 					}
 				});
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 			}
 		},

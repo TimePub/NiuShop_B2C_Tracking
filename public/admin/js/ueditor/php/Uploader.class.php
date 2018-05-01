@@ -149,7 +149,8 @@ class Uploader
         }
 
         //创建目录失败
-        if (!file_exists($dirname) && !mkdir($dirname, 0777, true)) {
+        $mode = intval('0777', 8);
+        if (!file_exists($dirname) && !mkdir($dirname, $mode, true)) {
             $this->stateInfo = $this->getStateInfo("ERROR_CREATE_DIR");
             return;
         } else if (!is_writeable($dirname)) {
@@ -326,8 +327,11 @@ class Uploader
     private function getFilePath()
     {
         $fullname = $this->fullName;
-        $rootPath = $_SERVER['DOCUMENT_ROOT'];
+        $rootPath = __FILE__;
 
+        $num = strpos($rootPath,'public') - 1;
+        $rootPath = substr($rootPath, 0, $num);
+        
         if (substr($fullname, 0, 1) != '/') {
             $fullname = '/' . $fullname;
         }

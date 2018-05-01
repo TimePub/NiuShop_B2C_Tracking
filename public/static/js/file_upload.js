@@ -9,7 +9,16 @@
 function uploadFile(fileid,data,callBack, source){
 	var dom = document.getElementById(fileid);
 	var file =  dom.files[0];//File对象;
-	if(validationFile(file, source)){
+	var only_type = $(dom).attr('only-type');
+	var validate_type = new Object();
+	if(!only_type){
+		validate_type.type_id = 1;
+		validate_type.type_content = '';
+	}else{
+		validate_type.type_id = 2;
+		validate_type.type_content = only_type;
+	}
+	if(validationFile(file, source, validate_type)){
 		$.ajaxFileUpload({
 			url : __URL(APPMAIN + '/upload/uploadfile'), //用于文件上传的服务器端请求地址
 			secureuri : false, //一般设置为false
@@ -30,26 +39,27 @@ function uploadFile(fileid,data,callBack, source){
  * 2017年6月9日 19:39:19 王永杰
  * @param file JS DOM文件对象
  * @source admin pc sourcel
+ * @validate_type 验证类型validate_type.type_id 1：普通图片上传 2：只允许某些类型
  */
-function validationFile(file, source) {
-	var fileTypeArr = ['application/php','text/html','application/javascript','application/msword','application/x-msdownload','text/plain'];
-	if(null == file) return false;
-	
-	if(!file.type){
-		if(source == 1) layer.msg("文件类型不合法");
-		
-		else if(source == "pc" ) $.msg("文件类型不合法");
-			
-		else showTip("文件类型不合法","warning");
-		
-		return false;
-	}
-	
-	var flag = false;
-	for(var i=0;i<fileTypeArr.length;i++){
-		if(file.type == fileTypeArr[i]){
+function validationFile(file, source, validate_type) {
+	if(validate_type.type_id == 1){
+		var fileTypeArr = ['application/php','text/html','application/javascript','application/msword','application/x-msdownload'];
+		if(null == file) return false;
+
+		var flag = false;
+		for(var i=0;i<fileTypeArr.length;i++){
+			if(file.type == fileTypeArr[i]){
+				flag = true;
+				break;
+			}
+		}
+	}else if(validate_type.type_id == 2){
+		var flag = false;
+		var type = file.name;
+		var pos = type.lastIndexOf('.');
+		var type_name = type.substring(pos);
+		if(type_name != validate_type.type_content){
 			flag = true;
-			break;
 		}
 	}
 	

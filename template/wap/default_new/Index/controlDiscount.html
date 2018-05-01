@@ -52,6 +52,9 @@
 .group-list-box .discount-list ul li div.goods_info .remaining_time{
 	margin:5px 0 0 5px;
 	font-size: 12px;
+	display: block;
+	height: 18px;
+	overflow: hidden;
 }
 .group-list-box .discount-list ul li div.goods_info .remaining_time span.hours,
 .group-list-box .discount-list ul li div.goods_info .remaining_time span.min,
@@ -130,7 +133,7 @@
 							</div>
 							<div class="goods_pic">
 								<a href="{:__URL('APP_MAIN/goods/goodsdetail?id='.$vo['goods_id'])}">
-									<img src="{:__IMG($vo['picture']['pic_cover_small'])}" alt="">
+									<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($vo['picture']['pic_cover_small'])}" alt="">
 								</a>
 							</div>
 						</a>

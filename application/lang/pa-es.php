@@ -1086,7 +1086,12 @@ return [
     'my_winning_records'                                                  => 'Me tocara registros',
     'to_receive_the_prize'                                                => 'To receive the prize',
     'immediately_receive'                                                 => 'Immediately to receive',
-    'member_bank_max_length'                                              => 'A lo largo de DiXian cuenta de las restricciones'
+    'member_bank_max_length'                                              => 'A lo largo de DiXian cuenta de las restricciones',
+    'member_waiting_share'                                                => 'Espera compartir',
+    'spell_group_zone'                                                    => 'Se aprovecha de',
+    'join_together'                                                       => 'La participación de ortografía',
+    'spell_group_order'                                                   => 'Spell group order',
+    'local_distribution'                                                  => 'Local distribution'
     
    
 ];

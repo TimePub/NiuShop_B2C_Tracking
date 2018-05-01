@@ -2,46 +2,56 @@
 {block name="resources"/}
 <script src="ADMIN_JS/highcharts.js"></script>
 <script src="ADMIN_JS/exporting.js"></script>
+<link rel="stylesheet" type="text/css" href="ADMIN_CSS/ptomotion_game_new.css">
 <style type="text/css">
-.mt5 li{font-size: 12px;}
-.tab-nav{margin-top:10px;border-bottom: 1px solid #e5e5e5;margin-left:0px;}
-.tabmenu{background-color: #FFF;width: 100%;height: 37px;display: block;position: relative;z-index: 90;margin-left: 20px;}
-.tabmenu .tab .ui-tabs-selected a{color: #FFFFFF;background-color: #FFF;display: inline-block;padding: 0px 10px;border: 0px;background-color: #0072D2;}
-.tabmenu .tab a, .tabmenu .tab .active a{font-size: 14px;display: inline-block;padding: 0 30px;text-align: center;height: 36px;line-height:36px;cursor:pointer;}
-.tabmenu .tab li:FIRST-CHILD{border-left: 1px solid #E3E3E3;}
-.tabmenu .tab li{float: left;border-top: 1px solid #E3E3E3;border-right: 1px solid #E3E3E3;}
-.search-form{color: #999;width: 100%;border-bottom: solid 1px #e5e5e5;}
-.search-form td{padding:10px;}
+.ui-tabs-panel{
+	border:1px solid #E1E6F0;
+	border-top:0;
+}
 </style>
  {/block}
+{block name="alert_info"}
+1、符合以下任何一种条件的订单即为有效订单：a）采用在线支付方式支付并且已付款；b）采用货到付款方式支付并且交易已完成<br/>
+2、图表展示了符合搜索条件的有效订单中的下单总金额和下单商品总数排名前30位的商品
+{/block}
 {block name="main"}
-<div class="alert">
-	<ul class="mt5">
-		<li>1、符合以下任何一种条件的订单即为有效订单：a）采用在线支付方式支付并且已付款；b）采用货到付款方式支付并且交易已完成</li>
-		<li>2、图表展示了符合搜索条件的有效订单中的下单总金额和下单商品总数排名前30位的商品</li>
-	</ul>
-</div>
+
 <input type="hidden" name="act" value="statistics_goods" />
 <input type="hidden" name="op" value="hotgoods" />
-<table class="search-form">
+<table class="mytable">
+	<tr>
+		<td width="100%">
+			{include file='adminblue/Goods/goodsThreeCategory'/}
+			&nbsp;&nbsp;<span>统计方式：</span>
+			<select id="date" class="querySelect select-common middle">
+				<option value="1">按照天统计</option>
+				<option value="3">按照周统计</option>
+				<option value="4">按照月统计</option>
+			</select>
+			&nbsp;&nbsp;<button class="btn-common" onclick="searchGoodsSale();" value="搜索">搜索</button>
+		</td>
+	</tr>
+</table>
+<!-- <table class="search-form">
 	<tbody>
 		<tr>
 			<td>
 				<div class="fr">
 					<label class="submit-border">
-						<input type="submit" class="btn-common" onclick="searchGoodsSale();" value="搜索">
+						<button class="btn-common" onclick="searchGoodsSale();" value="搜索">搜索</button>
 					</label>
 				</div>
 				<div class="fr">
 					<div class="fl" style="margin-right:3px;">
-						 商品分类
-						<select id="category_id_1" data-level="1"class="select-common" onchange="ClickHasSubCategory(this)">
+						<span>商品分类：</span>
+						<select id="category_id_1" data-level="1"class="select-common middle" onchange="ClickHasSubCategory(this)">
 							<option value="0" selected>请选择</option>
 							{foreach name="cateGoryList" item="category"}
 							<option value="{$category.category_id}">{$category.category_name}</option>
 							{/foreach}
 						</select>
-						<select id="date" class="querySelect select-common">
+						<span>统计方式：</span>
+						<select id="date" class="querySelect select-common middle">
 							<option value="1">按照天统计</option>
 							<option value="3">按照周统计</option>
 							<option value="4">按照月统计</option>
@@ -51,17 +61,13 @@
 			</td>
 		</tr>
 	</tbody>
-</table>
-<div class="tabmenu tab-nav">
-	<ul class="tab pngFix">
-		<li class="ui-tabs-selected">
-			<a class="a-nav" onclick="getGoodsSalesCharts(1)">下单金额</a>
-		</li>
-		<li>
-			<a class="a-nav" onclick="getGoodsSalesCharts(2)">下单商品数</a>
-		</li>
+</table> -->
+<nav class="option-nav">
+	<ul>
+		<li class="selected" ><a href="javascript:;" onclick="getGoodsSalesCharts(1)">下单金额</a></li>
+		<li ><a href="javascript:;" onclick="getGoodsSalesCharts(2)">下单商品数</a></li>
 	</ul>
-</div>
+</nav>
 <div id="orderamount_div" class="ui-tabs-panel" style="display: block;">
 	<div id="container_ordergamount" data-highcharts-chart="1">
 		<div class="highcharts-container" id="highcharts-2" style="width:99%;position: relative;overflow: hidden;height: 400px; text-align: left;font-size: 12px;"></div>
@@ -194,12 +200,9 @@ function getGoodsSalesCharts(type){
 		$("#goodsnum_div").show();
 		$("#orderamount_div").hide();
 	}
-	$(".a-nav").css("background-color","#ffffff");
-	$(".a-nav").css("color","#0072D2");
 
 	var num = type-1;
-	$(".a-nav:eq("+num+")").css("background-color","#0072D2");
-	$(".a-nav:eq("+num+")").css("color","#ffffff");
+	$('.option-nav ul li').eq(num).addClass('selected').siblings().removeClass('selected');
 
 	var start_date = $("#start_date").val();
 	var end_date = $("#end_date").val();
@@ -277,35 +280,6 @@ function getGoodsSalesCharts(type){
 function searchGoodsSale(){
 	getGoodsSalesCharts(var_type);
 }
-/**
- * 获取子级分类
- */
-function ClickHasSubCategory(event){
-	var id = $(event).val();
-	var level = $(event).data("level");
-	$.ajax({
-		type : "post",
-		url : "{:__URL('ADMIN_MAIN/goods/getchildcategory')}",
-		data:{ "categoryID":id},
-		success : function(data){
-			if(data.length > 0 && level <3){
-				if(level == 1){
-					$("#category_id_2").remove();
-					$("#category_id_3").remove();
-				}else{
-					$("#category_id_3").remove();
-				}
-			
-				var html = "<select data-level='"+(level+1)+"'id='category_id_"+(level+1)+"'class='select-common' onchange='ClickHasSubCategory(this);'>";
-				html +="<option value='0'>请选择</option>";
-				for (var i = 0; i < data.length; i++) {
-					html +="<option value='"+data[i]["category_id"]+"'>"+data[i]["category_name"]+"</option>";
-				}
-				html += "</select>";
-				$(event).after(html);
-			}
-		}
-	})
-}
+
 </script>
 {/block}

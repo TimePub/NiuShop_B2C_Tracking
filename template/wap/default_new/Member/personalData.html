@@ -65,9 +65,9 @@
 				<div class="cont-value" style="padding:0;">
 					<a href="{:__URL('APP_MAIN/member/modifyface')}">
 						{if condition="$member_img neq '' and $member_img neq '0'"}
-							<span class="value touxiang"><img src="{:__IMG($member_img)}" /></span>
+							<span class="value touxiang"><img src="{:__IMG($default_headimg)}" class="lazy_load" data-original="{:__IMG($member_img)}" /></span>
 						{else /}
-							<span class="value touxiang"><img src="__TEMP__/{$style}/public/images/member_default.png" /></span>
+							<span class="value touxiang"><img src="{:__IMG($default_headimg)}" /></span>
 						{/if}
 						
 					</a>
@@ -380,7 +380,7 @@ function logout(){
 			if (res['code'] > 0) {
 				window.location.href=__URL("APP_MAIN/login/index");
 			} else if(res["message"]!=null){
-				showBox(res["message"]);
+				showBox(res["message"],"error");
 			}
 		}
 	})
@@ -407,15 +407,15 @@ function btnsave() {
 			var newpassword2 = $("#newpassword2").val();
 			var reg = /^[\@A-Za-z0-9\!\#\$\%\^\&\*\.\~]{6,16}$/;
  			if (oldpassword.length == 0) {
-				showBox("{:lang('please_enter_the_original_password')}");
+				showBox("{:lang('please_enter_the_original_password')}","warning");
 				return false;
 			}
 			if (!reg.test(newpassword)) {
-				showBox("{:lang('please_enter_6_20_new_passwords')}");
+				showBox("{:lang('please_enter_6_20_new_passwords')}","warning");
 				return false;
 			}
 			if(newpassword2!=newpassword){
-				showBox("{:lang('the_two_password_is_inconsistent')}");
+				showBox("{:lang('the_two_password_is_inconsistent')}","warning");
 	 			return false;
 			}
 			$.ajax({
@@ -426,7 +426,7 @@ function btnsave() {
 					if (res['code']> 0) {
 						backPage();
 					} else {
-						showBox("{:lang('original_password_error')}");
+						showBox("{:lang('original_password_error')}","error");
 					}
 				}
 			});
@@ -435,11 +435,11 @@ function btnsave() {
 			var truename = $.trim($("#truename").text());
 			value = $.trim($("#value").val());
 			if (value == "") {
-				showBox("{:lang('real_name_cannot_empty')}");
+				showBox("{:lang('real_name_cannot_empty')}","warning");
 				return false;
 			}
 			if (truename == value) {
-				showBox("{:lang('consistent_with_the_original_real_name_without_modification')}");
+				showBox("{:lang('consistent_with_the_original_real_name_without_modification')}","warning");
 	 			return false;
 			}
 			$.ajax({
@@ -451,7 +451,7 @@ function btnsave() {
 						$("#truename").text(value);
 						backPage();
 					} else {
-						showBox("{:lang('unable_to_change')}");
+						showBox("{:lang('unable_to_change')}","error");
 					}
 				}
 			});
@@ -465,17 +465,17 @@ function btnsave() {
 			var res ='';
 			var mobile_not_exits = 0;
 			if (value == oldMobile) {
-				showBox("{:lang('consistent_with_the_original_mobile_phone_number_without_modification')}");
+				showBox("{:lang('consistent_with_the_original_mobile_phone_number_without_modification')}","warning");
 				return false;
 			}
 			if (value == "") {
-				showBox("{:lang('mobile_phones_must_not_be_empty')}");
+				showBox("{:lang('mobile_phones_must_not_be_empty')}","warning");
 	 			return false;
 			}else{
 
 				if(value.search(/^1(3|4|5|7|8)\d{9}$/) == -1){
 					$("#mobile").trigger("focus");
-					layer.msg("{:lang('phone_is_not_right_format')}");
+					showBox("{:lang('phone_is_not_right_format')}","warning");
 					return false;
 				}
 				{if condition="$notice['noticeMobile'] neq 1"}
@@ -492,7 +492,7 @@ function btnsave() {
 			}
 			{if condition="$login_verify_code['pc'] eq 1"}
 				if (vertification == "") {
-					showBox("{:lang('please_enter_verification_code')}");
+					showBox("{:lang('please_enter_verification_code')}","warning");
 					return false;
 				}
 				{if condition="$notice['noticeMobile'] neq 1"}
@@ -503,7 +503,7 @@ function btnsave() {
 						async : false,
 						success : function(data){
 							if(data['code'] < 0){
-								showBox(data['message']);
+								showBox(data['message'],"warning");
 								res = true;
 							}
 							return res;
@@ -516,12 +516,12 @@ function btnsave() {
 			{/if}
 			//判断手机号是否已被绑定
 			if(mobile_not_exits == 1){
-				layer.msg("{:lang('the_phone_number_already_exists')}");
+				showBox("{:lang('the_phone_number_already_exists')}","warning");
 				return false;
 			}
 			{if condition="$notice['noticeMobile'] eq 1"}
 				if(code.length == 0){
-					showBox("{:lang('member_enter_mobile_verification_code')}");
+					showBox("{:lang('member_enter_mobile_verification_code')}","warning");
 					return false;
 				}else{
 					$.ajax({
@@ -531,7 +531,7 @@ function btnsave() {
 						async : false,
 						success : function(data){
 							if(data['code'] < 0){
-								showBox(data['message']);
+								showBox(data['message'],"success");
 								result = true;
 							}
 							return result;
@@ -551,7 +551,7 @@ function btnsave() {
 						$("#mobilephone").text(value);
 						backPage();
 					} else {
-						showBox(res["message"]);
+						showBox(res["message"],"error");
 					}
 				}
 			});
@@ -571,7 +571,7 @@ function btnsave() {
 						backPage();
 						$("#qqno").text(value);
 					} else {
-						showBox(res["message"]);
+						showBox(res["message"],"error");
 					}
 				}
 			});
@@ -579,7 +579,7 @@ function btnsave() {
 		case "wxno":
 			value = $.trim($("#value").val());
 			if (value == "") {
-				showBox("{:lang('wechat_can_not_be_empty')}");
+				showBox("{:lang('wechat_can_not_be_empty')}","warning");
 				return false;
 			}
 			$.ajax({
@@ -591,7 +591,7 @@ function btnsave() {
 						backPage();
 						$("#wxno").text(value);
 					} else {
-						showBox("{:lang('unable_to_change')}");
+						showBox("{:lang('unable_to_change')}","error");
 					}
 				}
 			});
@@ -605,11 +605,11 @@ function btnsave() {
 			var res ='';
 			var email_not_exits = 0;
 			if(value == oldEmail){
-				showBox("{:lang('consistent_with_the_original_mailbox_no_change_required')}");
+				showBox("{:lang('consistent_with_the_original_mailbox_no_change_required')}","warning");
 				return false;
 			}
 			if (value == "") {
-				showBox("{:lang('mailbox_cannot_be_empty')}");
+				showBox("{:lang('mailbox_cannot_be_empty')}","warning");
 				return false;
 			}else{
 				$.ajax({
@@ -624,7 +624,7 @@ function btnsave() {
 			}
 			{if condition="$login_verify_code['pc'] eq 1"}
 				if (vertification == "") {
-					showBox("{:lang('please_enter_verification_code')}");
+					showBox("{:lang('please_enter_verification_code')}","warning");
 					return false;
 				}
 				{if condition="$notice['noticeEmail'] neq 1"}
@@ -635,7 +635,7 @@ function btnsave() {
 					async : false,
 					success : function(data){
 						if(data['code'] < 0){
-							showBox(data['message']);
+							showBox(data['message'],"warning");
 							res = true;
 						}
 						return res;
@@ -647,12 +647,12 @@ function btnsave() {
 				{/if}
 			{/if}
 			if(email_not_exits == 1){
-				layer.msg("{:lang('mailbox_already_exists')}");
+				showBox("{:lang('mailbox_already_exists')}","warning");
 				return false;
 			}
 			{if condition="$notice['noticeEmail'] eq 1"}
 				if(code.length == 0){
-					showBox("{:lang('member_enter_mailbox_verification_code')}");
+					showBox("{:lang('member_enter_mailbox_verification_code')}","warning");
 					return false;
 				}else{
 					$.ajax({
@@ -662,7 +662,7 @@ function btnsave() {
 						async : false,
 						success : function(data){
 							if(data['code'] < 0){
-								showBox(data['message']);
+								showBox(data['message'],"success");
 								result = true;
 							}
 							return result;
@@ -682,7 +682,7 @@ function btnsave() {
 						backPage();
 						$("#emailno").text(value);
 					} else {
-						showBox("{:lang('unable_to_change')}");
+						showBox("{:lang('unable_to_change')}","error");
 					}
 				}
 			});
@@ -691,11 +691,11 @@ function btnsave() {
 			var nickname = $("#nickname").text();
 			value = $.trim($("#input_nick_name").val());
 			if(nickname == value){
-				showBox("{:lang('consistent_with_the_original_nickname_without_modification')}");
+				showBox("{:lang('consistent_with_the_original_nickname_without_modification')}","warning");
 				return false;
 			}
 			if(value == ""){
-				showBox("{:lang('member_nicknames_cannot_empty')}");
+				showBox("{:lang('member_nicknames_cannot_empty')}","warning");
 				return false;
 			}
 			$.ajax({
@@ -707,7 +707,7 @@ function btnsave() {
 						$("#emailno").text(value);
 						backPage();
 					}else{
-						showBox(res.message);
+						showBox(res.message,"error");
 					}
 				}
 			});
@@ -722,7 +722,7 @@ $("#send_email").click(function (){
 	//验证邮箱格式是否正确
 	if(email.search(/\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/) == -1){
 		$("#email").trigger("focus");
-		layer.msg("{:lang('mailbox_format_is_incorrect')}");
+		showBox("{:lang('mailbox_format_is_incorrect')}","warning");
 		return false;
 	}
 	//验证手机号是否已经注册
@@ -733,7 +733,7 @@ $("#send_email").click(function (){
 		async: false,
 		success: function(data){
 			if(data){
-				layer.msg("{:lang('mailbox_already_exists')}");
+				showBox("{:lang('mailbox_already_exists')}","warning");
 				return false;
 			}else{
 				//判断输入的验证码是否正确 
@@ -745,7 +745,7 @@ $("#send_email").click(function (){
 						if(data['code']== 0){
 							time();
 						}else{
-							layer.msg(data["message"]);
+							showBox(data["message"],"warning");
 							$(".verifyimg").attr("src","{:__URL('SHOP_MAIN/captcha')}");
 							return false;
 						}
@@ -763,7 +763,7 @@ $("#send_mobile").click(function (){
 	//验证手机格式是否正确
 	if(mobile.search(/^1(3|4|5|7|8)\d{9}$/) == -1){
 		$("#mobile").trigger("focus");
-		layer.msg("{:lang('phone_is_not_right_format')}");
+		shoxBox("{:lang('phone_is_not_right_format')}","warning");
 		return false;
 	}
 	//验证手机号是否已经注册
@@ -774,7 +774,7 @@ $("#send_mobile").click(function (){
 		async: false,
 		success: function(data){
 			if(data){
-				layer.msg("{:lang('the_phone_number_already_exists')}");
+				showBox("{:lang('the_phone_number_already_exists')}","error");
 				return false;
 			}else{
 		 		//判断输入的验证码是否正确 
@@ -801,7 +801,7 @@ var wait=120;
 function time() {
 	if (wait == 0) {
 		$(".sendOutCode").removeAttr("disabled");
-		$(".sendOutCode").val("获取验证码{:lang('get_validation_code')}");
+		$(".sendOutCode").val("{:lang('get_validation_code')}");
 		wait = 120; 
 	} else { 
 		$(".sendOutCode").attr("disabled", 'disabled');

@@ -160,45 +160,13 @@ class Shop extends BaseController
      */
     public function pickupPointList()
     {
-        $child_menu_list = array(
-            array(
-                'url' => "express/expresscompany",
-                'menu_name' => "物流公司",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/areamanagement",
-                'menu_name' => "地区管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "order/returnsetting",
-                'menu_name' => "商家地址",
-                "active" => 0
-            ),
-            array(
-                'url' => "shop/pickuppointlist",
-                'menu_name' => "自提点管理",
-                "active" => 1
-            ),
-            array(
-                'url' => "shop/pickuppointfreight",
-                'menu_name' => "自提点运费",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/distributionareamanagement",
-                'menu_name' => "货到付款地区管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/expressmessage",
-                'menu_name' => "物流跟踪设置",
-                "active" => 0
-            )
-        );
-        
+        //获取物流配送三级菜单
+        $express = new Express();
+        $child_menu_list = $express->getExpressChildMenu(4);
         $this->assign('child_menu_list', $child_menu_list);
+        $express_child = $express->getExpressChild(3,1);
+        $this->assign('express_child', $express_child);
+        
         if (request()->isAjax()) {
             $shop = new ShopService();
             $page_index = request()->post('page_index', 1);
@@ -224,45 +192,12 @@ class Shop extends BaseController
      */
     public function pickuppointfreight()
     {
-        $child_menu_list = array(
-            array(
-                'url' => "express/expresscompany",
-                'menu_name' => "物流公司",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/areamanagement",
-                'menu_name' => "地区管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "order/returnsetting",
-                'menu_name' => "商家地址",
-                "active" => 0
-            ),
-            array(
-                'url' => "shop/pickuppointlist",
-                'menu_name' => "自提点管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "shop/pickuppointfreight",
-                'menu_name' => "自提点运费",
-                "active" => 1
-            ),
-            array(
-                'url' => "config/distributionareamanagement",
-                'menu_name' => "货到付款地区管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/expressmessage",
-                'menu_name' => "物流跟踪设置",
-                "active" => 0
-            )
-        );
-        
+        //获取物流配送三级菜单
+          $express = new Express();
+        $child_menu_list = $express->getExpressChildMenu(4);
         $this->assign('child_menu_list', $child_menu_list);
+        $express_child = $express->getExpressChild(3,3);
+        $this->assign('express_child', $express_child);
         
         $config_service = new Config();
         $config_info = $config_service->getConfig($this->instance_id, 'PICKUPPOINT_FREIGHT');
@@ -303,6 +238,12 @@ class Shop extends BaseController
             $res = $shop->addPickupPoint($shop_id, $name, $address, $contact, $phone, $province_id, $city_id, $district_id, '', '');
             return AjaxReturn($res);
         }
+       //获取物流配送三级菜单
+        $express = new Express();
+        $child_menu_list = $express->getExpressChildMenu(4);
+        $this->assign('child_menu_list', $child_menu_list);
+        $express_child = $express->getExpressChild(3,2);
+        $this->assign('express_child', $express_child);
         return view($this->style . "Shop/addSince");
     }
 

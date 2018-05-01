@@ -64,7 +64,7 @@
 					<li class="opacity_img clone" >
 						<div class="p-img" style="width:90%;padding:0 13px;">
 							<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$vo['goods_id'])}" target="_blank">
-								<img src="{:__IMG($vo['picture']['pic_cover_mid'])}" class="img-lazyload">
+								<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($vo['picture']['pic_cover_mid'])}" class="img-lazyload lazy_load">
 								<div class="brand-time" style="width:90%;">
 									<em class="time">
 										<span class="settime" starttime="{$vo.start_time | getTimeStampTurnTime}" endtime="{$vo.end_time | getTimeStampTurnTime}"></span>
@@ -78,11 +78,7 @@
 						<div class="" style="padding:0 13px;width:90%;">
 <!-- 							<div class="p-info"> -->
 								<div class="p-price">
-									{if condition="$vo.promotion_price == ''"}
-									<span class="shop-price"><em>¥</em>{$vo.promotion_price}</span>
-									{else/}
-									<span class="shop-price"><em>¥</em>{$vo.promotion_price}</span>
-									{/if}
+									<span class="shop-price"><em>¥</em>{$vo.display_price}</span>									
 									<span class="original-price"><em>¥</em>{$vo.price}</span>
 								</div>
 <!-- 							</div> -->

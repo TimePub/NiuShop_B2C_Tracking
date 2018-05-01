@@ -38,15 +38,23 @@ class Helpcenter extends BaseController
      */
     public function index()
     {
-       
         $platform = new Platform();
         $document_id = request()->get("id", "");
         $class_id = request()->get("class_id", "");
-        
+        if (!empty($document_id) && ! is_numeric($document_id)) {
+            
+            $redirect = __URL(__URL__ . '/index');
+            $this->redirect($redirect);
+        }
+        if (!empty($class_id) && ! is_numeric($class_id)) {
+            
+            $redirect = __URL(__URL__ . '/index');
+            $this->redirect($redirect);
+        }
         $platform_help_class = $platform->getPlatformHelpClassList(1, 0, '', 'sort');
         $this->assign('platform_help_class', $platform_help_class['data']); // 帮助中心分类列表
         
-        $platform_help_document = $platform->getPlatformHelpDocumentList(1, 0, '', 'sort');
+        $platform_help_document = $platform->getPlatformHelpDocumentList(1, 0, 'is_visibility=1', 'sort');
         $this->assign('platform_help_document', $platform_help_document['data']); // 帮助中心列表
         
         if (empty($document_id)) {
@@ -76,7 +84,8 @@ class Helpcenter extends BaseController
             $this->assign("seoconfig", $seoconfig);
         } else {
             $help_document_info = $platform->getPlatformHelpDocumentList(1, 0, [
-                'id' => $document_id
+                'id' => $document_id,
+                'is_visibility' => 1
             ], 'sort');
             if (empty($help_document_info['data'])) {
                 $redirect = __URL(__URL__ . '/index');

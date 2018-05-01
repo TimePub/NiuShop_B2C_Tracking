@@ -2,20 +2,9 @@
 {block name="resources"}
 <link rel="stylesheet" type="text/css" href="__TEMP__/{$style}/public/css/integralcenter/exchange.css">
 <style type="text/css">
-.act-list ul li.first{
-	margin-left:15px;
-	height:300px;
-	width:228px;
-}
-.act-list ul li.first:nth-child(5n+1){
-	margin-left:0;
-}
-.recommend{
-	position: absolute;
-	z-index: 10;
-	width: 40px;
-	margin-left: 8px;
-}
+.act-list ul li.first{margin-left:15px;height:300px;width:228px;}
+.act-list ul li.first:nth-child(5n+1){margin-left:0;}
+.recommend{position: absolute;z-index: 10;width: 40px;margin-left: 8px;}
 </style>
 {/block}
 {block name="main"}
@@ -45,7 +34,7 @@
 	<div class="spot-goods fr">
 		<h4>{:lang('goods_hot_exchange')}</h4>
 		<ul id="JS_spot_goods">
-			{foreach name="hotGoods.data"  item="good" key="k"}
+			{foreach name="hotGoods" item="good" key="k"}
 			<li {if condition="$k eq 0"}class="open"{/if}>
 				<div class="show">
 					<span class="index">{$k+1}</span>
@@ -59,7 +48,7 @@
 					</div>
 					<div class="detail">
 						<a href="" target="_blank" title="{$good.goods_name}" class="img">
-							<img src="{:__IMG($good['pic_cover_mid'])}" width="122" height="122">
+							<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($good['pic_cover_mid'])}" width="122" height="122">
 						</a>
 						<div class="number">
 							<p class="p1"><strong>{:lang('goods_integral')}：{$good.point_exchange}</strong></p>
@@ -103,7 +92,7 @@
 						{/if}
 					</div>
 					<div class="total">
-						<span>{:lang('goods_total')}<strong>{$hotGoods.total_count}</strong>{:lang('goods_goods')}</span>
+						<span>{:lang('goods_total')}<strong>{$allGoods.total_count}</strong>{:lang('goods_goods')}</span>
 					</div>
 					<span class="clr"></span>
 				</div>
@@ -129,33 +118,18 @@
 						{/if}
 						<div class="img">
 							<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$goods['goods_id'])}" target="_blank" title="{$goods.goods_name}">
-								<img src="{:__IMG($goods['pic_cover_mid'])}" />
+								<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($goods['pic_cover_mid'])}" />
 							</a>
 							<p class="absBg"></p>
 							<p class="absFg">
-								<a href="{:__URL('SHOP_MAIN/goods/goodsinfo',$goods['goods_name'])}" target="_blank" title="{$goods.goods_name}">{$goods.goods_name}</a>
+								<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$goods['goods_id'])}" target="_blank" title="{$goods.goods_name}">{$goods.goods_name}</a>
 							</p>
 						</div>
 						<div class="info">
-						{if condition="$goods.promotion_price neq 0 AND $goods.point_exchange neq 0"}
 							<div class="price" style="width:143px;color:red;">
-								<strong class="main-color arial">¥{$goods.promotion_price}+</strong>
-								<strong class="main-color arial">{$goods.point_exchange}</strong>
-								<span class="main-color jifen">{:lang('goods_integral')}</span>
+								<strong class="main-color arial">{$goods.display_price}</strong>
 							</div>
-							{else/}
-							
-							{if condition="$goods.promotion_price eq 0"}
-							<div class="price" style="width:143px;color:red;">
-								<strong class="main-color arial">{$goods.point_exchange}</strong>
-								<span class="main-color jifen">{:lang('goods_integral')}</span>
-							</div>
-							{else/}
-							<div class="price" style="width:143px;color:red;">
-								<strong class="main-color arial">¥{$goods.promotion_price}</strong>
-							</div>
-							{/if}
-						{/if}
+					
 							<div class="discount">
 								<span class="f16 yahei"><a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$goods['goods_id'])}" target="_blank">{:lang('goods_redeem_now')}</a></span>
 							</div>
@@ -169,7 +143,6 @@
 	</div>
 	<div class="blank5"></div>
 <script type="text/javascript">
-
 $(document).ready(function(){
 	//广告图
 	var ap_id=1076;
@@ -183,7 +156,7 @@ $(document).ready(function(){
 		str+="</tr>"
 	}
 	
-	$("#googleaaa").html(str); 
+	$("#googleaaa").html(str);
 	//2号广告图
 	var ap_id2 = 1102;
 	var data2 = platformAdvLoad(ap_id2);
@@ -192,8 +165,8 @@ $(document).ready(function(){
 		str2 += '<tr><td><a href="'+data2[0]['adv_url']+'" target="_blank"><img src="'+__IMG(data2[0]['adv_image'])+'" width="1210" height="60" border="0"></a></td></tr>"';
 		$("#googlebbb").html(str2);
 	}
-	
 });
+
 // 焦点图
 $(function(){
 	var slider = $('#JS_slider'),
@@ -241,7 +214,7 @@ $(function(){
 	item.hover(function(){
 		item.removeClass('open')
 		$(this).addClass('open');
-		var img = $(this).find('img'),
+		var img = $(this).find('img');
 		src = img.attr('data-lazy');
 		img.attr('src', src);
 	});
@@ -251,7 +224,6 @@ $(function(){
 </script>
 	<div class="blank"></div>
 </div>
-
 {/block}
 {block name="javascript"}
 <script src="__TEMP__/{$style}/public/js/integralcenter/integralcenter.js"></script>

@@ -513,7 +513,7 @@ interface IGoods
      * @param unknown $is_visible            
      * @param unknown $sort            
      */
-    function addGoodsSpecService($shop_id, $spec_name, $show_type, $is_visible, $sort, $spec_value_str, $attr_id = 0, $is_screen);
+    function addGoodsSpecService($shop_id, $spec_name, $show_type, $is_visible, $sort, $spec_value_str, $attr_id = 0, $is_screen, $spec_des);
 
     /**
      * 添加商品规格属性
@@ -567,7 +567,7 @@ interface IGoods
      * @param unknown $is_visible            
      * @param unknown $sort            
      */
-    function updateGoodsSpecService($spec_id, $shop_id, $spec_name, $show_type, $is_visible, $sort, $spec_value_str, $is_screen);
+    function updateGoodsSpecService($spec_id, $shop_id, $spec_name, $show_type, $is_visible, $sort, $spec_value_str, $is_screen, $spec_des);
 
     /**
      * 修改商品规格单个字段
@@ -625,7 +625,7 @@ interface IGoods
      * @param unknown $sort            
      * @param unknown $value_string            
      */
-    function addAttributeService($attribute_name, $is_use, $spec_id_array, $sort, $value_string);
+    function addAttributeService($attribute_name, $is_use, $spec_id_array, $sort, $value_string, $brand_id_array);
 
     /**
      * 添加 商品类型属性
@@ -678,7 +678,7 @@ interface IGoods
      * @param unknown $spec_id_array            
      * @param unknown $sort            
      */
-    function updateAttributeService($attr_id, $attr_name, $is_use, $spec_id_array, $sort, $value_string);
+    function updateAttributeService($attr_id, $attr_name, $is_use, $spec_id_array, $sort, $value_string, $brand_id_array);
 
     /**
      * 判断商品属性名称是否已经存在
@@ -840,5 +840,54 @@ interface IGoods
      * @param 判断标识（来源位置order，cart） $flag            
      */
     function getGoodsPurchaseRestrictionForCurrentUser($goods_id, $num, $flag);
+    
+    /**
+     * 添加营销活动时获取商品列表
+     * @param unknown $page_index
+     * @param unknown $page_size
+     * @param unknown $condition
+     * @param unknown $order
+     * @param unknown $field
+     */
+    function getSelectGoodsList($page_index, $page_size, $condition, $order, $field);
+    /**
+     * 商品足迹列表
+     * @param unknown $page_index
+     * @param unknown $page_size
+     * @param unknown $condition
+     * @param unknown $order
+     * @param unknown $field
+     */
+    function getGoodsBrowseList($page_index, $page_size, $condition, $order, $field = "*");
+    /**
+     * 添加用户足迹
+     * @param unknown $goods_id
+     * @param unknown $uid
+     */
+    function addGoodsBrowse($goods_id, $uid);
+    /**
+     * 删除用户数据
+     * @param unknown $id
+     */
+    function deleteGoodsBrowse($condition);
+    
+    /**
+     * 修改商品点击量
+     * 创建时间：2018年1月23日09:59:03
+     * @param unknown $goods_id
+     */
+    function updateGoodsClicks($goods_id);
+    
+    /**
+     * 通过商品标签数组获取商品标签
+     * @param unknown $goods_group_id_str
+     */
+    function getGoodsTabByGoodsGroupId($goods_group_id_str);
+    
+    /**
+     * 通过商品id获取商品sku列表
+     * @param unknown $goods_id
+     */
+    function getGoodsSkuListByGoodsId($goods_id);
 }
 

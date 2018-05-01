@@ -73,9 +73,6 @@ $('.custom-tag-list .mask').click(function(){
 		url : "{:__URL('APP_MAIN/Helpcenter/index')}",
 		async : true,
 		data : {'id':id },
-		beforeSend:function(){
-			showLoadMaskLayer();
-		},
 		success : function(data){
 			//alert(JSON.stringify(data));
 			var html = '';
@@ -86,7 +83,6 @@ $('.custom-tag-list .mask').click(function(){
 				html+='<p style="font-size:12px;">'+data['data'][0]['content']+'</p>';
 			}
 			$('#good_list').html(html);
-			hiddenLoadMaskLayer();
 		}
 	});
 } 

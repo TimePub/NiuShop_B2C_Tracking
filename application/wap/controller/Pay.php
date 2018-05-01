@@ -15,7 +15,6 @@
  */
 namespace app\wap\controller;
 
-use data\extend\QRcode;
 use data\service\Config;
 use data\service\Member as MemberService;
 use data\service\Order;
@@ -23,6 +22,7 @@ use data\service\UnifyPay;
 use data\service\WebSite;
 use think\Controller;
 use think\Log;
+use data\service\Pay\UnionPay;
 \think\Loader::addNamespace('data', 'data/');
 
 /**
@@ -68,11 +68,19 @@ class Pay extends Controller
         // 获取会员昵称
         $member = new MemberService();
         $member_info = $member->getMemberDetail();
-        $unpaid_goback = isset($_SESSION['unpaid_goback']) ? $_SESSION['unpaid_goback'] : '';
+        $unpaid_goback = "";
+        if (isset($_SERVER['HTTP_REFERER'])) {
+            if (strpos($_SERVER['HTTP_REFERER'], "paymentorder")) {
+                // 如果上一个界面是待付款订单，则直接返回当前的订单详情
+                $unpaid_goback = isset($_SESSION['unpaid_goback']) ? $_SESSION['unpaid_goback'] : '';
+            } else {
+                $unpaid_goback = $_SERVER['HTTP_REFERER'];
+            }
+        }
         $this->assign("unpaid_goback", $unpaid_goback); // 返回到订单
         $this->assign('member_info', $member_info);
     }
-
+    
     /* 演示版本 */
     public function demoVersion()
     {
@@ -98,7 +106,7 @@ class Pay extends Controller
             $this->error("订单主体信息已发生变动!", __URL(__URL__ . "/member/index"));
         }
         
-        if ($pay_value['pay_status'] == 1) {
+        if ($pay_value['pay_status'] != 0) {
             // 订单已经支付
             $this->error("订单已经支付或者订单价格为0.00，无需再次支付!");
         }
@@ -107,7 +115,6 @@ class Pay extends Controller
             $order_status = $this->getOrderStatusByOutTradeNo($out_trade_no);
             // 订单关闭状态下是不能继续支付的
             if ($order_status == 5) {
-                
                 $this->error("订单已关闭");
             }
         }
@@ -153,6 +160,7 @@ class Pay extends Controller
     public function wchatPay()
     {
         $out_trade_no = request()->get('no', '');
+        
         if (! is_numeric($out_trade_no)) {
             $this->error("没有获取到支付信息");
         }
@@ -161,32 +169,29 @@ class Pay extends Controller
         $red_url = str_replace("index.php", "", $red_url);
         $red_url = $red_url . "/weixinpay.php";
         $pay = new UnifyPay();
+        
         if (! isWeixin()) {
             // 扫码支付
-            // if(request()->isMobile())
-            // {
-            // $res = $pay->wchatPay($out_trade_no, 'MWEB', $red_url);
-            // $this->redirect($res["mweb_url"]);
-            // }else{
-            $res = $pay->wchatPay($out_trade_no, 'NATIVE', $red_url);
-            if ($res["return_code"] == "SUCCESS") {
-                if (empty($res['code_url'])) {
-                    $code_url = "生成支付二维码失败!";
+       
+                $res = $pay->wchatPay($out_trade_no, 'NATIVE', $red_url);
+                if ($res["return_code"] == "SUCCESS") {
+                    if (empty($res['code_url'])) {
+                        $code_url = "生成支付二维码失败!";
+                    } else {
+                        $code_url = $res['code_url'];
+                    }
+                    if (! empty($res["err_code"]) && $res["err_code"] == "ORDERPAID" && $res["err_code_des"] == "该订单已支付") {
+                        $this->redirect(__URL(__URL__ . "/member/index"));
+                    }
                 } else {
-                    $code_url = $res['code_url'];
+                    $code_url = "生成支付二维码失败!";
                 }
-                if (! empty($res["err_code"]) && $res["err_code"] == "ORDERPAID" && $res["err_code_des"] == "该订单已支付") {
-                    $this->redirect(__URL(__URL__ . "/member/index"));
-                }
-            } else {
-                $code_url = "生成支付二维码失败!";
-            }
-            $path = getQRcode($code_url, "upload/qrcode/pay", $out_trade_no);
-            $this->assign("path", __ROOT__ . '/' . $path);
-            $pay_value = $pay->getPayInfo($out_trade_no);
-            $this->assign('pay_value', $pay_value);
-            return view($this->style . "Pay/pcWeChatPay");
-            // }
+                $path = getQRcode($code_url, "upload/qrcode/pay", $out_trade_no);
+                $this->assign("path", __ROOT__ . '/' . $path);
+                $pay_value = $pay->getPayInfo($out_trade_no);
+                $this->assign('pay_value', $pay_value);
+                return view($this->style . "Pay/pcWeChatPay");
+            
         } else {
             // jsapi支付
             $res = $pay->wchatPay($out_trade_no, 'JSAPI', $red_url);
@@ -446,4 +451,6 @@ class Pay extends Controller
         }
         return 0;
     }
+
+
 }

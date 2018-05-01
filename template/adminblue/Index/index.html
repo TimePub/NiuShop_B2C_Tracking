@@ -215,29 +215,36 @@
 
 	<table>
 		<tr>
-			<td colspan="2" align="left" style="padding: 10px 0 0 20px;">昨日销量</td>
+			<td rowspan="3" align="left" style="background: #f6f6f6;text-align: center;">昨日销量</td>
 		</tr>
 		<tr>
-			<td>
+			<td style=" border-top: 1px solid #f6f6f6;">
+				<span>订单量(件)</span>
 				<strong class="yesterday_goods">0</strong>
-				<span>订单量(件)</span>
 			</td>
+		</tr>
+		<tr>
 			<td>
+				<span>订单金额(元)</span>
 				<strong class="yesterday_money">0</strong>
-				<span>订单金额(元)</span>
 			</td>
 		</tr>
+
+		<tr style="height: 10px;"></tr>
+
 		<tr>
-			<td colspan="2" align="left" style="padding: 15px 0 0 20px;">本月销量</td>
+			<td rowspan="3" align="left" style="background: #f6f6f6;text-align: center;">本月销量</td>
 		</tr>
 		<tr>
-			<td>
-				<strong class="month_goods">0</strong>
+			<td style=" border-top: 1px solid #f6f6f6;">
 				<span>订单量(件)</span>
+				<strong class="month_goods">0</strong>
 			</td>
+		</tr>
+		<tr>
 			<td>
-				<strong class="month_money">0</strong>
 				<span>订单金额(元)</span>
+				<strong class="month_money">0</strong>
 			</td>
 		</tr>
 	</table>
@@ -255,6 +262,11 @@
 		<i class="i-circular"></i>单品销售排名<span>按周期统计商家店铺的订单量和订单金额</span>
 	</h3>
 	<table>
+		<colgroup>
+			<col width="15%">
+			<col width="70%">
+			<col width="15%">
+		</colgroup>
 		<tr>
 			<td>排行</td>
 			<td style="text-align: left;">商品信息</td>
@@ -325,6 +337,50 @@
 			<td>GD版本</td>
 			<td>{$system_config['gd_version']}</td>
 		</tr>
+		<tr>
+			<td>sockets开启</td>
+			<td>{if condition="$system_config['sockets'] eq true"}已开启{else/}<span style="color:red;">未开启，邮箱功能将无法正常使用</span>{/if}</td>
+			<td>curl支持</td>
+			<td>{if condition="$system_config['curl'] eq true"}支持{else/}<span style="color:red;">不支持，微信和支付宝等功能将无法正常使用</span>{/if}</td>
+		</tr>
+		<tr>
+			<td>openssl开启</td>
+			<td>{if condition="$system_config['openssl'] eq true"}已开启{else/}<span style="color:red;">未开启，不支持https</span>{/if}</td>
+			<td></td>
+			<td></td>
+		</tr>
 	</table>
+</div>
+<!-- 快捷菜单 -->
+<div class="modal fade hide" id="set_shortcut_menu" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="width:1200px;">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h3>常用功能设置</h3>
+	</div>
+	<div class="modal-body">
+		<ul class="menu-box">
+			{volist name="menu_list" id="one"}
+			<li>
+				<h4>{$one.module_name}</h4>
+				<div>
+					{volist name="one.child_list" id="two"}
+					<p>
+						{if condition="in_array($two['module_id'],$selected_ids)"}
+						<i class="checkbox-common selected"><input type="checkbox" value="{$two.module_id}" checked/></i>
+						{else/}
+						<i class="checkbox-common"><input type="checkbox" value="{$two.module_id}"/></i>
+						{/if}
+						<span>{$two.module_name}</span>
+					</p>
+					{/volist}
+				</div>
+			</li>
+			{/volist}
+		</ul>
+	</div>
+	<div class="modal-footer">
+		<button class="btn-common btn-big" onclick="set_shortcut_menu()" >保存</button>
+		<button class="btn-common-cancle btn-big" data-dismiss="modal" aria-hidden="true">关闭</button>
+	</div>
 </div>
 {/block}

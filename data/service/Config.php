@@ -21,7 +21,6 @@ namespace data\service;
  */
 use data\api\IConfig as IConfig;
 use data\model\ConfigModel as ConfigModel;
-use data\model\ModuleModel;
 use data\model\NoticeModel;
 use data\model\NoticeTemplateItemModel;
 use data\model\NoticeTemplateModel;
@@ -31,6 +30,8 @@ use Qiniu\json_decode;
 use think\Cache;
 use think\Config as ThinkPHPConfig;
 use think\Db;
+use data\model\SysWapCustomTemplateModel;
+use data\model\SysShortcutMenuModel;
 
 class Config extends BaseService implements IConfig
 {
@@ -42,38 +43,38 @@ class Config extends BaseService implements IConfig
         parent::__construct();
         $this->config_module = new ConfigModel();
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IConfig::getWchatConfig()
      */
     public function getWchatConfig($instance_id)
     {
-        // $wchat_config = Cache::get("wchat_config" . $instance_id);
-        // if (empty($wchat_config)) {
-        $info = $this->config_module->getInfo([
-            'key' => 'WCHAT',
-            'instance_id' => $instance_id
-        ], 'value,is_use');
-        if (empty($info['value'])) {
-            $wchat_config = array(
-                'value' => array(
-                    'APP_KEY' => '',
-                    'APP_SECRET' => '',
-                    'AUTHORIZE' => '',
-                    'CALLBACK' => ''
-                ),
-                'is_use' => 0
-            );
-        } else {
-            $info['value'] = json_decode($info['value'], true);
-            $wchat_config = $info;
+        $wchat_config = Cache::get("wchat_config" . $instance_id);
+        if (empty($wchat_config)) {
+            $info = $this->config_module->getInfo([
+                'key' => 'WCHAT',
+                'instance_id' => $instance_id
+            ], 'value,is_use');
+            if (empty($info['value'])) {
+                $wchat_config = array(
+                    'value' => array(
+                        'APP_KEY' => '',
+                        'APP_SECRET' => '',
+                        'AUTHORIZE' => '',
+                        'CALLBACK' => ''
+                    ),
+                    'is_use' => 0
+                );
+            } else {
+                $info['value'] = json_decode($info['value'], true);
+                $wchat_config = $info;
+            }
+            Cache::set("wchat_config" . $instance_id, $wchat_config);
         }
-        // Cache::set("wchat_config" . $instance_id, $wchat_config);
-        // }
         return $wchat_config;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IConfig::setWchatConfig()
@@ -119,38 +120,38 @@ class Config extends BaseService implements IConfig
             return $res;
         }
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IConfig::getQQConfig()
      */
     public function getQQConfig($instance_id)
     {
-        // $qq_config = Cache::get("qq_config" . $instance_id);
-        // if (empty($qq_config)) {
-        $info = $this->config_module->getInfo([
-            'key' => 'QQLOGIN',
-            'instance_id' => $instance_id
-        ], 'value,is_use');
-        if (empty($info['value'])) {
-            $qq_config = array(
-                'value' => array(
-                    'APP_KEY' => '',
-                    'APP_SECRET' => '',
-                    'AUTHORIZE' => '',
-                    'CALLBACK' => ''
-                ),
-                'is_use' => 0
-            );
-        } else {
-            $info['value'] = json_decode($info['value'], true);
-            $qq_config = $info;
+        $qq_config = Cache::get("qq_config" . $instance_id);
+        if (empty($qq_config)) {
+            $info = $this->config_module->getInfo([
+                'key' => 'QQLOGIN',
+                'instance_id' => $instance_id
+            ], 'value,is_use');
+            if (empty($info['value'])) {
+                $qq_config = array(
+                    'value' => array(
+                        'APP_KEY' => '',
+                        'APP_SECRET' => '',
+                        'AUTHORIZE' => '',
+                        'CALLBACK' => ''
+                    ),
+                    'is_use' => 0
+                );
+            } else {
+                $info['value'] = json_decode($info['value'], true);
+                $qq_config = $info;
+            }
+            Cache::set("qq_config" . $instance_id, $qq_config);
         }
-        // Cache::set("qq_config" . $instance_id, $qq_config);
-        // }
         return $qq_config;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IConfig::setQQConfig()
@@ -213,39 +214,47 @@ class Config extends BaseService implements IConfig
         );
         return $data;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IConfig::getWpayConfig()
      */
     public function getWpayConfig($instance_id)
     {
-        $info = $this->config_module->getInfo([
-            'instance_id' => $instance_id,
-            'key' => 'WPAY'
-        ], 'value,is_use');
-        if (empty($info['value'])) {
-            return array(
-                'value' => array(
-                    'appid' => '',
-                    'appkey' => '',
-                    'mch_id' => '',
-                    'mch_key' => ''
-                ),
-                'is_use' => 0
-            );
+        $cache = Cache::get("getWpayConfig" . $instance_id);
+        if (empty($cache)) {
+            $info = $this->config_module->getInfo([
+                'instance_id' => $instance_id,
+                'key' => 'WPAY'
+            ], 'value,is_use');
+            if (empty($info['value'])) {
+                $data = array(
+                    'value' => array(
+                        'appid' => '',
+                        'appkey' => '',
+                        'mch_id' => '',
+                        'mch_key' => ''
+                    ),
+                    'is_use' => 0
+                );
+            } else {
+                $info['value'] = json_decode($info['value'], true);
+                $data = $info;
+            }
+            Cache::set("getWpayConfig" . $instance_id, $data);
+            return $data;
         } else {
-            $info['value'] = json_decode($info['value'], true);
-            return $info;
+            return $cache;
         }
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IConfig::setWpayConfig()
      */
     public function setWpayConfig($instanceid, $appid, $appkey, $mch_id, $mch_key, $is_use)
     {
+        Cache::set("getWpayConfig" . $instanceid, null);
         $data = array(
             'appid' => $appid,
             'appkey' => $appkey,
@@ -282,38 +291,78 @@ class Config extends BaseService implements IConfig
         }
         return $res;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IConfig::getAlipayConfig()
      */
     public function getAlipayConfig($instance_id)
     {
-        $info = $this->config_module->getInfo([
-            'instance_id' => $instance_id,
-            'key' => 'ALIPAY'
-        ], 'value,is_use');
-        if (empty($info['value'])) {
-            return array(
-                'value' => array(
-                    'ali_partnerid' => '',
-                    'ali_seller' => '',
-                    'ali_key' => ''
-                ),
-                'is_use' => 0
-            );
+        $cache = Cache::get("getAlipayConfig" . $instance_id);
+        if (empty($cache)) {
+            $info = $this->config_module->getInfo([
+                'instance_id' => $instance_id,
+                'key' => 'ALIPAY'
+            ], 'value,is_use');
+            if (empty($info['value'])) {
+                $data = array(
+                    'value' => array(
+                        'ali_partnerid' => '',
+                        'ali_seller' => '',
+                        'ali_key' => ''
+                    ),
+                    'is_use' => 0
+                );
+            } else {
+                $info['value'] = json_decode($info['value'], true);
+                $data = $info;
+            }
+            Cache::set("getAlipayConfig" . $instance_id, $data);
+            return $data;
         } else {
-            $info['value'] = json_decode($info['value'], true);
-            return $info;
+            return $cache;
         }
     }
 
+    /**
+     * 获取银联支付配置信息
+     */
+    public function getUnionpayConfig($instance_id)
+    {
+        $cache = Cache::get("getUnionpayConfig" . $instance_id);
+        if (empty($cache)) {
+            $info = $this->config_module->getInfo([
+                'instance_id' => $instance_id,
+                'key' => 'UNIONPAY'
+            ], 'value,is_use');
+            if (empty($info['value'])) {
+                $data = array(
+                    'value' => array(
+                        'merchant_number' => '',
+                        'certificate_key' => '',
+                        'service_charge' => ''
+                    ),
+                    'is_use' => 0
+                );
+            } else {
+                $info['value'] = json_decode($info['value'], true);
+                $data = $info;
+            }
+            Cache::set("getUnionpayConfig" . $instance_id, $data);
+            return $data;
+        } else {
+            return $cache;
+        }
+    }
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IConfig::setAlipayConfig()
      */
     public function setAlipayConfig($instanceid, $partnerid, $seller, $ali_key, $is_use)
     {
+        Cache::set("getAlipayConfig" . $instanceid, null);
+        
         $data = array(
             'ali_partnerid' => $partnerid,
             'ali_seller' => $seller,
@@ -351,10 +400,60 @@ class Config extends BaseService implements IConfig
     }
 
     /**
+     * 银联卡支付配置保存
+     *
+     * @param unknown $unionPayConfig            
+     * @param unknown $certificate_key            
+     * @param unknown $service_charge            
+     * @param unknown $is_use            
+     */
+    public function setUnionpayConfig($instanceid, $merchant_number, $certificate_key, $service_charge, $is_use)
+    {
+        Cache::set("getUnionpayConfig" . $instanceid, null);
+        
+        $data = array(
+            'merchant_number' => $merchant_number,
+            'certificate_key' => $certificate_key,
+            'service_charge' => $service_charge
+        );
+        $value = json_encode($data);
+        $info = $this->config_module->getInfo([
+            'key' => 'UNIONPAY',
+            'instance_id' => $instanceid
+        ], 'value');
+        if (empty($info)) {
+            $config_module = new ConfigModel();
+            $data = array(
+                'instance_id' => $instanceid,
+                'key' => 'UNIONPAY',
+                'value' => $value,
+                'is_use' => $is_use,
+                'create_time' => time()
+            );
+            $res = $config_module->save($data);
+        } else {
+            $config_module = new ConfigModel();
+            $data = array(
+                'key' => 'UNIONPAY',
+                'value' => $value,
+                'is_use' => $is_use,
+                'modify_time' => time()
+            );
+            $res = $config_module->save($data, [
+                'instance_id' => $instanceid,
+                'key' => 'UNIONPAY'
+            ]);
+        }
+        return $res;
+    }
+
+    /**
      * 设置微信和支付宝开关状态
      */
     public function setWpayStatusConfig($instanceid, $is_use, $type)
     {
+        Cache::set("getAlipayConfig" . $instanceid, null);
+        Cache::set("getWpayConfig" . $instanceid, null);
         $config_module = new ConfigModel();
         $result = $config_module->getInfo([
             'instance_id' => $instanceid,
@@ -362,12 +461,15 @@ class Config extends BaseService implements IConfig
         ], 'value');
         if (empty($result['value'])) {
             $info = array();
-            $value = json_encode($info);
+            $info['is_use'] = $is_use;
+            $value = json_encode($info['is_use']);
             $data = array(
-                'is_use' => $is_use,
-                'modify_time' => time(),
-                'value' => $value
+                'is_use' => $value,
+                
+                // 'is_use' => $is_use,
+                'modify_time' => time()
             );
+            // 'value' => $value
         } else {
             $data = array(
                 'is_use' => $is_use,
@@ -380,30 +482,38 @@ class Config extends BaseService implements IConfig
         ]);
         return $res;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \ata\api\IConfig::getHotsearchConfig()
      */
     public function getHotsearchConfig($instanceid)
     {
-        $info = $this->config_module->getInfo([
-            'key' => 'HOTKEY',
-            'instance_id' => $instanceid
-        ], 'value');
-        if (empty($info['value'])) {
-            return null;
+        $cache = Cache::get("getHotsearchConfig" . $instanceid);
+        if (empty($cache)) {
+            $info = $this->config_module->getInfo([
+                'key' => 'HOTKEY',
+                'instance_id' => $instanceid
+            ], 'value');
+            if (empty($info['value'])) {
+                return null;
+            } else {
+                $data = json_decode($info['value'], true);
+                Cache::set("getHotsearchConfig" . $instanceid, $data);
+                return $data;
+            }
         } else {
-            return json_decode($info['value'], true);
+            return $cache;
         }
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \ata\api\IConfig::setHotsearchConfig()
      */
     public function setHotsearchConfig($instanceid, $keywords, $is_use)
     {
+        Cache::set("getHotsearchConfig" . $instanceid, null);
         $data = $keywords;
         $value = json_encode($data);
         $info = $this->config_module->getInfo([
@@ -438,31 +548,40 @@ class Config extends BaseService implements IConfig
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IConfig::getDefaultSearchConfig()
      */
     public function getDefaultSearchConfig($instanceid)
     {
-        $info = $this->config_module->getInfo([
-            'key' => 'DEFAULTKEY',
-            'instance_id' => $instanceid
-        ], 'value');
-        if (empty($info['value'])) {
-            return null;
+        $cache = Cache::get("getDefaultSearchConfig" . $instanceid);
+        if (empty($cache)) {
+            $info = $this->config_module->getInfo([
+                'key' => 'DEFAULTKEY',
+                'instance_id' => $instanceid
+            ], 'value');
+            if (empty($info['value'])) {
+                return null;
+            } else {
+                
+                $data = json_decode($info['value'], true);
+                Cache::set("getDefaultSearchConfig" . $instanceid, $data);
+                return $data;
+            }
         } else {
-            return json_decode($info['value'], true);
+            return $cache;
         }
     }
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IConfig::setDefaultSearchConfig()
      */
     public function setDefaultSearchConfig($instanceid, $keywords, $is_use)
     {
+        Cache::set("getDefaultSearchConfig" . $instanceid, null);
         $data = $keywords;
         $value = json_encode($data);
         $info = $this->config_module->getInfo([
@@ -496,31 +615,38 @@ class Config extends BaseService implements IConfig
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IConfig::getUserNotice()
      */
     public function getUserNotice($instanceid)
     {
-        $info = $this->config_module->getInfo([
-            'key' => 'USERNOTICE',
-            'instance_id' => $instanceid
-        ], 'value');
-        if (empty($info['value'])) {
-            return null;
+        $cache = Cache::get("config_getUserNotice" . $instanceid);
+        if (empty($cache)) {
+            $info = $this->config_module->getInfo([
+                'key' => 'USERNOTICE',
+                'instance_id' => $instanceid
+            ], 'value');
+            if (empty($info['value'])) {
+                return null;
+            } else {
+                $data = json_decode($info['value'], true);
+                Cache::set("config_getUserNotice" . $instanceid, $data);
+            }
         } else {
-            return json_decode($info['value'], true);
+            return $cache;
         }
     }
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IConfig::setUserNotice()
      */
     public function setUserNotice($instanceid, $keywords, $is_use)
     {
+        Cache::set("config_getUserNotice" . $instanceid, null);
         $data = $keywords;
         $value = json_encode($data);
         $info = $this->config_module->getInfo([
@@ -554,42 +680,51 @@ class Config extends BaseService implements IConfig
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IConfig::getEmailMessage()
      */
     public function getEmailMessage($instanceid)
     {
-        $info = $this->config_module->getInfo([
-            'key' => 'EMAILMESSAGE',
-            'instance_id' => $instanceid
-        ], 'value, is_use');
-        if (empty($info['value'])) {
-            return array(
-                'value' => array(
-                    'email_host' => '',
-                    'email_port' => '',
-                    'email_addr' => '',
-                    'email_pass' => '',
-                    'email_id' => '',
-                    'email_is_security' => false
-                ),
-                'is_use' => 0
-            );
+        $cache = Cache::get("getEmailMessage" . $instanceid);
+        if (empty($cache)) {
+            $info = $this->config_module->getInfo([
+                'key' => 'EMAILMESSAGE',
+                'instance_id' => $instanceid
+            ], 'value, is_use');
+            if (empty($info['value'])) {
+                $data = array(
+                    'value' => array(
+                        'email_host' => '',
+                        'email_port' => '',
+                        'email_addr' => '',
+                        'email_pass' => '',
+                        'email_id' => '',
+                        'email_is_security' => false
+                    ),
+                    'is_use' => 0
+                );
+            } else {
+                $info['value'] = json_decode($info['value'], true);
+                $data = $info;
+            }
+            Cache::set("getEmailMessage" . $instanceid, $data);
+            return $data;
         } else {
-            $info['value'] = json_decode($info['value'], true);
-            return $info;
+            return $cache;
         }
     }
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IConfig::setEmailMessage()
      */
     public function setEmailMessage($instanceid, $email_host, $email_port, $email_addr, $email_id, $email_pass, $is_use, $email_is_security)
     {
+        Cache::set("getEmailMessage" . $instanceid, null);
+        
         $data = array(
             'email_host' => trim($email_host),
             'email_port' => trim($email_port),
@@ -631,39 +766,47 @@ class Config extends BaseService implements IConfig
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IConfig::getMobileMessage()
      */
     public function getMobileMessage($instanceid)
     {
-        $info = $this->config_module->getInfo([
-            'key' => 'MOBILEMESSAGE',
-            'instance_id' => $instanceid
-        ], 'value, is_use');
-        if (empty($info['value'])) {
-            return array(
-                'value' => array(
-                    'appKey' => '',
-                    'secretKey' => '',
-                    'freeSignName' => ''
-                ),
-                'is_use' => $info["is_use"]
-            );
+        $cache = Cache::get("getMobileMessage" . $instanceid);
+        if (empty($cache)) {
+            $info = $this->config_module->getInfo([
+                'key' => 'MOBILEMESSAGE',
+                'instance_id' => $instanceid
+            ], 'value, is_use');
+            if (empty($info['value'])) {
+                $data = array(
+                    'value' => array(
+                        'appKey' => '',
+                        'secretKey' => '',
+                        'freeSignName' => ''
+                    ),
+                    'is_use' => $info["is_use"]
+                );
+            } else {
+                $info['value'] = json_decode($info['value'], true);
+                $data = $info;
+            }
+            Cache::set("getMobileMessage" . $instanceid, $data);
+            return $data;
         } else {
-            $info['value'] = json_decode($info['value'], true);
-            return $info;
+            return $cache;
         }
     }
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IConfig::setMobileMessage()
      */
     public function setMobileMessage($instanceid, $app_key, $secret_key, $free_sign_name, $is_use, $user_type)
     {
+        Cache::set("getMobileMessage" . $instanceid, null);
         $data = array(
             'appKey' => trim($app_key),
             'secretKey' => trim($secret_key),
@@ -703,7 +846,7 @@ class Config extends BaseService implements IConfig
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IConfig::getWinxinOpenPlatformConfig()
      */
@@ -731,7 +874,7 @@ class Config extends BaseService implements IConfig
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IConfig::setWinxinOpenPlatformConfig()
      */
@@ -922,6 +1065,73 @@ class Config extends BaseService implements IConfig
     /**
      * (non-PHPdoc)
      *
+     * @see \ata\api\IConfig::setInstanceWchatConfig()
+     */
+    public function setInstanceAppletConfig($instance_id, $appid, $appsecret)
+    {
+        $data = array(
+            'appid' => trim($appid),
+            'appsecret' => trim($appsecret)
+        );
+        $value = json_encode($data);
+        $info = $this->config_module->getInfo([
+            'key' => 'SHOPAPPLET',
+            'instance_id' => $instance_id
+        ], 'value');
+        if (empty($info)) {
+            $config_module = new ConfigModel();
+            $data = array(
+                'instance_id' => $instance_id,
+                'key' => 'SHOPAPPLET',
+                'value' => $value,
+                'is_use' => 1,
+                'create_time' => time()
+            );
+            $res = $config_module->save($data);
+        } else {
+            $config_module = new ConfigModel();
+            $data = array(
+                'key' => 'SHOPAPPLET',
+                'value' => $value,
+                'is_use' => 1,
+                'modify_time' => time()
+            );
+            $res = $config_module->save($data, [
+                'instance_id' => $instance_id,
+                'key' => 'SHOPAPPLET'
+            ]);
+        }
+        return $res;
+    }
+
+    /**
+     * (non-PHPdoc)
+     *
+     * @see \ata\api\IConfig::getInstanceAppletConfig()
+     */
+    public function getInstanceAppletConfig($instance_id)
+    {
+        $info = $this->config_module->getInfo([
+            'key' => 'SHOPAPPLET',
+            'instance_id' => $instance_id
+        ], 'value');
+        if (empty($info['value'])) {
+            return array(
+                'value' => array(
+                    'appid' => '',
+                    'appsecret' => ''
+                ),
+                'is_use' => 1
+            );
+        } else {
+            $info['value'] = json_decode($info['value'], true);
+            return $info;
+        }
+    }
+
+    /**
+     * (non-PHPdoc)
+     *
      * @see \ata\api\IConfig::getOtherPayTypeConfig()
      */
     public function getOtherPayTypeConfig()
@@ -993,6 +1203,7 @@ class Config extends BaseService implements IConfig
      */
     public function setNotice($shopid, $notice_message, $is_enable)
     {
+        Cache::set("config_setNotice" . $shopid, null);
         $notice = new NoticeModel();
         $data = array(
             'notice_message' => $notice_message,
@@ -1011,22 +1222,28 @@ class Config extends BaseService implements IConfig
      */
     public function getNotice($shopid)
     {
-        $notice = new NoticeModel();
-        $notice_info = $notice->getInfo([
-            'shopid' => $shopid
-        ]);
-        if (empty($notice_info)) {
-            $data = array(
-                'shopid' => $shopid,
-                'notice_message' => '',
-                'is_enable' => 0
-            );
-            $notice->save($data);
+        $cache = Cache::get("config_getNotice" . $shopid);
+        if (empty($cache)) {
+            $notice = new NoticeModel();
             $notice_info = $notice->getInfo([
                 'shopid' => $shopid
             ]);
+            if (empty($notice_info)) {
+                $data = array(
+                    'shopid' => $shopid,
+                    'notice_message' => '',
+                    'is_enable' => 0
+                );
+                $notice->save($data);
+                $notice_info = $notice->getInfo([
+                    'shopid' => $shopid
+                ]);
+            }
+            Cache::set("config_setNotice" . $shopid, $notice_info);
+            return $notice_info;
+        } else {
+            return $cache;
         }
-        return $notice_info;
     }
 
     /**
@@ -1366,16 +1583,17 @@ class Config extends BaseService implements IConfig
                     $notify_list[$i]["logo"] = "public/admin/images/wchat.png";
                     $notify_list[$i]["pay_name"] = "微信支付";
                     $notify_list[$i]["desc"] = "该系统支持微信网页支付和扫码支付";
-                } else 
+                } else{ 
                     if ($notify_list[$i]["key"] == "ALIPAY") {
                         $notify_list[$i]["pay_name"] = "支付宝支付";
                         $notify_list[$i]["logo"] = "public/admin/images/pay.png";
                         $notify_list[$i]["desc"] = "该系统支持即时到账接口";
                     }
+                }
+         
+
             }
             return $notify_list;
-        } else {
-            return null;
         }
     }
 
@@ -1396,7 +1614,27 @@ class Config extends BaseService implements IConfig
                     'withdraw_cash_min' => 0.00,
                     'withdraw_multiple' => 0,
                     'withdraw_poundage' => 0,
-                    'withdraw_message' => ''
+                    'withdraw_message' => '',
+                    'withdraw_account' => array(
+                        array(
+                            'id' => 'bank_card',
+                            'name' => '银行卡',
+                            'value' => 1,
+                            'is_checked' => 1
+                        ),
+                        array(
+                            'id' => 'wechat',
+                            'name' => '微信',
+                            'value' => 2,
+                            'is_checked' => 0
+                        ),
+                        array(
+                            'id' => 'alipay',
+                            'name' => '支付宝',
+                            'value' => 3,
+                            'is_checked' => 0
+                        )
+                    )
                 ),
                 'desc' => '会员余额提现设置',
                 'is_use' => 0
@@ -1404,7 +1642,36 @@ class Config extends BaseService implements IConfig
             $this->setConfig($params);
             $info = $this->getConfig($shop_id, $key);
         }
-        $info['value'] = json_decode($info['value'], true);
+        
+        if (empty($info['value'])) {
+            $info['id'] = '';
+            $info['value']['withdraw_cash_min'] = '';
+            $info['value']['withdraw_multiple'] = '';
+            $info['value']['withdraw_poundage'] = '';
+            $info['value']['withdraw_message'] = '';
+            $info['value']['withdraw_account'] = array(
+                array(
+                    'id' => 'bank_card',
+                    'name' => '银行卡',
+                    'value' => 1,
+                    'is_checked' => 1
+                ),
+                array(
+                    'id' => 'wechat',
+                    'name' => '微信',
+                    'value' => 2,
+                    'is_checked' => 0
+                ),
+                array(
+                    'id' => 'alipay',
+                    'name' => '支付宝',
+                    'value' => 3,
+                    'is_checked' => 0
+                )
+            );
+        } else {
+            $info['value'] = json_decode($info['value'], true);
+        }
         return $info;
     }
 
@@ -1422,7 +1689,8 @@ class Config extends BaseService implements IConfig
                 'withdraw_cash_min' => $value['withdraw_cash_min'],
                 'withdraw_multiple' => $value['withdraw_multiple'],
                 'withdraw_poundage' => $value['withdraw_poundage'],
-                'withdraw_message' => $value['withdraw_message']
+                'withdraw_message' => $value['withdraw_message'],
+                'withdraw_account' => $value['withdraw_account']
             ),
             'desc' => '会员余额提现设置',
             'is_use' => $is_use
@@ -1438,22 +1706,39 @@ class Config extends BaseService implements IConfig
      */
     public function getcustomserviceConfig($shop_id)
     {
-        $key = 'SERVICE_ADDR';
-        $info = $this->getConfig($shop_id, $key);
-        if (empty($info)) {
-            $params[0] = array(
-                'instance_id' => $shop_id,
-                'key' => $key,
-                'value' => array(
-                    'service_addr' => ''
-                ),
-                'desc' => '美洽客服链接地址设置'
-            );
-            $this->setConfig($params);
+        $cache = cache("customserviceConfig");
+        if (empty($cache)) {
+            $key = 'SERVICE_ADDR';
             $info = $this->getConfig($shop_id, $key);
+            $info['value'] = json_decode($info['value'], true);
+            // var_dump($info['value']['checked_num']);
+            if (empty($info)) {
+                $params[0] = array(
+                    'instance_id' => $shop_id,
+                    'key' => $key,
+                    'value' => array(
+                        'service_addr' => ''
+                    ),
+                    'desc' => '客服链接地址设置'
+                );
+                $this->setConfig($params);
+                $info = $this->getConfig($shop_id, $key);
+            } else 
+                if ($info['value']['checked_num'] == 1) {
+                    $info['value']['service_addr'] = $info['value']['meiqia_service_addr'];
+                } else 
+                    if ($info['value']['checked_num'] == 2) {
+                        $info['value']['service_addr'] = $info['value']['kf_service_addr'];
+                    } else 
+                        if ($info['value']['checked_num'] == 3) {
+                            $info['value']['service_addr'] = 'http://sighttp.qq.com/msgrd?v=1&uin=' . $info['value']['qq_service_addr'];
+                        }
+            
+            cache("customserviceConfig", $info);
+            return $info;
+        } else {
+            return $cache;
         }
-        $info['value'] = json_decode($info['value'], true);
-        return $info;
     }
 
     /**
@@ -1552,10 +1837,14 @@ class Config extends BaseService implements IConfig
             'instance_id' => $shop_id,
             'key' => $key,
             'value' => array(
-                'service_addr' => trim($value['service_addr'])
+                'meiqia_service_addr' => trim($value['meiqia_service_addr']),
+                'kf_service_addr' => trim($value['kf_service_addr']),
+                'qq_service_addr' => trim($value['qq_service_addr']),
+                'checked_num' => trim($value['checked_num'])
             ),
-            'desc' => '美洽客服链接地址'
+            'desc' => '客服链接地址'
         );
+        cache("customserviceConfig", null);
         $res = $this->setConfig($params);
         return $res;
     }
@@ -1630,12 +1919,15 @@ class Config extends BaseService implements IConfig
         $order_delivery_pay = $this->getConfig($shop_id, 'ORDER_DELIVERY_PAY');
         $order_buy_close_time = $this->getConfig($shop_id, 'ORDER_BUY_CLOSE_TIME');
         $buyer_self_lifting = $this->getConfig($shop_id, 'BUYER_SELF_LIFTING');
+        
         $seller_dispatching = $this->getConfig($shop_id, 'ORDER_SELLER_DISPATCHING');
+        $is_open_o2o = $this->getConfig($shop_id, 'IS_OPEN_O2O');
         $is_logistics = $this->getConfig($shop_id, 'ORDER_IS_LOGISTICS');
         $shopping_back_points = $this->getConfig($shop_id, 'SHOPPING_BACK_POINTS');
         $is_open_virtual_goods = $this->getConfig($shop_id, 'IS_OPEN_VIRTUAL_GOODS');
+        $order_designated_delivery_time = $this->getConfig($shop_id, "IS_OPEN_ORDER_DESIGNATED_DELIVERY_TIME"); // 是否开启指定配送时间
         if (empty($order_auto_delinery) || empty($order_balance_pay) || empty($order_delivery_complete_time) || empty($order_show_buy_record) || empty($order_invoice_tax) || empty($order_invoice_content) || empty($order_delivery_pay) || empty($order_buy_close_time)) {
-            $this->SetShopConfig($shop_id, '', '', '', '', '', '', '', '');
+            $this->SetShopConfig($shop_id, '', '', '', '', '', '', '', '', '', '', '', '', '', '');
             $array = array(
                 'order_auto_delinery' => '',
                 'order_balance_pay' => '',
@@ -1647,9 +1939,11 @@ class Config extends BaseService implements IConfig
                 'order_buy_close_time' => '',
                 'buyer_self_lifting' => '',
                 'seller_dispatching' => '',
+                'is_open_o2o' => '',
                 'is_logistics' => '1',
                 'is_open_virtual_goods' => 0,
-                'shopping_back_points' => ''
+                'shopping_back_points' => '',
+                'order_designated_delivery_time' => 0
             );
         } else {
             $array = array(
@@ -1663,9 +1957,11 @@ class Config extends BaseService implements IConfig
                 'order_buy_close_time' => $order_buy_close_time['value'],
                 'buyer_self_lifting' => $buyer_self_lifting['value'],
                 'seller_dispatching' => $seller_dispatching['value'],
+                'is_open_o2o' => $is_open_o2o['value'],
                 'is_logistics' => $is_logistics['value'],
                 'is_open_virtual_goods' => $is_open_virtual_goods['value'],
-                'shopping_back_points' => $shopping_back_points['value']
+                'shopping_back_points' => $shopping_back_points['value'],
+                'order_designated_delivery_time' => $order_designated_delivery_time['value']
             );
         }
         if ($array['order_buy_close_time'] == 0) {
@@ -1751,7 +2047,7 @@ class Config extends BaseService implements IConfig
         return $res;
     }
 
-    public function SetShopConfig($shop_id, $order_auto_delinery, $order_balance_pay, $order_delivery_complete_time, $order_show_buy_record, $order_invoice_tax, $order_invoice_content, $order_delivery_pay, $order_buy_close_time, $buyer_self_lifting, $seller_dispatching, $is_logistics, $shopping_back_points, $is_open_virtual_goods)
+    public function SetShopConfig($shop_id, $order_auto_delinery, $order_balance_pay, $order_delivery_complete_time, $order_show_buy_record, $order_invoice_tax, $order_invoice_content, $order_delivery_pay, $order_buy_close_time, $buyer_self_lifting, $seller_dispatching, $is_open_o2o, $is_logistics, $shopping_back_points, $is_open_virtual_goods, $order_designated_delivery_time)
     {
         $array[0] = array(
             'instance_id' => $this->instance_id,
@@ -1844,12 +2140,26 @@ class Config extends BaseService implements IConfig
             'desc' => '是否开启虚拟商品',
             'is_use' => 1
         );
+        $array[13] = array(
+            'instance_id' => $this->instance_id,
+            'key' => 'IS_OPEN_ORDER_DESIGNATED_DELIVERY_TIME',
+            'value' => $order_designated_delivery_time,
+            'desc' => '是否开启订单指定配送时间',
+            'is_use' => 1
+        );
+        $array[14] = array(
+            'instance_id' => $this->instance_id,
+            'key' => 'IS_OPEN_O2O',
+            'value' => $is_open_o2o,
+            'desc' => '是否开启本地配送',
+            'is_use' => 1
+        );
         
         $res = $this->setConfig($array);
         return $res;
     }
 
-    public function SetIntegralConfig($shop_id, $register, $sign, $share)
+    public function SetIntegralConfig($shop_id, $register, $sign, $share, $reg_coupon, $click_coupon, $comment_coupon, $sign_coupon, $share_coupon)
     {
         $array[0] = array(
             'instance_id' => $shop_id,
@@ -1872,6 +2182,41 @@ class Config extends BaseService implements IConfig
             'desc' => '分享送积分',
             'is_use' => 1
         );
+        $array[3] = array(
+            'instance_id' => $shop_id,
+            'key' => 'SHARE_COUPON',
+            'value' => $share_coupon,
+            'desc' => '分享送优惠券',
+            'is_use' => 1
+        );
+        $array[4] = array(
+            'instance_id' => $shop_id,
+            'key' => 'SIGN_COUPON',
+            'value' => $sign_coupon,
+            'desc' => '签到送优惠券',
+            'is_use' => 1
+        );
+        $array[5] = array(
+            'instance_id' => $shop_id,
+            'key' => 'REGISTER_COUPON',
+            'value' => $reg_coupon,
+            'desc' => '注册送优惠券',
+            'is_use' => 1
+        );
+        $array[6] = array(
+            'instance_id' => $shop_id,
+            'key' => 'COMMENT_COUPON',
+            'value' => $comment_coupon,
+            'desc' => '评论送优惠券',
+            'is_use' => 1
+        );
+        $array[7] = array(
+            'instance_id' => $shop_id,
+            'key' => 'CLICK_COUPON',
+            'value' => $click_coupon,
+            'desc' => '点赞送优惠券',
+            'is_use' => 1
+        );
         $res = $this->setConfig($array);
         return $res;
     }
@@ -1881,18 +2226,35 @@ class Config extends BaseService implements IConfig
         $register_integral = $this->getConfig($shop_id, 'REGISTER_INTEGRAL');
         $sign_integral = $this->getConfig($shop_id, 'SIGN_INTEGRAL');
         $share_integral = $this->getConfig($shop_id, 'SHARE_INTEGRAL');
+        
+        $register_coupon = $this->getConfig($shop_id, 'REGISTER_COUPON');
+        $sign_coupon = $this->getConfig($shop_id, 'SIGN_COUPON');
+        $share_coupon = $this->getConfig($shop_id, 'SHARE_COUPON');
+        $click_coupon = $this->getConfig($shop_id, 'CLICK_COUPON');
+        $comment_coupon = $this->getConfig($shop_id, 'COMMENT_COUPON');
+        
         if (empty($register_integral) || empty($sign_integral) || empty($share_integral)) {
             $this->SetIntegralConfig($shop_id, '', '', '');
             $array = array(
                 'register_integral' => '',
                 'sign_integral' => '',
-                'share_integral' => ''
+                'share_integral' => '',
+                'register_coupon' => '',
+                'sign_coupon' => '',
+                'share_coupon' => '',
+                'click_coupon' => '',
+                'comment_coupon' => ''
             );
         } else {
             $array = array(
                 'register_integral' => $register_integral['value'],
                 'sign_integral' => $sign_integral['value'],
-                'share_integral' => $share_integral['value']
+                'share_integral' => $share_integral['value'],
+                'register_coupon' => $register_coupon['value'],
+                'sign_coupon' => $sign_coupon['value'],
+                'share_coupon' => $share_coupon['value'],
+                'click_coupon' => $click_coupon['value'],
+                'comment_coupon' => $comment_coupon['value']
             );
         }
         return $array;
@@ -1984,7 +2346,7 @@ class Config extends BaseService implements IConfig
         ]);
         return $res;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IConfig::databaseList()
@@ -2010,6 +2372,7 @@ class Config extends BaseService implements IConfig
         if (empty($express_detail['value'])) {
             return array(
                 'value' => array(
+                    'type' => 1,
                     'appid' => '',
                     'appkey' => '',
                     'back_url' => ''
@@ -2030,13 +2393,14 @@ class Config extends BaseService implements IConfig
      * @param unknown $appkey            
      * @param unknown $is_use            
      */
-    public function updateOrderExpressMessageConfig($shop_id, $appid, $appkey, $back_url, $is_use)
+    public function updateOrderExpressMessageConfig($shop_id, $appid, $appkey, $back_url, $is_use, $type)
     {
         $express_detail = $this->config_module->getInfo([
             'instance_id' => $shop_id,
             'key' => 'ORDER_EXPRESS_MESSAGE'
         ], 'value,is_use');
         $value = array(
+            "type" => $type,
             "appid" => trim($appid),
             "appkey" => trim($appkey),
             "back_url" => $back_url
@@ -2123,7 +2487,7 @@ class Config extends BaseService implements IConfig
      * 获取当前使用的PC端模板
      * 创建时间：2017年9月5日 09:17:14 王永杰
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IConfig::getUsePCTemplate()
      */
@@ -2197,60 +2561,8 @@ class Config extends BaseService implements IConfig
         return $res;
     }
 
-    /**
-     * 开启关闭自定义模板
-     * 2017年8月9日 14:42:21
-     *
-     * @param 店铺id $shop_id            
-     * @param 1：开启，0：禁用 $is_enable            
-     */
-    public function setIsEnableCustomTemplate($shop_id, $is_enable)
-    {
-        $res = 0;
-        $config_model = new ConfigModel();
-        $info = $this->config_module->getInfo([
-            'key' => 'WAP_CUSTOM_TEMPLATE_IS_ENABLE',
-            'instance_id' => $shop_id
-        ], 'value');
-        if (empty($info)) {
-            $data['instance_id'] = $shop_id;
-            $data['key'] = 'WAP_CUSTOM_TEMPLATE_IS_ENABLE';
-            $data['value'] = $is_enable;
-            $data['is_use'] = 1;
-            $data['create_time'] = time();
-            $res = $config_model->save($data);
-        } else {
-            $data['instance_id'] = $shop_id;
-            $data['value'] = $is_enable;
-            $data['modify_time'] = time();
-            $res = $config_model->save($data, [
-                'key' => 'WAP_CUSTOM_TEMPLATE_IS_ENABLE'
-            ]);
-        }
-        return $res;
-    }
-
-    /**
-     * 获取自定义模板是否启用，0 不启用 1 启用
-     * 创建时间：2017年9月20日 16:06:23 王永杰
-     *
-     * @param unknown $shop_id            
-     * @return number|unknown
-     */
-    public function getIsEnableCustomTemplate($shop_id)
-    {
-        $is_enable = 0;
-        $config_model = new ConfigModel();
-        $value = $config_model->getInfo([
-            'key' => 'WAP_CUSTOM_TEMPLATE_IS_ENABLE',
-            'instance_id' => $shop_id
-        ], 'value');
-        if (! empty($value)) {
-            $is_enable = $value["value"];
-        }
-        return $is_enable;
-    }
-
+ 
+   
     /*
      * (non-PHPdoc)
      * @see \data\api\IConfig::getUploadType()
@@ -2269,7 +2581,7 @@ class Config extends BaseService implements IConfig
             return $upload_type['value'];
         }
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IConfig::getQiniuConfig()
@@ -2302,7 +2614,7 @@ class Config extends BaseService implements IConfig
         $value = json_decode($qiniu_info["value"], true);
         return $value;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IConfig::setUploadType()
@@ -2382,7 +2694,7 @@ class Config extends BaseService implements IConfig
         $value = json_decode($info["value"], true);
         return $value;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IConfig::setUploadType()
@@ -2413,7 +2725,7 @@ class Config extends BaseService implements IConfig
      * 设置原路退款信息
      * 创建时间：2017年10月13日 17:59:57 王永杰
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IConfig::setOriginalRoadRefundSetting()
      */
@@ -2460,7 +2772,7 @@ class Config extends BaseService implements IConfig
      * 获取原路退款信息
      * 创建时间：2017年10月13日 18:01:15 王永杰
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IConfig::getOriginalRoadRefundSetting()
      */
@@ -2470,6 +2782,76 @@ class Config extends BaseService implements IConfig
             $key = 'ORIGINAL_ROAD_REFUND_SETTING_WECHAT';
         } elseif ($type == "alipay") {
             $key = 'ORIGINAL_ROAD_REFUND_SETTING_ALIPAY';
+        }
+        
+        $info = $this->config_module->getInfo([
+            'key' => $key,
+            'instance_id' => $shop_id
+        ], 'value');
+        return $info;
+    }
+
+    /**
+     * 设置转账配置信息
+     *
+     *
+     * @ERROR!!!
+     *
+     * @see \data\api\IConfig::setOriginalRoadRefundSetting()
+     */
+    public function setTransferAccountsSetting($shop_id, $type, $value)
+    {
+        if ($type == "wechat") {
+            $key = 'TRANSFER_ACCOUNTS_SETTING_WECHAT';
+        } elseif ($type == "alipay") {
+            $key = 'TRANSFER_ACCOUNTS_SETTING_ALIPAY';
+        }
+        
+        $info = $this->config_module->getInfo([
+            'key' => $key,
+            'instance_id' => $shop_id
+        ], 'value');
+        
+        if (empty($info)) {
+            $config_module = new ConfigModel();
+            $data = array(
+                'instance_id' => $shop_id,
+                'key' => $key,
+                'value' => $value,
+                'is_use' => 1,
+                'create_time' => time()
+            );
+            $res = $config_module->save($data);
+        } else {
+            $config_module = new ConfigModel();
+            $data = array(
+                'key' => $key,
+                'value' => $value,
+                'is_use' => 1,
+                'modify_time' => time()
+            );
+            $res = $config_module->save($data, [
+                'instance_id' => $shop_id,
+                'key' => $key
+            ]);
+        }
+        return $res;
+    }
+
+    /**
+     * 获取转账配置信息
+     *
+     *
+     * @ERROR!!!
+     *
+     * @see \data\api\IConfig::getOriginalRoadRefundSetting()
+     */
+    public function getTransferAccountsSetting($shop_id, $type)
+    {
+        if ($type == "wechat") {
+            $key = 'TRANSFER_ACCOUNTS_SETTING_WECHAT';
+        } elseif ($type == "alipay") {
+            $key = 'TRANSFER_ACCOUNTS_SETTING_ALIPAY';
         }
         
         $info = $this->config_module->getInfo([
@@ -2548,6 +2930,74 @@ class Config extends BaseService implements IConfig
     }
 
     /**
+     * 检测支付配置是否开启，支付配置和原路退款配置都要开启才行（配置信息也要填写）
+     *
+     * @param unknown $shop_id
+     *            店铺id
+     * @param unknown $type
+     *            wechat,alipay(微信/支付宝)
+     */
+    public function checkPayConfigEnabledOne($shop_id, $type)
+    {
+        $msg = 1; // 支付配置是否开启,1 开启，0 未开启（条件是各个配置项都不能为空，并且是启用状态）
+        $admin_main = ThinkPHPConfig::get('view_replace_str.ADMIN_MAIN');
+        $original_road_refund_info = $this->getOriginalRoadRefundSetting($shop_id, $type);
+        if (! empty($original_road_refund_info['value'])) {
+            
+            $refund_setting = json_decode($original_road_refund_info['value'], true);
+            if ($type == "alipay") {
+                
+                $pay_info = $this->getAlipayConfig($shop_id);
+                if (empty($pay_info) || empty($pay_info['value']['ali_partnerid']) || empty($pay_info['value']['ali_seller']) || empty($pay_info['value']['ali_key'])) {
+                    $msg = "请检查支付宝支付配置信息填写是否正确";
+                    return $msg;
+                }
+                
+                if ($pay_info['is_use'] == 0) {
+                    $msg = "当前未开启支付宝支付配置>";
+                    return $msg;
+                } else {
+                    
+                    // 支付配置开启后，再判断原路退款配置是否开启、填写了各项值
+                    if ($refund_setting['is_use'] == 0) {
+                        $msg = "当前未开启支付宝原路退款配置";
+                        return $msg;
+                    }
+                }
+            } elseif ($type == "wechat") {
+                
+                $pay_info = $this->getWpayConfig($shop_id);
+                if (empty($pay_info) || empty($pay_info['value']['appid']) || empty($pay_info['value']['appkey']) || empty($pay_info['value']['mch_id']) || empty($pay_info['value']['mch_key'])) {
+                    $msg = "请检查微信支付配置信息填写是否正确";
+                    return $msg;
+                }
+                
+                if ($pay_info['is_use'] == 0) {
+                    $msg = "当前未开启微信支付配置";
+                    return $msg;
+                } else {
+                    
+                    if (empty($refund_setting['apiclient_cert']) || empty($refund_setting['apiclient_key'])) {
+                        $msg = "请检查微信原路退款配置信息填写是否正确";
+                        return $msg;
+                    }
+                    if ($refund_setting['is_use'] == 0) {
+                        $msg = "当前未开启微信原路退款配置";
+                        return $msg;
+                    }
+                }
+            }
+        } else {
+            if ($type == "alipay") {
+                $msg = "当前未开启支付宝原路退款配置";
+            } elseif ($type == "wechat") {
+                $msg = "请检查微信原路退款配置信息填写是否正确";
+            }
+        }
+        return $msg;
+    }
+
+    /**
      * 获取是否开启虚拟商品配置信息 0:禁用，1:开启
      * 创建时间：2017年11月27日 16:58:14
      */
@@ -2561,6 +3011,439 @@ class Config extends BaseService implements IConfig
             return $info['value'];
         } else {
             return 0;
+        }
+    }
+
+    /**
+     * 设置默认图片
+     *
+     * @param unknown $shop_id            
+     * @param unknown $value            
+     */
+    public function setDefaultImages($shop_id, $value)
+    {
+        Cache::set("getDefaultImages" . $shop_id, null);
+        
+        $default_image = $this->config_module->getInfo([
+            "key" => "DEFAULT_IMAGE",
+            "instance_id" => $shop_id
+        ], "*");
+        if (! empty($default_image)) {
+            $data = array(
+                "value" => $value
+            );
+            $res = $this->config_module->save($data, [
+                "instance_id" => $shop_id,
+                "key" => "DEFAULT_IMAGE"
+            ]);
+        } else {
+            $res = $this->addConfig($shop_id, "DEFAULT_IMAGE", $value, "默认图片", 1);
+        }
+        
+        return $res;
+    }
+
+    /**
+     * 获取默认图片
+     *
+     * @param unknown $instanceid            
+     * @return mixed|NULL|mixed
+     */
+    public function getDefaultImages($instanceid)
+    {
+        $cache = Cache::get("getDefaultImages" . $instanceid);
+        if (empty($cache)) {
+            $info = $this->config_module->getInfo([
+                'key' => 'DEFAULT_IMAGE',
+                'instance_id' => $instanceid
+            ], 'value, is_use');
+            if (empty($info['value'])) {
+                $data = array(
+                    'value' => array(
+                        "default_goods_img" => "",
+                        "default_headimg" => "",
+                        "default_cms_thumbnail" => ""
+                    ),
+                    'is_use' => 0
+                );
+            } else {
+                $info['value'] = json_decode($info['value'], true);
+                $data = $info;
+            }
+            Cache::set("getDefaultImages" . $instanceid, $data);
+            return $data;
+        } else {
+            return $cache;
+        }
+    }
+
+    /**
+     * 获取手机端自定义模板列表
+     * 创建时间：2018年1月17日12:07:14 全栈小学生
+     *
+     * @param number $page_index            
+     * @param number $page_size            
+     * @param string $condition            
+     * @param string $order            
+     * @param string $field            
+     * @return multitype:number unknown
+     */
+    public function getWapCustomTemplateList($page_index = 1, $page_size = 0, $condition = '', $order = 'id desc', $field = '*')
+    {
+        $model = new SysWapCustomTemplateModel();
+        $list = $model->pageQuery($page_index, $page_size, $condition, $order, $field);
+        return $list;
+    }
+
+    /**
+     * 根据主键id删除手机端自定义模板
+     * 创建时间：2018年1月17日12:13:41 全栈小学生
+     *
+     * @param unknown $id            
+     * @return Ambigous <multitype:unknown, multitype:unknown unknown string >
+     */
+    public function deleteWapCustomTemplateById($id)
+    {
+        $model = new SysWapCustomTemplateModel();
+        $res = $model->destroy([
+            "id" => [
+                "in",
+                $id
+            ]
+        ]);
+        return $res;
+    }
+
+    /**
+     * 设置默认手机自定义模板
+     * 创建时间：2018年1月17日12:17:17 全栈小学生
+     *
+     * @ERROR!!!
+     *
+     * @see \data\api\IConfig::setDefaultCustomTemplate()
+     */
+    public function setDefaultWapCustomTemplate($id)
+    {
+        $model = new SysWapCustomTemplateModel();
+        $res = $model->save([
+            "is_default" => 0
+        ], [
+            "id" => array(
+                'NEQ',
+                $id
+            )
+        ]);
+        
+        $res = $model->save([
+            "is_default" => 1,
+            "modify_time" => time()
+        ], [
+            "id" => $id
+        ]);
+        return $res;
+    }
+
+    /**
+     * 根据id获取手机端自定义模板
+     * 创建时间：2018年1月17日12:42:52
+     *
+     * @ERROR!!!
+     *
+     * @see \data\api\IConfig::getCustomTemplateById()
+     */
+    public function getWapCustomTemplateById($id)
+    {
+        $model = new SysWapCustomTemplateModel();
+        $res = $model->getInfo([
+            'id' => $id
+        ]);
+        return $res;
+    }
+
+    /**
+     * 编辑手机端自定义模板
+     * 创建时间：2018年1月17日14:24:25
+     *
+     * @param unknown $template_name            
+     * @param unknown $template_data            
+     * @return Ambigous <boolean, number, \think\false, string>
+     */
+    public function editWapCustomTemplate($id, $template_name, $template_data)
+    {
+        $data['shop_id'] = $this->instance_id;
+        $data['template_name'] = $template_name;
+        $data['template_data'] = $template_data;
+        $data['modify_time'] = time();
+        $data['create_time'] = time();
+        $model = new SysWapCustomTemplateModel();
+        if ($id == 0) {
+            // 添加
+            $default_custom_template = $this->getDefaultWapCustomTemplate();
+            if (empty($default_custom_template)) {
+                $data['is_default'] = 1;
+            }
+            $res = $model->save($data);
+        } else {
+            $res = $model->save($data, [
+                'id' => $id
+            ]);
+        }
+        return $res;
+    }
+
+    /**
+     * 获取默认手机端自定义模板
+     * 创建时间：2018年1月17日14:51:45
+     *
+     * @return unknown
+     */
+    public function getDefaultWapCustomTemplate()
+    {
+        $model = new SysWapCustomTemplateModel();
+        $res = $default_custom_template = $model->getInfo([
+            "shop_id" => $this->instance_id,
+            "is_default" => 1
+        ]);
+        return $res;
+    }
+
+    /**
+     * 获取原路退款设置
+     * (non-PHPdoc)
+     */
+    public function getRefundConfig($shop_id)
+    {
+        $config_model = new ConfigModel();
+        $condition = array(
+            'instance_id' => $shop_id,
+            'key' => array(
+                'in',
+                'ORIGINAL_ROAD_REFUND_SETTING_WECHAT,ORIGINAL_ROAD_REFUND_SETTING_ALIPAY'
+            )
+        );
+        $notify_list = $config_model->getQuery($condition, "*", "");
+        if (! empty($notify_list)) {
+            for ($i = 0; $i < count($notify_list); $i ++) {
+                if ($notify_list[$i]["key"] == "ORIGINAL_ROAD_REFUND_SETTING_WECHAT") {
+                    $notify_list[$i]["logo"] = "public/admin/images/wchat.png";
+                    $notify_list[$i]["pay_name"] = "微信";
+                    $notify_list[$i]["desc"] = "该系统支持微信网页支付和扫码支付";
+                } else 
+                    if ($notify_list[$i]["key"] == "ORIGINAL_ROAD_REFUND_SETTING_ALIPAY") {
+                        $notify_list[$i]["pay_name"] = "支付宝";
+                        $notify_list[$i]["logo"] = "public/admin/images/pay.png";
+                        $notify_list[$i]["desc"] = "该系统支持即时到账接口";
+                    }
+            }
+            return $notify_list;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * 设置退款 微信和支付宝开关状态
+     */
+    public function setRefundStatusConfig($instanceid, $is_use, $type)
+    {
+        Cache::set("getRefundAlipayConfig" . $instanceid, null);
+        Cache::set("getRefundWpayConfig" . $instanceid, null);
+        $config_module = new ConfigModel();
+        $result = $config_module->getInfo([
+            'instance_id' => $instanceid,
+            'key' => $type
+        ], 'value');
+        
+        $old_value = array();
+        $old_value = json_decode($result['value'], true);
+        if (! empty($old_value)) {
+            if ($type == 'ORIGINAL_ROAD_REFUND_SETTING_WECHAT') {
+                $new_value["is_use"] = $is_use;
+                $new_value["apiclient_cert"] = $old_value['apiclient_cert'];
+                $new_value["apiclient_key"] = $old_value['apiclient_key'];
+                
+                $value = json_encode($new_value);
+                $config_module->save([
+                    "value" => $value
+                ], [
+                    'instance_id' => $instanceid,
+                    'key' => $type
+                ]);
+            } else {
+                $new_value["is_use"] = $is_use;
+                $value = json_encode($new_value);
+                $config_module->save([
+                    "value" => $value
+                ], [
+                    'instance_id' => $instanceid,
+                    'key' => $type
+                ]);
+            }
+            
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * 获取转账设置
+     * (non-PHPdoc)
+     */
+    public function getTransferConfig($shop_id)
+    {
+        $config_model = new ConfigModel();
+        $condition = array(
+            'instance_id' => $shop_id,
+            'key' => array(
+                'in',
+                'TRANSFER_ACCOUNTS_SETTING_WECHAT,TRANSFER_ACCOUNTS_SETTING_ALIPAY'
+            )
+        );
+        $notify_list = $config_model->getQuery($condition, "*", "");
+        if (! empty($notify_list)) {
+            for ($i = 0; $i < count($notify_list); $i ++) {
+                if ($notify_list[$i]["key"] == "TRANSFER_ACCOUNTS_SETTING_WECHAT") {
+                    $notify_list[$i]["logo"] = "public/admin/images/wchat.png";
+                    $notify_list[$i]["pay_name"] = "微信转账";
+                    $notify_list[$i]["desc"] = "该系统支持微信网页支付和扫码支付";
+                } else 
+                    if ($notify_list[$i]["key"] == "TRANSFER_ACCOUNTS_SETTING_ALIPAY") {
+                        $notify_list[$i]["pay_name"] = "支付宝转账";
+                        $notify_list[$i]["logo"] = "public/admin/images/pay.png";
+                        $notify_list[$i]["desc"] = "该系统支持即时到账接口";
+                    }
+            }
+            return $notify_list;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * 设置转账 微信和支付宝开关状态
+     */
+    public function setTransferStatusConfig($instanceid, $is_use, $type)
+    {
+        Cache::set("getTransferAlipayConfig" . $instanceid, null);
+        Cache::set("getTransferWpayConfig" . $instanceid, null);
+        $config_module = new ConfigModel();
+        $result = $config_module->getInfo([
+            'instance_id' => $instanceid,
+            'key' => $type
+        ], 'value');
+        
+        $old_value = array();
+        $old_value = json_decode($result['value'], true);
+        if (! empty($old_value)) {
+            
+            $new_value["is_use"] = $is_use;
+            $value = json_encode($new_value);
+            $config_module->save([
+                "value" => $value
+            ], [
+                'instance_id' => $instanceid,
+                'key' => $type
+            ]);
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * 设置商家服务，固定4个
+     * 创建时间：2018年1月22日18:12:50
+     *
+     * @param unknown $instance_id            
+     * @param unknown $value            
+     */
+    public function setMerchantServiceConfig($instance_id, $value)
+    {
+        $config_module = new ConfigModel();
+        $info = $config_module->getInfo([
+            'instance_id' => $instance_id,
+            'key' => 'MERCHANT_SERVICE'
+        ], "value");
+        
+        $data = array(
+            'key' => 'MERCHANT_SERVICE',
+            'instance_id' => $instance_id,
+            'value' => $value,
+            'is_use' => 1,
+            'desc' => '商家服务',
+            'modify_time' => time()
+        );
+        if (empty($info['value'])) {
+            
+            $res = $config_module->save($data);
+        } else {
+            
+            $res = $config_module->save($data, [
+                'instance_id' => $instance_id,
+                'key' => 'MERCHANT_SERVICE'
+            ]);
+        }
+        return $res;
+    }
+
+    /**
+     * 获取商家服务，固定4个
+     * 创建时间：2018年1月22日18:15:20
+     *
+     * @param unknown $instance_id            
+     * @return unknown
+     */
+    public function getMerchantServiceConfig($instance_id)
+    {
+        $config_module = new ConfigModel();
+        $info = $config_module->getInfo([
+            'instance_id' => $instance_id,
+            'key' => 'MERCHANT_SERVICE'
+        ], "value");
+        $res = array();
+        if (! empty($info['value'])) {
+            $res = json_decode($info['value'], true);
+        }
+        
+        $count = 6; // 固定数量
+        for ($i = 0; $i < $count; $i ++) {
+            
+            // 缺几个补几个
+            if (count($res) != $count) {
+                array_push($res, [
+                    'id' => $i,
+                    'title' => '',
+                    'describe' => '',
+                    'pic' => ''
+                ]);
+            }
+        }
+        return $res;
+    }
+
+    /**
+     * 获取已经存在的商家服务，排除空
+     * 创建时间：2018年1月22日19:15:55
+     *
+     * @param unknown $instance_id            
+     */
+    public function getExistingMerchantService($instance_id)
+    {
+        $model = new ConfigModel();
+        
+        $info = $model->getInfo([
+            'instance_id' => $instance_id,
+            'key' => 'MERCHANT_SERVICE'
+        ], "value");
+        if (! empty($info['value'])) {
+            $info['value'] = json_decode($info['value'], true);
+            foreach ($info['value'] as $k => $v) {
+                if (empty($v['title'])) {
+                    unset($info['value'][$k]);
+                }
+            }
+            return $info['value'];
         }
     }
 
@@ -2601,7 +3484,7 @@ class Config extends BaseService implements IConfig
         return $res;
     }
 
-     /**
+    /**
      * 获取手机端分类显示方式,1:缩略图模式，2：列表模式
      * 创建时间：2018年1月23日15:44:16
      *
@@ -2621,4 +3504,131 @@ class Config extends BaseService implements IConfig
         }
         return $res;
     }
+    
+    /**
+     * 设置图片水印
+     * (non-PHPdoc)
+     */
+    public function setPictureWatermark($shop_id, $value)
+    {
+        $water_info = $this->config_module->getInfo([
+            "key" => "WATER_CONFIG",
+            "instance_id" => $shop_id
+        ], "*");
+        if (empty($water_info)) {
+            $data = array(
+                "watermark" => "",
+                "transparency" => "",
+                "waterPosition" => "",
+                "imgWatermark" => ""
+            );
+            $res = $this->addConfig($shop_id, "WATER_CONFIG", json_encode($data), "图片水印参数配置", 1);
+        } else {
+            $data = array(
+                "value" => $value
+            );
+            $res = $this->config_module->save($data, [
+                "key" => "WATER_CONFIG",
+                "instance_id" => $shop_id
+            ]);
+        }
+        return $res;
+    }
+    
+    /**
+     * 获取水印配置
+     * @param unknown $instanceid
+     */
+    public function getWatermarkConfig($instanceid)
+    {
+        $water_info = $this->config_module->getInfo([
+            "key" => "WATER_CONFIG",
+            "instance_id" => $instanceid
+        ], "*");
+        if (empty($water_info)) {
+            $data = array(
+                "watermark" => "",
+                "transparency" => "100",
+                "waterPosition" => "9",//默认水印在右下角
+                "imgWatermark" => ""
+            );
+            $res = $this->addConfig($instanceid, "WATER_CONFIG", json_encode($data), "图片水印参数配置", 1);
+            if (! $res > 0) {
+                return null;
+            } else {
+                $water_info = $this->config_module->getInfo([
+                    "key" => "WATER_CONFIG",
+                    "instance_id" => $instanceid
+                ], "*");
+            }
+        }
+        $value_info = $water_info["value"];
+        $value = json_decode($water_info["value"], true);
+        return $value;
+    }
+    
+    /**
+     * 设置本地配送时间设置
+     */
+    function setDistributionTimeConfig($shop_id, $value){
+        $instanceid = $this->instance_id;
+        $time_info = $this->getDistributionTimeConfig($instanceid);
+        if($time_info == 0){
+            $res = $this->addConfig($instanceid, "DISTRIBUTION_TIME_CONFIG", $value, "本地配送时间设置", 1);
+            return $res;
+        }else{
+            $res = $this->config_module->save(['value'=>$value], [
+                "key" => "DISTRIBUTION_TIME_CONFIG",
+                "instance_id" => $shop_id,
+            ]);
+            return $res;
+        }
+    }
+    /**
+     * 获取本地配送时间设置
+    */
+    function getDistributionTimeConfig($instanceid){
+        
+        $time_info = $this->config_module->getInfo([
+            "key" => "DISTRIBUTION_TIME_CONFIG",
+            "instance_id" => $instanceid
+        ], "*");
+        
+        if(empty($time_info)){
+            return 0;
+        }
+        
+        return $time_info;
+    }
+    
+    /**
+     * 设置快捷菜单
+     */
+    function setShortcutMenu($shop_id,$uid,$menu_ids){
+        $model = new SysShortcutMenuModel();
+        //删除原先的
+        $del_res = $model->destroy(['shop_id'=>$shop_id,'uid'=>$uid]);
+        //添加新的
+        $add_arr =explode(',',$menu_ids);
+        foreach($add_arr as $key=>$val){
+            $model = new SysShortcutMenuModel();
+            $data = [
+                'shop_id'=>$shop_id,
+                'uid' => $uid,
+                'module_id'=>$val,
+            ];
+           
+            $add_res = $model->save($data);
+        }
+        return $add_res;
+    }
+    /**
+     * 获取快捷菜单
+    */
+    function getShortcutMenu($shop_id,$uid){
+        $model = new SysShortcutMenuModel();
+        $list = $model->getViewList(1, 0, '', '');
+        return $list;
+    }
+    
 }

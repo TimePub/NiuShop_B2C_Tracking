@@ -26,7 +26,7 @@ interface IMember extends IUser
 
     /**
      * 前台会员添加
-     * 
+     *
      * @param unknown $user_name            
      * @param unknown $password            
      * @param unknown $email            
@@ -41,14 +41,14 @@ interface IMember extends IUser
 
     /**
      * 删除会员
-     * 
+     *
      * @param unknown $uid(会员ID)            
      */
     function deleteMember($uid);
 
     /**
      * 会员列表
-     * 
+     *
      * @param number $page_index            
      * @param number $page_size            
      * @param string $condition            
@@ -65,13 +65,13 @@ interface IMember extends IUser
     /**
      * 获取会员基础信息
      */
-    function getMemberInfo();
+    function getMemberInfo($uid = '');
 
     /**
      * 获取会员详情
      * $shop_id不传就为全部
      */
-    function getMemberDetail($shop_id = '');
+    function getMemberDetail($shop_id = '', $uid = '');
 
     /**
      * 会员地址管理列表
@@ -80,7 +80,7 @@ interface IMember extends IUser
 
     /**
      * 修改会员地址
-     * 
+     *
      * @param unknown $id            
      * @param unknown $consigner            
      * @param unknown $mobile            
@@ -96,7 +96,7 @@ interface IMember extends IUser
 
     /**
      * 添加会员物流地址
-     * 
+     *
      * @param unknown $consigner            
      * @param unknown $mobile            
      * @param unknown $phone            
@@ -111,7 +111,7 @@ interface IMember extends IUser
 
     /**
      * 获取会员物流地址详情
-     * 
+     *
      * @param unknown $id
      *            地址ID
      */
@@ -119,7 +119,7 @@ interface IMember extends IUser
 
     /**
      * 删除会员物流地址
-     * 
+     *
      * @param unknown $id
      *            地址ID
      */
@@ -127,14 +127,14 @@ interface IMember extends IUser
 
     /**
      * 修改地址为默认地址
-     * 
+     *
      * @param unknown $id            
      */
     function updateAddressDefault($id);
 
     /**
      * 修改个人信息
-     * 
+     *
      * @param unknown $user_name            
      * @param unknown $user_tel            
      * @param unknown $user_qq            
@@ -149,7 +149,7 @@ interface IMember extends IUser
 
     /**
      * 分页获取用户积分和余额
-     * 
+     *
      * @param unknown $uid
      *            //用户ID
      * @param unknown $page_index
@@ -161,7 +161,7 @@ interface IMember extends IUser
 
     /**
      * 获取会员积分记录
-     * 
+     *
      * @param unknown $start_time
      *            //开始时间
      * @param unknown $end_time
@@ -171,7 +171,7 @@ interface IMember extends IUser
 
     /**
      * 分页获取会员积分记录
-     * 
+     *
      * @param unknown $start_time
      *            //开始时间
      * @param unknown $end_time
@@ -187,7 +187,7 @@ interface IMember extends IUser
 
     /**
      * 获取会员余额
-     * 
+     *
      * @param unknown $start_time
      *            //开始时间
      * @param unknown $end_time
@@ -197,7 +197,7 @@ interface IMember extends IUser
 
     /**
      * 分页获取会员余额记录
-     * 
+     *
      * @param unknown $start_time
      *            //开始时间
      * @param unknown $end_time
@@ -213,7 +213,7 @@ interface IMember extends IUser
 
     /**
      * 通过订单ID获取订单号
-     * 
+     *
      * @param unknown $order_id
      *            //订单ID
      */
@@ -221,7 +221,7 @@ interface IMember extends IUser
 
     /**
      * 获取会员优惠券
-     * 
+     *
      * @param unknown $type
      *            1已领用未使用 2.已使用 3.已过期
      */
@@ -229,7 +229,7 @@ interface IMember extends IUser
 
     /**
      * 通过商铺号来获取商铺名
-     * 
+     *
      * @param unknown $shop_id
      *            商铺ID
      */
@@ -237,8 +237,8 @@ interface IMember extends IUser
 
     /**
      * 会员锁定
-     * 
-     * {@inheritdoc}
+     *
+     * @ERROR!!!
      *
      * @see \data\api\system\IUser::userLock()
      */
@@ -246,14 +246,14 @@ interface IMember extends IUser
 
     /**
      * 会员解锁
-     * 
+     *
      * @param unknown $uid            
      */
     function userUnlock($uid);
 
     /**
      * 获取会员商品收藏
-     * 
+     *
      * @param number $page_index            
      * @param number $page_size            
      * @param string $condition            
@@ -263,7 +263,7 @@ interface IMember extends IUser
 
     /**
      * 获取会员店铺收藏
-     * 
+     *
      * @param number $page_index            
      * @param number $page_size            
      * @param string $condition            
@@ -273,7 +273,7 @@ interface IMember extends IUser
 
     /**
      * 添加收藏
-     * 
+     *
      * @param unknown $fav_id
      *            对应店铺或者会员ID
      * @param unknown $fav_type
@@ -285,7 +285,7 @@ interface IMember extends IUser
 
     /**
      * 取消收藏
-     * 
+     *
      * @param unknown $fav_id
      *            对应店铺或者会员ID
      * @param unknown $fav_type
@@ -295,7 +295,7 @@ interface IMember extends IUser
 
     /**
      * 判断会员 是否已经收藏（商品，店铺） 返回 1 or 0
-     * 
+     *
      * @param unknown $uid            
      * @param unknown $fav_id            
      * @param unknown $fav_type            
@@ -309,7 +309,7 @@ interface IMember extends IUser
 
     /**
      * 获取会员浏览历史
-     * 
+     *
      * @param unknown $uid            
      * @param unknown $start_time            
      * @param unknown $end_time            
@@ -318,7 +318,7 @@ interface IMember extends IUser
 
     /**
      * 添加浏览历史
-     * 
+     *
      * @param unknown $goods_id            
      * @param unknown $goods_name            
      * @param unknown $goods_category_id            
@@ -337,14 +337,14 @@ interface IMember extends IUser
 
     /**
      * 获取会员申请店铺情况
-     * 
+     *
      * @param unknown $uid            
      */
     function getMemberIsApplyShop($uid);
 
     /**
      * 获取店铺账户
-     * 
+     *
      * @param unknown $uid            
      * @param unknown $shop_id            
      */
@@ -352,7 +352,7 @@ interface IMember extends IUser
 
     /**
      * 会员积分转余额
-     * 
+     *
      * @param unknown $uid            
      * @param unknown $shop_id            
      * @param unknown $point            
@@ -361,28 +361,28 @@ interface IMember extends IUser
 
     /**
      * 会员对应店积分总额默认为平台的
-     * 
+     *
      * @param unknown $shop_id            
      */
     function memberShopPointCount($uid = 0, $shop_id = 0);
 
     /**
      * 会员对应店余额默认为平台的
-     * 
+     *
      * @param unknown $shop_id            
      */
     function memberShopBalanceCount($uid = 0, $shop_id = 0);
 
     /**
      * 获取所有会员
-     * 
+     *
      * @param unknown $condition            
      */
     function getMemberAll($condition);
 
     /**
      * 获取会员头像
-     * 
+     *
      * @param unknown $uid            
      */
     function getMemberImage($uid);
@@ -394,7 +394,7 @@ interface IMember extends IUser
 
     /**
      * 查看某月的会员注册情况
-     * 
+     *
      * @param unknown $begin_date            
      * @param unknown $end_date            
      */
@@ -402,7 +402,7 @@ interface IMember extends IUser
 
     /**
      * 会员购物币流水
-     * 
+     *
      * @param unknown $start_time            
      * @param unknown $end_time            
      */
@@ -410,7 +410,7 @@ interface IMember extends IUser
 
     /**
      * 会员购物币分页流水
-     * 
+     *
      * @param unknown $start_time            
      * @param unknown $end_time            
      * @param unknown $page_index            
@@ -422,7 +422,7 @@ interface IMember extends IUser
     /**
      * 充值会员账户（针对会员账户充值）1.
      * 积分2. 余额 3. 购物币
-     * 
+     *
      * @param unknown $shop_id            
      * @param unknown $type            
      * @param unknown $num            
@@ -438,7 +438,7 @@ interface IMember extends IUser
 
     /**
      * 获取会员签到记录
-     * 
+     *
      * @param unknown $page_index            
      * @param unknown $page_size            
      * @param unknown $shop_id            
@@ -458,7 +458,7 @@ interface IMember extends IUser
 
     /**
      * 获取 会员等级列表
-     * 
+     *
      * @param number $page_index            
      * @param number $page_size            
      * @param string $condition            
@@ -469,7 +469,7 @@ interface IMember extends IUser
 
     /**
      * 添加 会员等级
-     * 
+     *
      * @param unknown $level_name            
      * @param unknown $min_integral            
      * @param unknown $goods_discount            
@@ -479,7 +479,7 @@ interface IMember extends IUser
 
     /**
      * 修改会员等级
-     * 
+     *
      * @param unknown $level_id            
      * @param unknown $level_name            
      * @param unknown $min_integral            
@@ -490,21 +490,21 @@ interface IMember extends IUser
 
     /**
      * 删除会员等级
-     * 
+     *
      * @param unknown $level_id            
      */
     function deleteMemberLevel($level_id);
 
     /**
      * 获取 会员等级详情
-     * 
+     *
      * @param unknown $level_id            
      */
     function getMemberLevelDetail($level_id);
 
     /**
      * 修改 会员等级 单个字段
-     * 
+     *
      * @param unknown $level_id            
      * @param unknown $field_name            
      * @param unknown $field_value            
@@ -513,7 +513,7 @@ interface IMember extends IUser
 
     /**
      * 添加前台会员（后台添加）
-     * 
+     *
      * @param unknown $user_name            
      * @param unknown $password            
      * @param unknown $email            
@@ -524,7 +524,7 @@ interface IMember extends IUser
 
     /**
      * 创建充值余额
-     * 
+     *
      * @param unknown $recharge_money            
      * @param unknown $uid            
      * @param unknown $out_trade_no            
@@ -533,7 +533,7 @@ interface IMember extends IUser
 
     /**
      * 支付充值余额
-     * 
+     *
      * @param unknown $out_trade_no            
      */
     function payMemberRecharge($out_trade_no, $pay_type);
@@ -546,23 +546,23 @@ interface IMember extends IUser
     /**
      * 添加会员提现账号
      */
-    function addMemberBankAccount($uid, $bank_type, $branch_bank_name, $realname, $account_number, $mobile);
+    function addMemberBankAccount($uid, $account_type, $account_type_name, $branch_bank_name, $realname, $account_number, $mobile);
 
     /**
      * 修改会员提现账号
      */
-    function updateMemberBankAccount($account_id, $branch_bank_name, $realname, $account_number, $mobile);
+    function updateMemberBankAccount($account_id, $account_type, $account_type_name, $branch_bank_name, $realname, $account_number, $mobile);
 
     /**
      * 删除会员提现账号
-     * 
+     *
      * @param unknown $id            
      */
     function delMemberBankAccount($account_id);
 
     /**
      * 设定会员默认账户
-     * 
+     *
      * @param unknown $uid            
      * @param unknown $account_id            
      */
@@ -570,28 +570,29 @@ interface IMember extends IUser
 
     /**
      * 获取提现账号详情信息
-     * 
+     *
      * @param unknown $id            
      */
     function getMemberBankAccountDetail($id);
 
     /**
      * 获取提现记录
-     * 
+     *
      * @param unknown $uid            
      * @param unknown $shop_id            
      */
     function getMemberBalanceWithdraw($page_index = 1, $page_size = 0, $condition = '', $order = '');
-    
+
     /**
      * 获取会员提现审核数量
-     * @param unknown $condition
+     *
+     * @param unknown $condition            
      */
     function getMemberBalanceWithdrawCount($condition);
 
     /**
      * 申请提现
-     * 
+     *
      * @param unknown $shop_id            
      * @param unknown $withdraw_no            
      * @param unknown $distributor_uid            
@@ -602,16 +603,16 @@ interface IMember extends IUser
 
     /**
      * 用户提现审核
-     * 
+     *
      * @param unknown $shop_id            
      * @param unknown $id            
      * @param unknown $status            
      */
-    function MemberBalanceWithdrawAudit($shop_id, $id, $status);
+    function MemberBalanceWithdrawAudit($shop_id, $id, $status, $transfer_type, $transfer_name, $transfer_money, $transfer_remark, $transfer_no, $transfer_account_no, $type_id);
 
     /**
      * 拒绝用户提现申请
-     * 
+     *
      * @param unknown $shop_id            
      * @param unknown $id            
      * @param unknown $status            
@@ -621,28 +622,28 @@ interface IMember extends IUser
 
     /**
      * 获取用户提现详情
-     * 
+     *
      * @param unknown $id            
      */
     public function getMemberWithdrawalsDetails($id);
 
     /**
      * 获取会员下面的优惠券列表
-     * 
+     *
      * @param unknown $uid            
      */
     function getMemberCouponTypeList($shop_id, $uid);
 
     /**
      * 获取会员提现记录
-     * 
+     *
      * @param unknown $uid            
      */
     function getMemberExtractionBalanceList($uid);
 
     /**
      * 后台修改会员相关信息
-     * 
+     *
      * @param unknown $uid            
      * @param unknown $user_name            
      * @param unknown $email            
@@ -664,15 +665,16 @@ interface IMember extends IUser
 
     /**
      * 通过用户的id 更新用户的昵称
-     * 
+     *
      * @param unknown $uid            
      * @param unknown $nickName            
      */
     function updateNickNameByUid($uid, $nickName);
-    
+
     /**
-     * 判断用户名是否存在 
-     * @param unknown $user_name
+     * 判断用户名是否存在
+     *
+     * @param unknown $user_name           
      */
     function judgeUserNameIsExistence($user_name);
 }

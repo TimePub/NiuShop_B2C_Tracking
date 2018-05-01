@@ -1,20 +1,18 @@
 {extend name="adminblue/base" /}
 {block name="resources"/}
-<style>
-select{width:135px;}
-</style>
 {/block}
 {block name="main"}
+
 <div class="set-style">
 	<dl>
-		<dt><span style="color:red;">*</span>&nbsp;&nbsp;自提点名称:</dt>
+		<dt><span style="color:red;">*</span>&nbsp;&nbsp;门店名称：</dt>
 		<dd>
 			<p><input id="name" type="text" class="input-common"></p>
-			<p class="error">自提点名称不能为空</p>
+			<p class="error">门店名称不能为空</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span style="color:red;">*</span>&nbsp;&nbsp;自提点地址:</dt>
+		<dt><span style="color:red;">*</span>&nbsp;&nbsp;门店地址：</dt>
 		<dd>
 			<p>
 				<select name="province" id="seleAreaNext" onchange="GetProvince();getSelCity();" class="select-common">
@@ -27,32 +25,35 @@ select{width:135px;}
 					<option value="-1">请选择区/县</option>
 				</select>
 			</p>
-			<p class="error">请选择自提点完整地址</p>
+			<p class="error">请选择门店完整地址</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span style="color:red;">*</span>&nbsp;&nbsp;详细地址:</dt>
+		<dt><span style="color:red;">*</span>&nbsp;&nbsp;详细地址：</dt>
 		<dd>
-			<p><input id="address" type="text" class="input-common"></p>
+			<p><textarea id="address" class="textarea-common"></textarea></p>
 			<p class="error">详细地址不能为空</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>自提点联系人:</dt>
+		<dt>门店联系人：</dt>
 		<dd>
 			<p><input id="contact" type="text" class="input-common"></p>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span style="color:red;">*</span>&nbsp;&nbsp;自提点电话:</dt>
+		<dt><span style="color:red;">*</span>&nbsp;&nbsp;门店电话：</dt>
 		<dd>
 			<p><input id="phone" type="text" class="input-common"></p>
-			<p class="error">自提点电话不能为空</p>
+			<p class="error">门店电话不能为空</p>
 		</dd>
 	</dl>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="addReturnAjax();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="addReturnAjax();" >保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
 	</dl>
 </div>
 <script>
@@ -81,6 +82,7 @@ function GetProvince() {
 					getSelCity();
 					$("#cityid").val('-1');
 				}
+				$('.select-common').selectric();
 			}
 		}
 	});
@@ -109,6 +111,7 @@ function getSelCity() {
 					$("#seleAreaFouth").val($("#districtid").val());
 					$("#districtid").val('-1');
 				}
+				$('.select-common').selectric();
 			}
 		}
 	});
@@ -137,6 +140,7 @@ $(function() {
 					GetProvince();
 					$("#provinceid").val('-1');
 				}
+				$('.select-common').selectric();
 			}
 		}
 	});
@@ -191,9 +195,10 @@ function addReturnAjax() {
 		},
 		success : function(data) {
 			if (data['code'] > 0) {
-				showMessage('success', data["message"],window.location.href=__URL("ADMIN_MAIN/shop/pickuppointlist"));
+				showTip(data["message"],'success');
+				location.href = __URL("ADMIN_MAIN/shop/pickuppointlist");
 			} else {
-				showMessage('error', data["message"]);
+				showTip(data["message"],'error');
 			}
 		}
 	});

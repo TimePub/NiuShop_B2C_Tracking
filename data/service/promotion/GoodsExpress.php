@@ -25,6 +25,8 @@ use data\model\NsOrderExpressCompanyModel;
 use data\model\CityModel;
 use data\model\DistrictModel;
 use data\service\Config;
+use data\model\NsO2oDistributionConfigModel;
+use data\model\NsO2oDistributionAreaModel;
 
 /**
  * 商品邮费操作类
@@ -50,6 +52,8 @@ class GoodsExpress extends BaseService
      */
     public function getSkuListExpressFee($goods_sku_list, $express_company_id, $province, $city, $district)
     {
+   
+        
         $config = new Config();
         // 查询用户是否选择物流
         $is_able_select = $config->getConfig(0, 'ORDER_IS_LOGISTICS');
@@ -58,7 +62,9 @@ class GoodsExpress extends BaseService
         } else {
             $is_able = 0;
         }
+        
         if ($is_able == 1) {
+            
             $fee = $this->getSameExpressSkuListFee($goods_sku_list, $express_company_id, $province, $city, $district);
             return $fee;
         } else {
@@ -71,12 +77,15 @@ class GoodsExpress extends BaseService
                         if ($same_fee >= 0) {
                             $fee += $same_fee;
                         } else {
+                         
                             return NULL_EXPRESS_FEE;
                         }
                     }
                 }
+                
                 return $fee;
             } else {
+                
                 return NULL_EXPRESS_FEE;
             }
         }
@@ -170,12 +179,14 @@ class GoodsExpress extends BaseService
                 }
             }
         }
+       
         // 如果模板为空，找到默认模板
         if (empty($temp)) {
             if (! empty($default)) {
                 $temp = $default;
                 return $temp;
             } else {
+               
                 return NULL_EXPRESS_FEE; // 返回表示该地址不支持配送
             }
         } else {
@@ -599,5 +610,51 @@ class GoodsExpress extends BaseService
         } else {
             return '';
         }
+    }
+    /**
+     * 获取商品运费价格
+     * @param unknown $goods_money
+     * @param unknown $province
+     * @param unknown $city
+     * @param unknown $district
+     * @param unknown $community
+     */
+    public function getGoodsO2oPrice($goods_money, $store_id, $province, $city, $district, $community)
+    {
+        $check_area = $this->getO2oDistributionAreaIsUse($store_id, $province, $city, $district);
+        if($check_area)
+        {
+            $distribution_config = new NsO2oDistributionConfigModel();
+            $config = $distribution_config->getFirstData(['store_id' => $store_id, 'order_money' => array('ELT', $goods_money)], 'order_money desc');
+            if(!empty($config))
+            {
+                return $config['freight'];
+            }else{
+                return NULL_EXPRESS_FEE;
+            }
+        }else{
+            return NULL_EXPRESS_FEE;
+        }
+      
+    }
+    /**
+     * 检测某个地址是否可以 货到付款
+     *
+     * @param unknown $shop_id
+     * @param unknown $province_id
+     * @param unknown $city_id
+     * @param unknown $district_id
+     */
+    public function getO2oDistributionAreaIsUse($store_id, $province_id, $city_id, $district_id)
+    {
+        $o2o_area = new NsO2oDistributionAreaModel();
+        $is_use = false;
+        $list = $o2o_area->where(" FIND_IN_SET(" . $province_id . ", province_id) AND FIND_IN_SET( " . $city_id . ", city_id) AND FIND_IN_SET(" . $district_id . ", district_id) and store_id=".$store_id)->select();
+        if (! empty($list) && count($list) > 0) {
+            $is_use = true;
+        } else {
+            $is_use = false;
+        }
+        return $is_use;
     }
 }

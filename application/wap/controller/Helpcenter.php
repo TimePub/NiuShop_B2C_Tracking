@@ -35,13 +35,13 @@ class Helpcenter extends BaseController
      */
     public function index()
     {
-        $document_id = request()->post('id','');
+        $document_id = request()->post('id', '');
         // $class_id = isset($_GET['class_id'])?$_GET['class_id']:'';
         $platform = new Platform();
         $platform_help_class = $platform->getPlatformHelpClassList(1, 0, '', 'sort');
         $this->assign('platform_help_class', $platform_help_class['data']); // 帮助中心分类列表
         
-        $platform_help_document = $platform->getPlatformHelpDocumentList(1, 0, '', 'sort');
+        $platform_help_document = $platform->getPlatformHelpDocumentList(1, 0, 'is_visibility=1', 'sort');
         $this->assign('platform_help_document', $platform_help_document['data']); // 帮助中心列表
         if (empty($document_id)) {
             $help_document_info = array(
@@ -51,7 +51,8 @@ class Helpcenter extends BaseController
             $this->assign('help_document_info', $help_document_info); // 帮助中心信息详情
         } else {
             $help_document_info = $platform->getPlatformHelpDocumentList(1, 0, [
-                'id' => $document_id
+                'id' => $document_id,
+                'is_visibility' => 1
             ], 'sort');
             return $help_document_info;
             // dump($help_document_info['data']);

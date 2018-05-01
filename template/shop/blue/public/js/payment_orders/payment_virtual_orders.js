@@ -32,7 +32,8 @@ $(function(){
 			if($("#account_balance").val() != undefined){
 				account_balance = $("#account_balance").val() == "" ? 0 : $("#account_balance").val();
 			}
-			var integral = $("#count_point_exchange").val() == "" ? 0 : $("#count_point_exchange").val();//积分
+			// var integral = $("#count_point_exchange").val() == "" ? 0 : $("#count_point_exchange").val();//积分
+			var integral = $("#use_point").val();
 			var pay_type = parseInt($("#paylist li a[class='selected']").attr("data-select"));//支付方式 0：在线支付
 			var buyer_invoice = getInvoiceContent();//发票
 			$.ajax({
@@ -209,6 +210,28 @@ function validationMemberBalance(){
 	return false;
 }
 
+/**
+ *验证输入的积分
+ */
+function validationMemberPoint(){
+	//最大可用积分
+	var member_account_point = parseInt($(".member-account-point").text());
+	var max_use_point = $("#max_use_point").val(); 
+	//使用积分
+	var use_point = parseInt($("#use_point").val());
+
+	if(use_point < 0 || use_point == NaN) $("#use_point").val(0);
+
+	if(use_point > max_use_point){
+		if(member_account_point > max_use_point){
+			$("#use_point").val(max_use_point); 
+		}else{
+			$("#use_point").val(member_account_point); 
+		}
+	}
+	return true;
+}
+
 function validationTelephone(){
 	var reg = /^1[34578]\d{9}$/;
 	if($("#user_telephone").val().length == 0){
@@ -336,6 +359,27 @@ function calculateTotalAmount(){
 		money = 0;
 	}
 	var old_total_money = parseFloat($("#realprice").attr("data-old-keep-total-money"))+parseFloat(order_invoice_tax_money);
+
+	//是否开启积分抵现
+	var integral_balance_is_open = $("#integral_balance_is_open").val();
+	if(integral_balance_is_open == 1){
+		var use_point = $("#use_point").val();
+		var point_convert_rate = $("#point_convert_rate").val();
+		var point_money = use_point * point_convert_rate;
+		$("#point_money").text(parseFloat(point_money).toFixed(2));
+		money -= point_money;
+		if(money < 0){
+			var overflow_money = 0 - money;
+				use_point = use_point - parseInt((overflow_money / point_convert_rate));
+				use_point = use_point < 0 ? 0 : use_point;
+				point_money = use_point * point_convert_rate;
+				$("#point_money").text(parseFloat(point_money).toFixed(2));
+				$("#use_point").val(use_point);	
+			money = 0;
+		}
+		old_total_money -= point_money;
+	}
+
 	$("#realprice").attr("data-old-total-money",old_total_money.toFixed(2));//原合计（不包含优惠,但包括税额）
 	$("#realprice").text(money.toFixed(2));//合计
 	$("#realprice").attr("data-total-money",money.toFixed(2));//合计[实际付款金额]（包含优惠券、运费）

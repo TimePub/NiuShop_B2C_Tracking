@@ -17,7 +17,6 @@ namespace app\admin\controller;
 
 use data\service\Verification as VerificationService;
 use data\service\Member as MemberService;
-use data\service\VirtualGoods;
 /**
  * 核销管理
  */
@@ -43,19 +42,14 @@ class Verification extends BaseController
         }
         $child_menu_list = array();
         $child_menu_list[0] = array(
-            'url' => "VirtualGoods/virtualGoodsList",
-            'menu_name' => '虚拟商品管理',
-            "active" => 0
+            'url' => "Verification/index",
+            'menu_name' => '核销人员',
+            "active" => 1
         );
         $child_menu_list[1] = array(
             'url' => "Verification/virtualGoodsVerificationList?type=to_reply",
             'menu_name' => '核销记录',
             "active" => 0
-        );
-        $child_menu_list[2] = array(
-            'url' => "Verification/index",
-            'menu_name' => '核销人员',
-            "active" => 1
         );
         $this->assign('child_menu_list', $child_menu_list);
         return view($this->style. 'Verification/index');
@@ -148,8 +142,8 @@ class Verification extends BaseController
         $type = request()->get('type', '');
         $child_menu_list = array();
         $child_menu_list[0] = array(
-            'url' => "VirtualGoods/virtualGoodsList",
-            'menu_name' => '虚拟商品管理',
+            'url' => "Verification/index",
+            'menu_name' => '核销人员',
             "active" => 0
         );
         $child_menu_list[1] = array(
@@ -157,13 +151,6 @@ class Verification extends BaseController
             'menu_name' => '核销记录',
             "active" => 1
         );
-        $child_menu_list[2] = array(
-            'url' => "Verification/index",
-            'menu_name' => '核销人员',
-            "active" => 0
-        );
-        
-        
         $this->assign('child_menu_list', $child_menu_list);
         
         return view($this->style. "Verification/virtualGoodsVerificationList");

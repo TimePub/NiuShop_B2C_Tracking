@@ -108,17 +108,19 @@
 				success : function(data) {
 					count = 0;
 					$("#select_count").css("visibility", "hidden");
-					var html = '';
 					if (data["data"].length > 0) {
+						$("#albumList").empty();
 						for (var i = 0; i < data["data"].length; i++) {
+							var html = '';
 							html += "<li class='img-li' title='"+data["data"][i]["pic_name"]+"' data-id=" + data["data"][i]["pic_id"] + " img_path='" + data['data'][i]['pic_cover'] + "' onclick='select_img(this," + data["data"][i]["pic_id"] + ")'>";
 							html += '<img src="' + __IMG(data["data"][i]["pic_cover"]) + '" />';
 							html += "<img src='__STATIC__/images/icon_ok.png' class='icon_ok' /></li>";
+							$("#albumList").append(html);
 						}
 					} else {
-						html += '<div class="none_info">暂无符合条件的数据记录！</div>';
+						var html = '<div class="none_info">暂无符合条件的数据记录！</div>';
+						$("#albumList").html(html);
 					}
-					$("#albumList").html(html);
 					initPageData(data["page_count"],data['data'].length,data['total_count']);
 					$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 				}

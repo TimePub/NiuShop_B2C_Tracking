@@ -9,15 +9,23 @@
 <script src="ADMIN_JS/iframe_tools.source.js"></script>
 <link rel="stylesheet" type="text/css" href="__STATIC__/bootstrap/css/bootstrap.css">
 <link rel="stylesheet" type="text/css" href="__STATIC__/css/common.css">
-<link rel="stylesheet" type="text/css" href="__STATIC__/css/seller_center.css">
+<link rel="stylesheet" type="text/css" href="__STATIC__/css/seller_center.css?n=6">
+<link rel="stylesheet" type="text/css" href="__STATIC__/blue/css/ns_blue_common.css" />
 {include file="adminblue/controlCommonVariable" }
 <script>
 function goodsAddCallBack(){
+	var win = art.dialog.open.origin;
+	
 	var goodsid = "{$goodsid}";
 	var dialog_flag = "{$flag}";
 	var box_id = "{$box_id}";
-	var dis = $("#next_Page").attr("disabled");
+	/* var dis = $("#next_Page").attr("disabled");
 	if (dis == "disabled") {
+		return;
+	} */
+	var is_disbaled = $("#next_Page").hasClass('disabled');
+	if(is_disbaled){
+		win.location = "javascript:showTip('请选择完整的分类','warning')";
 		return;
 	}
 	var quick_id = "";// 所选择的商品分类
@@ -77,11 +85,17 @@ function goodsAddCallBack(){
 	win.location = "javascript:addGoodsCallBack(" + goods_category_id + ",'" + goods_category_name + "'," + goods_attr_id + ","+goodsid+",'"+dialog_flag+"','"+ box_id +"')";
 	art.dialog.close();
 }
+
+//取消退出
+function no_select_back(){
+	art.dialog.close();
+}
+
 </script>
 </head>
-<body>
+<body style="background-color:#fff !important;">
 {include file="adminblue/urlModel"}
-<script type="text/javascript" src="ADMIN_JS/goods/release_good_frist.js"></script>
+<script type="text/javascript" src="ADMIN_JS/goods/release_good_frist.js?n=7"></script>
 <input type="hidden" value="{$category_select_ids}" id="category_select_ids"/>
 <input type="hidden" value="{$category_select_names}" id="category_select_names"/>
 <input type="hidden" value="{$category_extend_id}" id="category_extend_id"/>
@@ -98,21 +112,27 @@ function goodsAddCallBack(){
 			</div>
 		</div>
 		<div id="categoryDivContainer" class="categoryContainer">
-			<div id="selectCategoryDiv1" class="selectCategoryDiv" style="height:auto;">
-				<div class="category-search">
-					<i class="icon-search-tabao"></i>
-					<input type="text" name="search_category" placeholder="输入名称" />
-				</div>
+			<div id="selectCategoryDiv1" class="selectCategoryDiv" >
+<!-- 				<div class="category-search"> -->
+<!-- 					<i class="icon-search-tabao"></i> -->
+<!-- 					<input type="text" name="search_category" placeholder="输入名称" /> -->
+<!-- 				</div> -->
 				<div class="categorySet">
 					{foreach name="cateGoryList" item="category"}
 					<div class="categoryItem " id="{$category.category_id}" data-attr-id="{$category.attr_id}" onclick="ClickHasSubCategory(this)">
-						<span style="width: 170px;">{$category.category_name}</span>
+						<span class="span-left">{$category.category_name}</span>
 						{if condition="$category.is_parent eq 1"}
-						<span>&gt;</span>
+						<span class="span-right">&gt;</span>
 						{/if}
 					</div>
 					{/foreach}
 				</div>
+			</div>
+			<div id="selectCategoryDiv2" class="selectCategoryDiv" >
+
+			</div>
+			<div id="selectCategoryDiv3" class="selectCategoryDiv" >
+
 			</div>
 		</div>
 		<div class="cate-path">
@@ -122,7 +142,8 @@ function goodsAddCallBack(){
 		</div>
 	</div>
 	<div class="div-btn">
-		<a class="btn btn-info disabled" href="javascript:goodsAddCallBack();" id="next_Page">已选好类目，进入下一步</a>
+		<button class="btn-common btn-big disabled" onclick="goodsAddCallBack()" id="next_Page">保存</button>
+		<button class="btn-common-cancle btn-big" onclick="no_select_back()">取消</button>
 	</div>
 </div>
 </body>

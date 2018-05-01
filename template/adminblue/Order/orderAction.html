@@ -1,5 +1,5 @@
 <style>
-.modal-body{max-height:none;}
+.modal-body{max-height:none;overflow-y: visible;}
 .editprice-input{width:100px;}
 .pick_title{float: left;line-height: 32px; width: 140px;text-align:right;}
 .pick_title .required{color:red;margin-right:10px;}
@@ -7,6 +7,7 @@ textarea{width: 350px;}
 #pickup_name,#pickup_mobile{width: 350px;}
 .address_choice select{width:118px}
 .modal-backdrop{background-color: #000000;}
+.form-group:after{content:"";display:block;clear:both;}
 </style>
 
 <!-- 模态框（Modal） -->
@@ -19,7 +20,7 @@ textarea{width: 350px;}
 		<table class="table table-striped table-main table-order-header">
 			<colgroup>
 				<col style="width: 40%;">
-				<col style="width: 20%;">
+				<col style="width: 20%;">	
 				<col style="width: 25%;">
 				<col style="width: 15%;">
 			</colgroup>
@@ -63,8 +64,8 @@ textarea{width: 350px;}
 		</ul>
 	</div>
 	<div class="modal-footer">
-		<button class="btn btn-primary" onclick="updPrice()" id="butSubmit">保存</button>
-		<button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+		<button class="btn-common btn-big" onclick="updPrice()" id="butSubmit">保存</button>
+		<button class="btn-common-cancle btn-big" data-dismiss="modal" aria-hidden="true">关闭</button>
 	</div>
 </div>
 
@@ -77,19 +78,17 @@ textarea{width: 350px;}
 			</div>
 			<div class="modal-body">
 				<!-- 主要内容 -->
-				<div>待发货(<span id="no_shipping_num"></span>)，已选<span id="checkedbox">0</span></div>
-				<table class="table table-hover" style="margin-bottom:10px;">
+				<div style="padding: 0 0 10px 0;">待发货(<span id="no_shipping_num"></span>)，已选<span id="checkedbox">0</span></div>
+				<table class="table-class" style="margin-bottom:10px;">
 					<thead>
 						<tr>
-							<td>
-								<label class="checkbox-inline">
-									<input type="checkbox" id="inlineCheckbox1" onclick="deliveryCheckAll(this)">
-								</label>
-							</td>
-							<td>商品</td>
-							<td>数量</td>
-							<td>物流 | 单号</td>
-							<td>状态</td>
+							<th>
+								<i class="checkbox-common"><input type="checkbox" id="inlineCheckbox1" onclick="deliveryCheckAll(this)"></i>
+							</th>
+							<th>商品</th>
+							<th>数量</th>
+							<th>物流 | 单号</th>
+							<th>状态</th>
 						</tr>
 					</thead>
 					<colgroup>
@@ -103,25 +102,84 @@ textarea{width: 350px;}
 				</table>
 				<div>
 					<div style="margin-bottom:5px;">发货方式：</div>
-					<label class="checkbox-inline" style="float:left;margin-right:30px;"><input type="radio" name="shipping_type" id="shipping_type0" value="0"> 无需物流</label>
-					<label class="checkbox-inline" style="float:left;"><input type="radio" name=shipping_type id="shipping_type1" value="1" checked="checked"> 需要物流</label>
+					<label class="checkbox-inline" style="float:left;margin-right:30px;">
+						<i class="radio-common">
+							<input type="radio" name="shipping_type" id="shipping_type0" value="0">
+						</i>
+						<span>无需物流</span>
+					</label>
+					<label class="checkbox-inline" style="float:left;">
+						<i class="radio-common selected">
+							<input type="radio" name=shipping_type id="shipping_type1" value="1" checked="checked">
+						</i>
+						<span>需要物流</span>
+					</label>
 				</div>
 				<div style="clear:both;"></div>
-				<div class="form-group" id="express_input">
-					<select class="form-control input-lg" id="divlogistics_express_company" style="margin-bottom:5px;margin-right:15px;float:left;"></select>
-					<div class="col-lg-2"><input type="text" id="divlogistics_express_no" class="form-control" placeholder="请填写快递单号" style="height:19px;"></div>
+				<div class="form-group" id="express_input" style="margin:5px 0 10px 0;">
+					<select class="form-control" id="divlogistics_express_company" ></select>
+					<input type="text" id="divlogistics_express_no" class="input-common" placeholder="请填写快递单号" style="vertical-align:2px;">
 				</div>
-				<div id="receiver_info"></div>
+				<div id="receiver_info" style="clear:both;"></div>
 			</div>
 			
 			<div class="modal-footer">
-				<input type="hidden" id="delivery_order_id"/>
-				<button class="btn btn-primary" onclick="orderDeliverySubmit()">提交更改</button>
-				<button class="btn" data-dismiss="modal">关闭</button>
+				<input type="hidden" id="o2o_delivery_order_id"/>
+				<button class="btn-common btn-big" onclick="orderDeliverySubmit()">保存</button>
+				<button class="btn-common-cancle btn-big" data-dismiss="modal">关闭</button>
 			</div>
 		</div>
 	</div>
 </div>
+
+<!-- 本地配送模态框 -->
+<div class="modal hide fade" id="o2o_Delivery" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="left:32%">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				<h3>商品发货</h3>
+			</div>
+			<div class="modal-body">
+				<!-- 主要内容 -->
+				<div>待发货(<span id="o2o_shipping_num"></span>)</div>
+				<table class="table table-hover" style="margin-bottom:10px;">
+					<thead>
+						<tr>
+							<td>商品</td>
+							<td>数量</td>
+						</tr>
+					</thead>
+					<colgroup>
+						<col style="width: 60%;">
+						<col style="width: 40%;">
+					<colgroup>
+					<tbody></tbody>
+				</table>
+				<div>
+					<div style="margin-bottom:5px;">配送人员：</div>
+				</div>
+				<div style="clear:both;"></div>
+				<div class="form-group" id="express_input">
+					<select class="form-control input-lg" id="o2o_delivery_user" ></select>
+					<input type="text" id="o2o_delivery_no" class="input-common" placeholder="请填写配送单号" style="vertical-align:2px;">
+				</div>
+				<div id="receiver_info"></div>
+				<div>
+					<div style="margin-bottom:5px;">备注：</div>
+					<textarea class="remark textarea-common" style=" width: 440px;height: 80px;" maxlength="500"></textarea>
+				</div>
+			</div>
+			
+			<div class="modal-footer">
+				<input type="hidden" id="delivery_order_id"/>
+				<button class="btn-common btn-big" onclick="o2oDeliverySubmit()">提交更改</button>
+				<button class="btn-common-cancle btn-big" data-dismiss="modal">关闭</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 
 <!-- 自提模态 -->
 <div class="modal hide fade" id="pickup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="margin-left:-365px; width: 700px;">
@@ -141,23 +199,23 @@ textarea{width: 350px;}
 				
 				<div class="form-group">
 					<div class="pick_title"><span class="required">*</span>提货人：</div>
-					<div class="col-lg-4"><input type="text" id="pickup_name" class="form-control" placeholder="请填写提货人姓名"></div>
+					<div class="col-lg-4"><input type="text" id="pickup_name" class="form-control input-common" placeholder="请填写提货人姓名"></div>
 				</div>
 				<div class="form-group">
 					<div class="pick_title"><span class="required">*</span>提货人手机号：</div>
-					<div class="col-lg-4"><input type="text" id="pickup_mobile" class="form-control" placeholder="请填写提货人手机号"></div>
+					<div class="col-lg-4"><input type="text" id="pickup_mobile" class="form-control input-common" placeholder="请填写提货人手机号"></div>
 				</div>
 				<div class="form-group">
 					<div class="pick_title">备注：</div>
-					<div class="col-lg-2"><textarea id="pickup_desc"></textarea></div>
+					<div class="col-lg-2"><textarea id="pickup_desc" class="textarea-common"></textarea></div>
 				</div>
 			
 			</div>
 			
 			<div class="modal-footer">
 				<input type="hidden" id="pickup_order_id" />
-				<button class="btn btn-primary" onclick="orderPickupSubmit(pickup_order_id)">确认提货</button>
-				<button class="btn" data-dismiss="modal">关闭</button>
+				<button class="btn-common btn-big" onclick="orderPickupSubmit(pickup_order_id)">确认提货</button>
+				<button class="btn-common-cancle btn-big" data-dismiss="modal">关闭</button>
 			</div>
 		</div>
 	</div>
@@ -173,30 +231,30 @@ textarea{width: 350px;}
 			<div class="modal-body">
 				<div class="form-group">
 					<div class="pick_title"><span class="required">*</span>收货人：</div>
-					<div class="col-lg-4"><input type="text" id="receiver_name" class="form-control" style="width:350px"></div>
+					<div class="col-lg-4"><input type="text" id="receiver_name" class="form-control input-common" style="width:350px;margin-bottom:10px !important;"></div>
 				</div>
 				<div class="form-group">
 					<div class="pick_title"><span class="required">*</span>收货人手机号：</div>
-					<div class="col-lg-4"><input type="text" id="receiver_mobile" class="form-control" style="width:350px"></div>
+					<div class="col-lg-4"><input type="text" id="receiver_mobile" class="form-control input-common" style="width:350px;margin-bottom:10px !important;"></div>
 				</div>
 				<div class="form-group">
 					<div class="pick_title">收货人固定电话：</div>
-					<div class="col-lg-4"><input type="text" id="fixed_telephone" class="form-control" style="width:350px"></div>
+					<div class="col-lg-4"><input type="text" id="fixed_telephone" class="form-control input-common" style="width:350px;margin-bottom:10px !important;"></div>
 				</div>
 				<div class="form-group">
 					<div class="pick_title">收货人邮编：</div>
-					<div class="col-lg-4"><input type="text" id="receiver_zip" class="form-control" style="width:350px" maxlength="6" onkeyup="this.value=this.value.replace(/\D/g,'')"></div>
+					<div class="col-lg-4"><input type="text" id="receiver_zip" class="form-control input-common" style="width:350px;margin-bottom:10px !important;" maxlength="6" onkeyup="this.value=this.value.replace(/\D/g,'')"></div>
 				</div>
-				<div class="form-group" style="width:100%;overflow:hidden;margin-bottom: 15px;">
+				<div class="form-group" style="width:100%;margin-bottom: 10px;">
 					<div class="pick_title"><span class="required">*</span>收货地址：</div>
 					<div class="address_choice">
-						<select name="province" id="seleAreaNext" onchange="GetProvince();getSelCity();">
+						<select name="province" id="seleAreaNext" onchange="GetProvince();" class="select-common harf">
 							<option value="">请选择省</option>
 						</select>
-						<select name="city" id="seleAreaThird" onchange="getSelCity();">
+						<select name="city" id="seleAreaThird" onchange="getSelCity();" class="select-common harf">
 							<option value="">请选择市</option>
 						</select>
-						<select name="district" id="seleAreaFouth" >
+						<select name="district" id="seleAreaFouth" class="select-common harf">
 							<option value="-1">请选择区/县</option>
 						</select>
 						<input type="hidden" id="provinceid" >
@@ -206,14 +264,14 @@ textarea{width: 350px;}
 				</div>
 				<div class="form-group">
 					<div class="pick_title"><span class="required">*</span>详细地址：</div>
-					<div class="col-lg-4"><input type="text" id="address_detail" class="form-control" style="width:350px"></div>
+					<div class="col-lg-4"><input type="text" id="address_detail" class="form-control input-common" style="width:350px"></div>
 				</div>
 			</div>
 			
 			<div class="modal-footer">
 				<input type="hidden" id="update_address_id" />
-				<button type="button" class="btn btn-primary" onclick="updateAddressSubmit(update_address_id)">修改</button>
-				<button type="button" class="btn" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn-common btn-big" onclick="updateAddressSubmit(update_address_id)">修改</button>
+				<button type="button" class="btn-common-white btn-big" data-dismiss="modal">关闭</button>
 			</div>
 		</div>
 	</div>
@@ -232,18 +290,63 @@ textarea{width: 350px;}
 					<dt><span class="required">*</span>备注:</dt>
 					<dd>
 						<p>
-							<textarea rows="3" cols="20" id="memo"></textarea>
+							<textarea rows="3" cols="20" id="memo" class="textarea-common"></textarea>
 						</p>
 						<p class="error">请输入备注</p>
 					</dd>
 				</dl>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-primary" onclick="addMemoAjax()">保存</button>
+				<button type="button" class="btn-common btn-big" onclick="addMemoAjax()">保存</button>
+				<button class="btn-common-cancle btn-big" data-dismiss="modal">关闭</button>
 			</div>
 		</div>
 	</div>
 </div>
+
+
+<!-- 修改运单号 -->
+<div class="modal hide fade" id="update_express" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="width: 700px; left: 45%; top: 30%; display: none;">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				<h3>修改运单号</h3>
+			</div>
+	 			<div class="modal-body">
+					<div style="margin-bottom:5px;">发货方式：</div>
+					<label class="checkbox-inline" style="float:left;margin-right:30px;">
+						<i class="radio-common">
+							<input type="radio" name="shipping_type_update" id="shipping_type2" value="0">
+						</i>
+						<span>无需物流</span>
+					</label>
+					<label class="checkbox-inline" style="float:left;">
+						<i class="radio-common selected">
+							<input type="radio" name=shipping_type_update id="shipping_type3" value="1" checked="checked">
+						</i>
+						<span>需要物流</span>
+					</label>
+				
+					<div style="clear:both;"></div>
+					<div class="form-group" id="update_express_input" style="margin:5px 0 10px 0;height: 30px;">
+						<select class="select-common" id="update_divlogistics_express_company" ></select>
+						<input type="text" id="update_divlogistics_express_no" class="input-common" placeholder="请填写快递单号" style="vertical-align:1px;">
+					</div>
+
+					<div id="receiver_infos"></div>
+				</div>
+			</div>
+			
+			<div class="modal-footer">
+				<input type="hidden" id="order_goods_express_id"/>
+				<button class="btn-common btn-big" onclick="updateExpressAjax()">提交更改</button>
+				<button class="btn-common-cancle btn-big" data-dismiss="modal">关闭</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 <script>
 $(function() {
 
@@ -264,12 +367,14 @@ $(function() {
 					var opt = new Option(data[i].province_name,data[i].province_id);
 					selCity.options.add(opt);
 				}
+				
 				if(typeof($("#provinceid").val())!='undefined'){
 					$("#seleAreaNext").val($("#provinceid").val());
 					GetProvince();
 					$("#provinceid").val('-1');
 				}
-			}
+				$("#seleAreaNext").selectric({maxHeight:500});
+			} 
 		}
 	});
 
@@ -279,6 +384,14 @@ $(function() {
 
 	$("#shipping_type0").focus(function(){
 		$("#express_input").hide();
+	});
+	
+	$("#shipping_type3").focus(function(){
+		$("#update_express_input").show();
+	});
+
+	$("#shipping_type2").focus(function(){
+		$("#update_express_input").hide();
 	});
 });
 /*****订单相关操作函数开始*****/
@@ -300,12 +413,20 @@ function operation(operation_type, order_id){
 	}else if(operation_type == 'logistics'){
 		//查看物流
 		location.href = __URL(ADMINMAIN+'/order/orderdetail?order_id='+order_id);
+	}else if(operation_type == 'update_express'){
+		updateExpress(order_id);//修改运单号
 	}else if(operation_type == 'update_address'){
 		update_address(order_id);//修改收货地址
 	}else if(operation_type == 'getdelivery'){
 		getdelivery(order_id);//确认收货
 	}else if(operation_type == 'delete_order'){
 		delete_order(order_id);//删除订单
+	}else if(operation_type == 'o2o_delivery'){
+		o2o_delivery(order_id);//o2o发货
+	}else if(operation_type == 'order_presell'){
+		presellOrderOffLinePay(order_id);//预售线下支付
+	}else if(operation_type == 'stocking_complete'){
+		presellStockingComplete(order_id);
 	}
 }
 
@@ -328,7 +449,8 @@ function orderDelivery(order_id){
 					co_html += '<option value="'+data["express_company_list"][i]["co_id"]+'">'+data["express_company_list"][i]["company_name"]+'</option>';
 				}
 			} 
-			$("#divlogistics_express_company").append(co_html);
+			$("#divlogistics_express_company").append(co_html).addClass("select-common").selectric({maxHeight:500});
+			
 			$("#divlogistics_express_company").val(data['order_info']["shipping_company_id"]);
 			
 			var go_html = '';
@@ -337,11 +459,11 @@ function orderDelivery(order_id){
 				if(data['order_goods_list'][i]['shipping_status'] == 0){
 					no_shipping_num++;
 				}
-				go_html += '<tr>';
+				go_html += '<tr align="center">';
 				if(data['order_goods_list'][i]['shipping_status'] > 0){
-					go_html += '<td><label class="checkbox-inline"><input type="checkbox" value="'+data['order_goods_list'][i]['shipping_status']+'" disabled="true"></label></td>';
+					go_html += '<td><i class="checkbox-common"><input type="checkbox" value="'+data['order_goods_list'][i]['shipping_status']+'" disabled="true"></i></label></td>';
 				}else{
-					go_html += '<td><label class="checkbox-inline"><input type="checkbox" id="'+data['order_goods_list'][i]['order_goods_id']+'" value="'+data['order_goods_list'][i]['shipping_status']+'" onclick="deliveryCheck(this)"></label></td>';
+					go_html += '<td><i class="checkbox-common"><input type="checkbox" id="'+data['order_goods_list'][i]['order_goods_id']+'" value="'+data['order_goods_list'][i]['shipping_status']+'" onclick="deliveryCheck(this)"></i></td>';
 				}
 				go_html += '<td><a>'+data['order_goods_list'][i]['goods_name']+'</a></td>';
 				go_html += '<td>'+data['order_goods_list'][i]['num']+'</td>';
@@ -375,7 +497,7 @@ function orderDeliverySubmit(){
 		return false;
 	}
 	var express_name = $("#divlogistics_express_company").find("option:selected").text();
-	var shipping_type = $('#Delivery input[name="shipping_type"]:checked ').val();
+	var shipping_type = $('#Delivery input[name="shipping_type"]:checked').val();
 	var express_company_id = $("#divlogistics_express_company").val();
 	var express_no = $("#divlogistics_express_no").val();
 	if(shipping_type == 1){
@@ -412,6 +534,9 @@ function orderDeliverySubmit(){
 function deliveryCheckAll(event){
 	var checked = event.checked;
 	$("#Delivery .modal-body table tbody input[type = 'checkbox'][value = 0]").prop("checked",checked);
+	var parent = $("#Delivery .modal-body table tbody input[type = 'checkbox'][value = 0]").parent();
+	if(checked) parent.addClass('selected');
+	else parent.removeClass("selected");
 	var obj = $("#Delivery .modal-body table tbody input[type = 'checkbox'][value = 0][checked]");
 	$("#checkedbox").html(obj.length);
 }
@@ -425,6 +550,8 @@ function deliveryCheck(event){
 function CheckAll(event){
 	var checked = event.checked;
 	$(".table-class tbody input[type = 'checkbox']").prop("checked",checked);
+	if(checked) $(".table-class tbody input[type = 'checkbox']").parent().addClass("selected");
+	else $(".table-class tbody input[type = 'checkbox']").parent().removeClass("selected");
 }
 
 function orderOffLinePay(order_id){
@@ -445,13 +572,45 @@ function orderOffLinePay(order_id){
 					});
 					$(this).dialog('close');
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 			},
 		},
 		contentText:"确定线下支付吗？",
 	});
 }
+
+//预售订单线下支付
+function presellOrderOffLinePay(presell_order_id){
+	$( "#dialog" ).dialog({
+		buttons: {
+			"确定": function() {
+					$.ajax({
+						type : "post",
+						url : "{:__URL('ADMIN_MAIN/orderpresell/presellOrderOffLinePay')}",
+						data : {'presell_order_id':presell_order_id},
+						success : function(data) {
+							if (data["code"] > 0) {
+								showMessage('success', data["message"],window.location.reload());
+							}else{
+								showMessage('error', data["message"]);
+							}
+						}
+					});
+					$(this).dialog('close');
+			},
+			"取消,#f5f5f5,#666": function() {
+				$(this).dialog('close');
+			},
+		},
+		contentText:"确定线下支付吗？",
+	});
+}
+
+
+
+
+
 function orderComplete(order_id){
 	$.ajax({
 		type : "post",
@@ -484,7 +643,7 @@ function orderClose(order_id){
 			})
 			$(this).dialog('close');
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 			},
 		},
@@ -540,11 +699,11 @@ function modifyPrice(order_id,orderFreight){
 				str += "</td>";
 				str += "<td>";
 				str += "<div class='editprice-discount'><input  type='hidden' id='productPrice" + jsonData[i].order_goods_id + "' value='" + jsonData[i].price + "'><input type='hidden' id='count" + jsonData[i].goods_id + "' value='" + jsonData[i].num + "'>";
-				str += "<div class='editprice-minus'><input name='caculatePrice'  onchange=\"caculatePrice()\" id='" + jsonData[i].order_goods_id + "' value='"+jsonData[i].adjust_money+"'  class='editprice-input price' type='number'  placeholder='0'  /></div>";
+				str += "<div class='editprice-minus'><input name='caculatePrice'  onchange=\"caculatePrice()\" id='" + jsonData[i].order_goods_id + "' value='"+jsonData[i].adjust_money+"'  class='editprice-input price input-common harf' type='number'  placeholder='0'  /></div>";
 				str += "</td>"; 
 				if (i == 0) {
 					str += "<td rowspan='"+jsonData.length+"'>";
-					str += "<input onchange=\"caculatePrice()\" id='Freightnumber' type='number' placeholder='0'  class='editprice-input' value='"+order_info.shipping_money+"' ";
+					str += "<input onchange=\"caculatePrice()\" id='Freightnumber' type='number' placeholder='0'  class='editprice-input input-common harf' value='"+order_info.shipping_money+"' ";
 					if(orderFreight != 0 || orderFreight != ''){
 						str += orderFreight;
 					}
@@ -572,7 +731,6 @@ function modifyPrice(order_id,orderFreight){
 		}
 	});
 }
-
 //重新计算
 function caculatePrice(){
 	//设置邮费
@@ -719,9 +877,16 @@ function update_address(order_id){
 			$("#provinceid").val(provinceid);
 			$("#cityid").val(cityid);
 			$("#districtid").val(districtid);
+			$("#seleAreaNext option[value='"+provinceid+"']").attr("selected", true);
+			$("#seleAreaNext").selectric({maxHeight:500});
 			GetProvince();
 			getSelCity();
-			$("#address_detail").val(data['receiver_address']);
+			var address_arr = data['receiver_address'].split('&nbsp;');
+			if(address_arr[3] != undefined){
+				$("#address_detail").val(address_arr[3]);
+			}else{
+				$("#address_detail").val("");
+			}
 			$("#update_address").modal('show');
 			$("#update_address .modal-body table tbody tr").remove();
 			$("#update_address_id").val(order_id);
@@ -833,6 +998,7 @@ function GetProvince() {
 					getSelCity();
 					$("#cityid").val('-1');
 				}
+				$("#seleAreaThird").selectric({maxHeight:500});
 			}
 		}
 	});
@@ -864,7 +1030,7 @@ function getSelCity() {
 					$("#seleAreaFouth").val($("#districtid").val());
 					$("#districtid").val('-1');
 				}
-				
+				$("#seleAreaFouth").selectric({maxHeight:500});
 			}
 		}
 	});
@@ -927,11 +1093,198 @@ function delete_order(order_id){
 			})
 			$(this).dialog('close');
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 			},
 		},
 		contentText:"确定要删除订单吗？",
 	});
 }
+ 
+//显示运单
+function updateExpress(order_id){
+	$.ajax({
+		type : "post",
+		url : "{:__URL('ADMIN_MAIN/order/orderdeliverydata')}",
+		data : {'order_id':order_id},
+		success : function(data) {
+			$("#order_goods_express_id").val(data['order_info']['goods_packet_list'][0]['express_id']);
+			var receiver_info = '收货信息：'+data['order_info']['address']+'&nbsp;'+data['order_info']['receiver_address']+'&nbsp;'+data['order_info']['receiver_name']+'&nbsp;'+data['order_info']['receiver_mobile'];//收货信息
+			$("#receiver_infos").html(receiver_info);
+			var express_company_id = data['order_info']['goods_packet_list'][0]['express_company_id'];
+			var express_code = data['order_info']['goods_packet_list'][0]['express_code'];
+			var co_html = '';
+			co_html += '<option value="0">请选择物流公司</option>';
+			for(var i=0;i<data['express_company_list'].length;i++){
+				
+				if(data['express_company_list'][i]['is_enabled'] == '1'){
+					var co_id = data["express_company_list"][i]["co_id"];
+					if(express_company_id == co_id){
+						co_html += '<option value="'+data["express_company_list"][i]["co_id"]+'" selected >'+data["express_company_list"][i]["company_name"]+'</option>';
+					}
+					else
+					{
+						co_html += '<option value="'+data["express_company_list"][i]["co_id"]+'">'+data["express_company_list"][i]["company_name"]+'</option>';
+					}
+				}
+			} 
+			$("#update_divlogistics_express_company").html(co_html).selectric();
+			$("#update_divlogistics_express_no").val(express_code);
+			$("#update_express").modal("show");
+			
+		}
+	});	
+	
+}
+ 
+//修改运单
+var flags = false;
+function updateExpressAjax(){
+
+		var order_goods_express_id = $("#order_goods_express_id").val();
+		var express_name = $("#update_divlogistics_express_company").find("option:selected").text();
+		var shipping_type = $('#update_express input[name="shipping_type_update"]:checked ').val();
+		var express_company_id = $("#update_divlogistics_express_company").val();
+		var express_no = $("#update_divlogistics_express_no").val();
+		if(shipping_type == 1){
+			if(express_company_id == "0"){
+				showTip("请选择物流公司",'warning');
+				return false;
+			}
+			if(express_no == ""){
+				showTip("请填写快递单号",'warning');
+				$("#update_divlogistics_express_no").focus();
+				return false;
+			}
+		}
+		if(flags){
+			return;
+		}
+		flags = true;
+		$.ajax({
+			type : "post",
+			url : "{:__URL('ADMIN_MAIN/order/updateOrderExpress')}",
+			data : {'order_goods_express_id':order_goods_express_id,"express_name":express_name,"shipping_type":shipping_type,"express_company_id":express_company_id,"express_no":express_no},
+			success : function(data) {
+				$("#Delivery").modal('hide');
+				if (data['code'] > 0) {
+					showMessage('success', data["message"],window.location.reload());
+				} else {
+					showMessage('error', data["message"]);
+					flags = false;
+				}
+			}
+		});
+	}
+
+/**
+ * 弹出本地配送模态框
+ */
+function o2o_delivery(order_id){
+	$("#o2o_Delivery").modal('show');
+	$("#o2o_delivery_order_id").val(order_id);
+	$.ajax({
+		type : "post",
+		url : "{:__URL('ADMIN_MAIN/order/o2odeliverydata')}",
+		data : {'order_id':order_id},
+		success : function(data) {
+			$("#delivery_order_id").val(order_id);
+			var receiver_info = '收货信息：'+data['order_info']['address']+'&nbsp;'+data['order_info']['receiver_address']+'&nbsp;'+data['order_info']['receiver_name']+'&nbsp;'+data['order_info']['receiver_mobile'];//收货信息
+			$("#receiver_info").html(receiver_info);
+			var co_html = '';
+			co_html += '<option value="0">请选择配送人员</option>';
+			for(var i=0;i<data['o2o_delivery_user_list'].length;i++){
+				co_html += '<option value="'+data["o2o_delivery_user_list"][i]["id"]+'">'+data["o2o_delivery_user_list"][i]["name"]+ "&nbsp;&nbsp;" +data["o2o_delivery_user_list"][i]["mobile"] + '</option>';
+			} 
+			$("#o2o_delivery_user").html(co_html).addClass('select-common').selectric({maxHeight:500});
+			
+			var go_html = '';
+			var no_shipping_num = 0;
+			for(var i=0;i<data['order_goods_list'].length;i++){
+				if(data['order_goods_list'][i]['shipping_status'] == 0){
+					no_shipping_num++;
+				}
+				go_html += '<tr>';
+					go_html += '<td><a>'+data['order_goods_list'][i]['goods_name']+'</a></td>';
+					go_html += '<td>'+data['order_goods_list'][i]['num']+'</td>';
+				go_html += '</tr>';
+			}
+			$("#o2o_shipping_num").html(no_shipping_num);
+			$("#o2o_Delivery .modal-body table tbody").html(go_html);
+		}
+	});
+}
+
+/**
+ * 本地配送提交
+ */
+var o2o_flag = false;
+function o2oDeliverySubmit(){
+	var order_id = $("#o2o_delivery_order_id").val();
+	var o2o_delivery_user_id = $("#o2o_delivery_user").val();
+	var o2o_delivery_no = $("#o2o_delivery_no").val();
+	var remark = $("#o2o_Delivery .remark").val();
+
+	if(o2o_delivery_user_id == "0"){
+		showTip("请选择配送人员",'warning');
+		$("#o2o_delivery_user").focus();
+		return false;
+	}
+	 if(o2o_delivery_no == ""){
+		showTip("请填写配送单号",'warning');
+		$("#o2o_delivery_no").focus();
+		return false;
+	} 
+	
+	if(o2o_flag){
+		return;
+	}
+	o2o_flag = true;
+	$.ajax({
+		type : "post",
+		url : "{:__URL('ADMIN_MAIN/order/o2odelivery')}",
+		data : {
+			'order_id':order_id,
+			'o2o_delivery_user_id': o2o_delivery_user_id,
+			'o2o_delivery_no':o2o_delivery_no,
+			'remark' : remark
+			},
+		success : function(data) {
+			$("#o2o_Delivery").modal('hide');
+			if (data['code'] > 0) {
+				showMessage('success', data["message"],window.location.reload());
+			} else {
+				showMessage('error', data["message"]);
+				o2o_flag = false;
+			}
+		}
+	});
+}
+
+//备货完成
+function presellStockingComplete(order_id){
+	$( "#dialog" ).dialog({
+		buttons: {
+			"确定": function() {
+			$.ajax({
+				type : "post",
+				url : "{:__URL('ADMIN_MAIN/Orderpresell/orderStockingComplete')}",
+				data : {"order_id" : order_id},
+				success : function(data) {
+					if(data["code"] > 0 ){
+						LoadingInfo(1);
+						showMessage('success', data["message"],window.location.reload());
+					}
+				}
+			})
+			$(this).dialog('close');
+			},
+			"取消,#f5f5f5,#666": function() {
+				$(this).dialog('close');
+			},
+		},
+		contentText:"确定设为备货完成吗？",
+	});
+}
+ 
 </script>

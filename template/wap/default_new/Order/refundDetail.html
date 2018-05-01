@@ -335,10 +335,9 @@ function ExpressSave(){
 			dataType: "json",
 			success: function (response) {
 				if(response.code>0){
-					showBox("{:lang('successful_application_for_refund')}");
-					window.location.href = __URL("APP_MAIN/Member/index");
+					showBox("{:lang('successful_application_for_refund')}","success",__URL("APP_MAIN/Member/index"));
 				}else{
-					showBox("{:lang('failed_to_apply_for_refund')}");
+					showBox("{:lang('failed_to_apply_for_refund')}","error");
 				}
 			}
 		});
@@ -356,14 +355,14 @@ function btnSave() {
 	var num2 = parseFloat($("#maxRefundMoney").val());
 	if(refund_money == "" && refund_money !== 0){
 		$("#refund_money").focus();
-		showBox("{:lang('please_enter_the_refund_amount')}");
+		showBox("{:lang('please_enter_the_refund_amount')}","warning");
 		return;
 	}
 
 	if(refund_money >= 0){
 		if (refund_money <0 || refund_money >num2 ) {
 			$("#refund_money").focus();
-			showBox("{:lang('member_beyond_refund_amount')}");
+			showBox("{:lang('member_beyond_refund_amount')}","warning");
 			return;
 		}
 	}
@@ -371,7 +370,7 @@ function btnSave() {
 	if(refund_reason == '{:lang('member_other')}'){
 		refund_reason = description;
 		if(refund_reason == ""){
-			showBox("{:lang('member_please_enter_refund_statement')}");
+			showBox("{:lang('member_please_enter_refund_statement')}","warning");
 			return false;
 		}
 	}
@@ -389,9 +388,9 @@ function btnSave() {
 		dataType:"json",
 		success: function (response) {
 			if(response.code>0){
-				window.location.reload();
+				showBox(response.message,"success",window.location.reload());
 			}else{
-				showBox(response.message);
+				showBox(response.message,"error");
 			}
 		}
 	});
@@ -403,7 +402,7 @@ function maxRefund() {
 	var num2 = parseFloat($("#maxRefundMoney").val());
 	if (num < 0 || num >num2) {
 		$("#refund_money").focus();
-		showBox("{:lang('member_beyond_refund_amount')}");
+		showBox("{:lang('member_beyond_refund_amount')}","warning");
 		return;
 	}
 };

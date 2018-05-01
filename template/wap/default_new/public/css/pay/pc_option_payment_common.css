@@ -366,15 +366,5 @@ ol{padding-left: 24px;}
 	min-height: 86px;
 	position:fixed;
 	bottom:0;
-}
-.ft-copyright {
-	padding: 50px 0 20px;
-	margin: 0 15px;
-	font-size: 12px;
-	background: url("../../images/logo_copy.png") no-repeat center 15px;
-	background-size: 110px 30px;
-}
-.ft-copyright a {
-	padding-top: 45px;
-	color: #ccc;
+	font-size: 0
 }

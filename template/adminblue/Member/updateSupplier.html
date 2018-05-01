@@ -9,46 +9,48 @@
 </style>
 {/block}
 {block name="main"}
+<div class="space-10"></div>
 <div class="set-style">
 	<dl>
-		<dt><span class="required">*</span>供货商名称:</dt>
+		<dt><span class="required">*</span>供货商名称：</dt>
 		<dd>
 			<input type="text" id="supplier_name" value="{$info['supplier_name']}" class="input-common">
 			<p class="error">请输入供货商名称</p>
-			<p class="hint">设置供货商名称</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span class="required">*</span>联系人姓名:</dt>
+		<dt ><span class="required">*</span>联系人姓名：</dt>
 		<dd>
 			<input type="text" id="linkman_name" value="{$info['linkman_name']}" class="input-common">
 			<p class="error">请输入联系人姓名</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span class="required">*</span>联系人电话:</dt>
+		<dt ><span class="required">*</span>联系人电话：</dt>
 		<dd>
 			<input type="text" id="linkman_tel" value="{$info['linkman_tel']}" class="input-common">
 			<p class="error">请输入联系人电话</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span class="required">*</span>联系人地址:</dt>
+		<dt><span class="required">*</span>联系人地址：</dt>
 		<dd>
-			<input type="text" id="linkman_address" value="{$info['linkman_address']}" class="input-common">
+			<textarea class="textarea-common"  id="linkman_address">{$info['linkman_address']}</textarea>
 			<p class="error">请输入联系地址</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>描述:</dt>
+		<dt >供货商描述：</dt>
 		<dd>
-			<textarea id="desc" class="input-common">{$info['desc']}</textarea>
-			<p class="hint">供货商描述信息</p>
+			<textarea id="desc" class="textarea-common">{$info['desc']}</textarea>
 		</dd>
 	</dl>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="updateSupplier();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="updateSupplier();">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);">返回</button>
+		</dd>
 	</dl>
 </div>
 <input type="hidden" id="supplier_id" value="{$supplier_id}">
@@ -108,9 +110,10 @@ function updateSupplier(){
 		},
 		success : function(data) {
 			if (data["code"] > 0) {
-				showMessage('success', data["message"], "{:__URL('ADMIN_MAIN/member/supplierlist.html')}");
+				showTip(data['message'],"success");
+				location.href = "{:__URL('ADMIN_MAIN/member/supplierlist.html')}";
 			}else{
-				showMessage('error', data["message"]);
+				showTip(data['message'],"error");
 				flag = false;
 			}
 		}

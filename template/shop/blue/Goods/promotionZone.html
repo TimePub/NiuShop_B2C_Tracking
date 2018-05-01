@@ -59,7 +59,7 @@ ul.list-grid .item {
 						<div class="item-con">
 							<div class="item-pic">
 								<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$goods['goods_id'])}" title="{$goods.goods_name}" target="_blank">
-									<img src="{:__IMG($goods['pic_cover_mid'])}">
+									<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($goods['pic_cover_mid'])}">
 								</a>
 							</div>
 							{notempty name="$curr_group['group_id']"}
@@ -73,7 +73,7 @@ ul.list-grid .item {
 							</div>
 							{/notempty}
 							<div class="item-info">
-								<div class="item-price"><em class="sale-price money-color">￥{$goods.promotion_price}</em></div>
+								<div class="item-price"><em class="sale-price money-color">{$goods.display_price}</em></div>
 								<div class="item-name"><a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$goods['goods_id'])}" target="_blank" title="{$goods.goods_name}">{$goods.goods_name}</a></div>
 								<div class="item-con-info">
 									<div class="fr" style="float: left;margin-right: 5px;">
@@ -136,6 +136,7 @@ ul.list-grid .item {
 	{include file='shop/blue/Goods/controlPopUpGoodsSkuAttribute'/}
 {/block}
 {block name="javascript"}
+<script type="text/javascript" src="__TEMP__/{$style}/public/js/ns_index.js"></script>
 <script src="__TEMP__/{$style}/public/js/goods/controlGoods.js"></script>
 <script src="__TEMP__/{$style}/public/js/ns_collections.js" type="text/javascript"></script>
 <script type="text/javascript">

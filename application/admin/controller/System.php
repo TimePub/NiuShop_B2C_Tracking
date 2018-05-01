@@ -21,6 +21,7 @@ use data\service\GoodsBrand as GoodsBrand;
 use data\service\GoodsCategory as GoodsCategory;
 use data\service\GoodsGroup;
 use data\service\Platform;
+use think\Cache;
 
 /**
  * 系统模块控制器
@@ -121,7 +122,7 @@ class System extends BaseController
             $url = request()->post('url', '');
             $is_menu = request()->post('is_menu', '');
             $is_control_auth = request()->post('is_control_auth', '');
-            $is_dev = request()->post('id', '');
+            $is_dev = request()->post('is_dev', '');
             $sort = request()->post('sort', '');
             $module_picture = request()->post('module_picture', '');
             $desc = request()->post('desc', '');
@@ -162,7 +163,7 @@ class System extends BaseController
             $url = request()->post('url', '');
             $is_menu = request()->post('is_menu', '');
             $is_control_auth = request()->post('is_control_auth', '');
-            $is_dev = request()->post('id', '');
+            $is_dev = request()->post('is_dev', '');
             $sort = request()->post('sort', '');
             $module_picture = request()->post('module_picture', '');
             $desc = request()->post('desc', '');
@@ -655,7 +656,7 @@ class System extends BaseController
                 'adv_title' => array('like','%' . $search_text . '%'),
                 'npap.instance_id' => $this->instance_id,
                 'npap.type' => $type
-            ], 'slide_sort desc');
+            ], 'slide_sort asc');
             return $list;
         }
         return view($this->style . "System/shopAdvList");
@@ -1202,6 +1203,7 @@ class System extends BaseController
         $ap_id = request()->post('ap_id', '');
         $platform = new Platform();
         $res = $platform->delPlatfromAdvPosition($ap_id);
+        Cache::tag("niu_platform_adv_position")->set("getPlatformAdvPositionDetail" . $ap_id, '');
         return AjaxReturn($res);
     }
 
@@ -1215,6 +1217,7 @@ class System extends BaseController
             $is_use = request()->post('is_use', '');
             $platform = new Platform();
             $res = $platform->setPlatformAdvPositionUse($ap_id, $is_use);
+            Cache::tag("niu_platform_adv_position")->set("getPlatformAdvPositionDetail" . $ap_id, '');
             return AjaxReturn($res);
         }
     }

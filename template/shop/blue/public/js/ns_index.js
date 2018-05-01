@@ -189,7 +189,7 @@ $(function() {
 				short_name = fnum;
 			var $el = $("<a class='smooth' href='javascript:;'><em class='fs-name'>" + short_name + "</em></a>")
 			var $i = $("<i class='fs-line'></i>");
-			if (i < $('.floor-list').length - 1) {
+			if (i <  $('.floor-list').length - 1) {
 				$el.append($i);
 			}
 			elevatorfloor.append($el);
@@ -214,15 +214,16 @@ $(function() {
 //		console.log(floor_top_array);
 //		console.log(floor_height_array);
 		if ($(".floor-list").length > 0) {
-			var smooth_height = $(".elevator-floor .smooth").height() + 30;//30是补差
-			conTop = $(".floor-list:eq(0)").offset().top - $(".floor-list:eq(0)").height() - smooth_height - 100;//100是补差
+			conTop = $(".floor-list:eq(0)").offset().top-($(".floor-list:eq(0)").height()/2);
 			conTopEnd = $(".floor-list:eq(" + ($(".floor-list").length-1) + ")").offset().top;
 		}
+		
 		$(window).scroll(function() {
 			var scrt = $(window).scrollTop();
 //			console.log("当前滚动的位置：" + scrt);
 //			console.log("楼层位置：" + conTop);
 //			console.log("楼层结束位置：" + conTopEnd);
+			
 			if (scrt > conTop){
 
 				$(".elevator").show("fast", function() {
@@ -232,13 +233,12 @@ $(function() {
 						"-moz-transform": "scale(1)",
 						"transform": "scale(1)",
 						"opacity": "1"
-					})
+					});
 				}).css({
 					"visibility": "visible"
 				});
 				
-			}
-			else {
+			}else {
 
 				$(".elevator-floor").css({
 					"-webkit-transform": "scale(1.2)",
@@ -262,19 +262,14 @@ $(function() {
 					"visibility": "hidden"
 				});
 			}
+			
 			setTab();
 		});
 		
 		$(".elevator-floor a.smooth").on("click", function() {
 			var index = $(".elevator-floor a.smooth").index(this);
-//			var smooth_height = $(".elevator-floor .smooth").height() + 30;
-//			console.log(index);
-//			console.log(floor_top_array[index]);
-//			console.log(floor_height_array[index]);
-//			console.log("滚动到：" + (floor_top_array[index] - floor_height_array[index]));
-			//旧的算法显示在中间：scrollTop: (floor_top_array[index] - floor_height_array[index] - smooth_height - 110) + "px"
 			$("html,body").stop().animate({
-				scrollTop: (floor_top_array[index] - floor_height_array[index] - ($(".elevator-floor a").height() * (index + 1))) + "px"
+				scrollTop: floor_top_array[index]-55 + "px"
 			}, 400);
 		});
 		
@@ -291,12 +286,16 @@ $(function() {
 			
 			var scrollTop = $(window).scrollTop();
 			var temp_arr = new Array();
-			var smooth_height = $(".elevator-floor .smooth").height() + 30;
-			
+			var smooth_height = $(".elevator-floor .smooth").height()+30;
 			for(var i=floor_top_array.length-1;i>=0;i--){
 				
 				//条件是：当前滚动相当于顶部的偏移值 + 当前循环的楼层高度 + 左侧定位楼层高度  >= 当前循环楼层的顶部偏移值 - 当前循环的楼层高度
-				if(scrollTop + floor_height_array[i] + smooth_height >= floor_top_array[i] - floor_height_array[i]){
+//				console.log("当前："+scrollTop+35);
+//				console.log("匹配："+floor_top_array[i]);
+//				if(scrollTop + floor_height_array[i] + smooth_height >= floor_top_array[i] - floor_height_array[i]){
+//				if(scrollTop >= floor_top_array[i]-floor_height_array[i]){
+				if(scrollTop+smooth_height >= floor_top_array[i]-floor_height_array[i]){
+//					console.log("i:"+i);
 					$(".elevator-floor a").eq(i).addClass("active").siblings().removeClass("active");
 					break;
 				}
@@ -314,28 +313,27 @@ $(".top-active-close").click(function(){
 
 //处理轮播图片
 $(function() {
-if($('.NS-FLOOR-HISLIDER').length >0)
-{
-	$.each($('.NS-FLOOR-HISLIDER'),function(i,v){
-		$(v).hiSlider();
-	});
-}	
+	if($('.NS-FLOOR-HISLIDER').length >0){
+		$.each($('.NS-FLOOR-HISLIDER'),function(i,v){
+			$(v).hiSlider();
+		});
+	}
 });
 
 //头部滚动通栏悬浮框
-$(document).ready(function(){ 
-	var headHeight=820;  //这个高度其实有更好的办法的。使用者根据自己的需要可以手工调整。
-	var nav=$(".as-shelter"); 
+$(document).ready(function(){
+	var headHeight=820;//这个高度其实有更好的办法的。使用者根据自己的需要可以手工调整。
+	var nav=$(".as-shelter");
 	var nav2=$(".follow-box");//要悬浮的容器的id
-	$(window).scroll(function(){ 
-	 
-	if($(this).scrollTop()>headHeight){ 
-		nav.addClass("show");   //悬浮的样式
+	$(window).scroll(function(){
+	
+	if($(this).scrollTop()>headHeight){
+		nav.addClass("show");//悬浮的样式
 		nav2.addClass("show");
-	} 
-	else{ 
-		nav.removeClass("show"); 
-		nav2.removeClass("show"); 
-		} 
-	}) 
+	}
+	else{
+		nav.removeClass("show");
+		nav2.removeClass("show");
+		}
+	})
 })

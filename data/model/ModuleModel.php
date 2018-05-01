@@ -31,7 +31,8 @@ class ModuleModel extends BaseModel
 
     protected $rule = [
         'module_id' => '',
-        'url' => 'no_html_parse'
+        'url' => 'no_html_parse',
+        'desc'=>'no_html_parse'
     ];
 
     protected $msg = [

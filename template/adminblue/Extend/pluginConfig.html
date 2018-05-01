@@ -7,7 +7,7 @@
 			{switch name="form.type"}
 				{case value="text"}
 					<dl>
-						<dt>{$form.title}:</dt>
+						<dt>{$form.title}：</dt>
 						<dd>
 							<p><input type="text" name="config[{$key}]" value="{$form.value}" class="input-common"></p>
 							<p class="hint">{$form.tip}</p>
@@ -16,7 +16,7 @@
 				{/case}
 				{case value="password"}
 					<dl>
-						<dt>{$form.title}:</dt>
+						<dt>{$form.title}：</dt>
 						<dd>
 							<p><input type="password" name="config[{$key}]" value="{$form.value}" class="input-common"></p>
 							<p class="hint">{$form.tip}</p>

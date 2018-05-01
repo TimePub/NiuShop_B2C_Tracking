@@ -623,7 +623,7 @@ input.ui-button::-moz-focus-inner,button.ui-button::-moz-focus-inner {
 	position: absolute;
 	top: 0;
 	left: 0;
-	padding: .2em;
+	/*padding: .2em;*/
 	outline: 0
 }
 
@@ -639,7 +639,6 @@ input.ui-button::-moz-focus-inner,button.ui-button::-moz-focus-inner {
 	width: 90%;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	display: none;
 }
 
 .ui-dialog .ui-dialog-titlebar-close {
@@ -658,7 +657,7 @@ input.ui-button::-moz-focus-inner,button.ui-button::-moz-focus-inner {
 .ui-dialog .ui-dialog-content {
 	position: relative;
 	border: 0;
-	padding: .5em 1em;
+	padding: .5em 1em 0 1em;
 	background: none;
 	overflow: auto
 }
@@ -666,8 +665,8 @@ input.ui-button::-moz-focus-inner,button.ui-button::-moz-focus-inner {
 .ui-dialog .ui-dialog-buttonpane {
 	border-width: 1px 0 0 0;
 	background-image: none;
-	margin-top: .5em;
-	padding: .3em 1em .5em .4em;
+	/*margin-top: .5em;*/
+	padding: .3em .4em .5em .4em;
 	text-align: center;
 }
 
@@ -677,17 +676,19 @@ input.ui-button::-moz-focus-inner,button.ui-button::-moz-focus-inner {
 }
 
 .ui-dialog .ui-dialog-buttonpane button {
-	margin: .5em .4em .5em .4em;
-	cursor: pointer;
-	background: #66bb6a;
-	color: #fff;
-	font: inherit;
-	min-width: 105px;
-	padding: 10px 0;
-	transition: background .2s;
-	text-align: center;
-	border: none;
-	border-redius: 0;
+    margin: .5em .4em .5em .4em;
+    cursor: pointer;
+    background: #0059d6;
+    color: #fff;
+    font: inherit;
+    min-width: 85px;
+    padding: 7px 0;
+    transition: background .2s;
+    text-align: center;
+    border: none;
+    border-radius: 2px;
+    outline: none;
+    border:1px solid #0059d6;
 }
 
 .ui-dialog .ui-resizable-n {
@@ -737,7 +738,9 @@ input.ui-button::-moz-focus-inner,button.ui-button::-moz-focus-inner {
 }
 
 .ui-draggable .ui-dialog-titlebar {
-	cursor: move
+	cursor: move;
+	background: #F2F6FC;
+	border-bottom: 1px solid #E1E6F0;
 }
 
 .ui-progressbar {
@@ -1006,7 +1009,11 @@ body .ui-tooltip {
 }
 
 .ui-widget.ui-widget-content {
-	border: 1px solid #c5c5c5
+	/*border: 1px solid #c5c5c5*/
+    -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+    position: fixed!important;
 }
 
 .ui-widget-content {
@@ -1020,9 +1027,10 @@ body .ui-tooltip {
 }
 
 .ui-widget-header {
-	background: #fff;
-	color: #333;
-	font-weight: bold
+    background: #fff;
+    color: #333;
+    font-weight: normal;
+    font-size: 14px;
 }
 
 .ui-widget-header a {
@@ -1871,24 +1879,24 @@ body .ui-tooltip {
 }
 
 .ui-corner-all,.ui-corner-top,.ui-corner-left,.ui-corner-tl {
-	border-top-left-radius: 3px
+	border-top-left-radius: 0
 }
 
 .ui-corner-all,.ui-corner-top,.ui-corner-right,.ui-corner-tr {
-	border-top-right-radius: 3px
+	border-top-right-radius: 0
 }
 
 .ui-corner-all,.ui-corner-bottom,.ui-corner-left,.ui-corner-bl {
-	border-bottom-left-radius: 3px
+	border-bottom-left-radius: 0
 }
 
 .ui-corner-all,.ui-corner-bottom,.ui-corner-right,.ui-corner-br {
-	border-bottom-right-radius: 3px
+	border-bottom-right-radius: 0
 }
 
 .ui-widget-overlay {
-	background: #aaa;
-	opacity: .3;
+	background: #000;
+	opacity: .8;
 	filter: Alpha(Opacity =   30)
 }
 
@@ -1906,7 +1914,8 @@ body .ui-tooltip {
 	color: #2b2e38;
 	text-align: center;
 	font-size: 14px;
-	margin: 0;
+	margin: 30px 0;
+
 }
 
 .text-h2 {
@@ -1922,30 +1931,26 @@ body .ui-tooltip {
 
 .time-class {
 	margin-top: 10px;
-	display: none;
+	display: none;  	
 }
 
-.text-img {
-	width: 100%;
-	height: 60px;
-	text-align: center;
-	line-height: 60px;
+.dialog-content{
+    display: inline-block;
+    padding-left: 45px;
+    height: 35px;
+    line-height: 35px;
+    font-size: 16px;
+    background: url(../images/dialog-warning.png) no-repeat left;
+    background-size: 35px 35px;
+}
+.dialog-content.success {
+	background: url("../images/dialog-success.png") no-repeat left;
+	background-size: 35px 35px;
 }
 
-.text-img .dlalog-icon {
-	width: 60px;
-	height: 60px;
-	display: inline-block;
-	background: url("../images/dialog-warning.png") no-repeat;
-	background-size: 60px 60px;
-}
-
-.text-img .dlalog-icon.success {
-	background: url("../images/dialog-success.png") no-repeat;
-	background-size: 60px 60px;
-}
-
-.text-img .dlalog-icon.error {
-	background: url("../images/dialog-error.png") no-repeat;
-	background-size: 60px 60px;
+.dialog-content.error {
+	background: url("../images/dialog-error.png") no-repeat left;
+	background-size: 35px 35px;
+	padding-top: 0;
+	color: #2b2e38;
 }

@@ -1,12 +1,9 @@
 {extend name="shop/blue/base" /}
 {block name="resources"}
 <style>
-#find-box .item {
-	width: 650px;
-}
+#find-box .item {width: 650px;}
 </style>
 {/block}
-
 {block name="main"}
 <div class="margin-w1210">
 	{include file='shop/blue/Member/controlLeftMenu'/}
@@ -34,13 +31,13 @@
 			
 			 <!-- 邮箱 -->
 			<div class="mc">
-				{if condition="$member_info['user_info']['user_email'] neq ''"}
+				{if condition="$member_detail['user_info']['user_email'] neq ''"}
 				<div class="fore1">
 					<s class="fore1_3"></s>
 					<strong>{:lang('member_mailbox_binding')}</strong>
 				</div>
 				<div class="fore2">
-					<span class="ftx-03">{:lang('member_verified_mailbox')}：{$member_info['user_info']['user_email']}</span>
+					<span class="ftx-03">{:lang('member_verified_mailbox')}：{$member_detail['user_info']['user_email']}</span>
 				</div>
 				<div class="fore3">
 					<input type="button" value="{:lang('member_modify')}" onclick="location.href='{:__URL('SHOP_MAIN/member/usersecurity?atc=user_email')}'" class="main-btn common-btn" />
@@ -61,13 +58,13 @@
 			
 			<!-- 手机 -->
 			<div class="mc">
-				{if condition="$member_info['user_info']['user_tel'] neq ''"}
+				{if condition="$member_detail['user_info']['user_tel'] neq ''"}
 				<div class="fore1">
 					<s class="fore1_3"></s>
 					<strong>{:lang('member_bind_mobile')}</strong>
 				</div>
 				<div class="fore2">
-					<span class="ftx-03">{:lang('member_phone_bound')}：{$member_info['user_info']['user_tel']}</span>
+					<span class="ftx-03">{:lang('member_phone_bound')}：{$member_detail['user_info']['user_tel']}</span>
 				</div>
 				<div class="fore3">
 					<input type="button" value="{:lang('member_modify')}" onclick="location.href='{:__URL('SHOP_MAIN/member/usersecurity?atc=user_mobile')}'" class="main-btn common-btn" />
@@ -150,52 +147,52 @@
 	</div>
 </div>
 <script type="text/javascript">
-	function modifyPwd(){
-		var old_password=$('#old_password').val();
-		var new_password=$('#newpassword').val();
-		var new_password1=$('#newpassword1').val();
-		if(old_password.length==0){
-			$("#old_password").next(".error").show();
-			return false;
-		}else{
-			$("#old_password").next(".error").hide();
-		}
-		if(new_password.length==0){
-			$("#newpassword").next(".error").show();
-			return false;
-		}else{
-			$("#newpassword").next(".error").hide();
-		}
-		if(new_password1.length==0){
-			$("#newpassword1").next(".error").show();
-			return false;
-		}else{
-			$("#newpassword1").next(".error").hide();
-		}
-		if(new_password1!=new_password){
-			$("#newpassword1").next().next(".error").show();
-			return false;
-		}else{
-			$("#newpassword1").next(".error").hide();
-		}
-		$.ajax({
-			url: "{:__URL('SHOP_MAIN/member/modifypassword')}",
-			data: { "new_password":new_password,"old_password":old_password },
-			type: "post",
-			success: function (res) {
-				if (res['code']> 0) {
-					$('#user_pwd #find-box').html('<div class="find_box_end"><p> <i></i> {:lang('member_password_changes_succeeded')}！ </p><p class="on_go"> <a href="SHOP_MAIN/member/usersecurity" title="{:lang('member_instant_shopping')}" class="back">{:lang('member_return_account_security_center')}&gt;&gt;</a> </p></div>'); 
-					$('#user_pwd #sflex04 .normal').removeClass('doing');
-					$('#user_pwd #sflex04 .normal').removeClass('done');
-					$('#user_pwd #sflex04 .last').addClass('doing');
-				} else if(res['code'] == -2005){
-					$("#old_password").next().next(".error").show();
-				}else{
-					$("#old_password").next().next(".error").hide();
-				}
-			}
-		});
+function modifyPwd(){
+	var old_password=$('#old_password').val();
+	var new_password=$('#newpassword').val();
+	var new_password1=$('#newpassword1').val();
+	if(old_password.length==0){
+		$("#old_password").next(".error").show();
+		return false;
+	}else{
+		$("#old_password").next(".error").hide();
 	}
+	if(new_password.length==0){
+		$("#newpassword").next(".error").show();
+		return false;
+	}else{
+		$("#newpassword").next(".error").hide();
+	}
+	if(new_password1.length==0){
+		$("#newpassword1").next(".error").show();
+		return false;
+	}else{
+		$("#newpassword1").next(".error").hide();
+	}
+	if(new_password1!=new_password){
+		$("#newpassword1").next().next(".error").show();
+		return false;
+	}else{
+		$("#newpassword1").next(".error").hide();
+	}
+	$.ajax({
+		url: "{:__URL('SHOP_MAIN/member/modifypassword')}",
+		data: { "new_password":new_password,"old_password":old_password },
+		type: "post",
+		success: function (res) {
+			if (res['code']> 0) {
+				$('#user_pwd #find-box').html('<div class="find_box_end"><p> <i></i> {:lang('member_password_changes_succeeded')}！ </p><p class="on_go"> <a href="SHOP_MAIN/member/usersecurity" title="{:lang('member_instant_shopping')}" class="back">{:lang('member_return_account_security_center')}&gt;&gt;</a> </p></div>'); 
+				$('#user_pwd #sflex04 .normal').removeClass('doing');
+				$('#user_pwd #sflex04 .normal').removeClass('done');
+				$('#user_pwd #sflex04 .last').addClass('doing');
+			} else if(res['code'] == -2005){
+				$("#old_password").next().next(".error").show();
+			}else{
+				$("#old_password").next().next(".error").hide();
+			}
+		}
+	});
+}
 </script>
 {elseif condition="$atc eq 'user_mobile'"/}
 <!-- 手机号绑定 -->
@@ -316,7 +313,7 @@ function bindingMobile(){
 }
 </script>
 {elseif condition="$atc eq 'user_email'"/}
-	<!-- 邮箱绑定 -->
+<!-- 邮箱绑定 -->
 <div class="member-main" id="user_email">
 	<div class="box"> 
 		<h5 title="{:lang('member_mailbox_binding')}" class="user-title user-title-t usersecurityTitle"><span>{:lang('member_mailbox_binding')}</span></h5>
@@ -642,7 +639,6 @@ $(function(){
 				data: {"mobile": mobile,"vertification":vertification },
 				type: "post",
 				success: function (res) {
-					// alert(JSON.stringify(res));
 					if(res['code']==0){
 						$('#sendOutCode').val(120);
 						$('#sendOutCode').attr('disabled',true);
@@ -672,10 +668,9 @@ $(function(){
 			}
 			$.ajax({
 				url:  __URL(SHOPMAIN+"/components/emailverificationcode"),
-				data: {"email": email,"vertification":vertification  },
+				data: {"email": email,"vertification":vertification },
 				type: "post",
 				success: function (res) {
-					//alert(JSON.stringify(res));
 					if(res['code']==0){
 						$('#sendOutCode').val('120{:lang('second')}');
 						$('#sendOutCode').attr('disabled',true);
@@ -691,7 +686,5 @@ $(function(){
 })
 </script>
 </div>
-<!-- <script type="text/javascript" src="__TEMP__/{$style}/public/js/verification_code.js"></script>  -->
 {/block}
-
 {block name="RightSideBar"}{/block}

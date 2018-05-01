@@ -161,7 +161,6 @@ function add_num(cart_id, max_buy, goodsid, obj, stock) {
 	var number = parseInt(goods_obj.val());
 	var temp_num = 0;// 要修改的数量
 	var is_update = true;// 是否更新，true：更新，false：不更新
-	var price = $("#subtotal_" + cart_id).attr("data-price");// 商品单价
 
 	if (max_buy == 0) {// 不限购
 
@@ -178,7 +177,6 @@ function add_num(cart_id, max_buy, goodsid, obj, stock) {
 		temp_num = ++number;
 		//减去已有的商品数量就是要购买的商品数量
 		var purchase_restriction = temp_num - goods_obj.attr("data-default-num");
-		console.log(goods_obj.attr("data-default-num"));
 		getGoodsPurchaseRestrictionForCurrentUser(goodsid,purchase_restriction,function(purchase){
 			if(purchase.code == 0){
 				temp_num = temp_num-purchase.value;//当前商品数量 - 还能购买的商品数量 = 可购买的商品数量
@@ -187,7 +185,9 @@ function add_num(cart_id, max_buy, goodsid, obj, stock) {
 			}
 		});
 	}
+	calculated_price(obj, temp_num, goodsid);
 	goods_obj.val(temp_num);
+	var price = $("#goods_price_" + cart_id).text().replace("￥","");// 商品单价
 	if (is_update) {
 		var total_price = temp_num * price;
 		total_price = total_price.toFixed(2);
@@ -199,25 +199,25 @@ function add_num(cart_id, max_buy, goodsid, obj, stock) {
 }
 
 // 数量减少
-function minus_num(cart_id, max_buy, stock, min_buy) {
+function minus_num(cart_id, max_buy, stock, min_buy, goodsid, obj) {
 	var obj = $("#goods_number_" + cart_id);
 	var number = parseInt(obj.val());
-	var price = $("#subtotal_" + cart_id).attr("data-price");// 商品单价
-
+	
+	if(min_buy >= number){
+		$.msg("该商品最少购买" + min_buy + "件");
+		number = min_buy;
+	}
 	if (number > 1) {
-		if(min_buy >= number){
-			$.msg("该商品最少购买" + min_buy + "件");
-			number = min_buy;
-		}else{
-			number--;
-			obj.val(number);
-			var total_price = number * price;
-			total_price = total_price.toFixed(2);
-			$("#subtotal_" + cart_id).text("￥" + total_price);
-			$("#subtotal_" + cart_id).attr("data-total", total_price);
-			getCopeSum();// 刷新应付总额
-			updateGoodsNumber(cart_id, number,obj);// 更新商品数量
-		}
+		number--;
+		obj.val(number);
+		calculated_price(obj, number, goodsid);
+		var price = $("#goods_price_" + cart_id).text().replace("￥","");// 商品单价
+		var total_price = number * price;
+		total_price = total_price.toFixed(2);
+		$("#subtotal_" + cart_id).text("￥" + total_price);
+		$("#subtotal_" + cart_id).attr("data-total", total_price);
+		getCopeSum();// 刷新应付总额
+		updateGoodsNumber(cart_id, number,obj);// 更新商品数量	
 	}
 }
 
@@ -239,8 +239,7 @@ function change_price(cart_id, max_buy, goodsid, obj, stock, min) {
 		}
 
 		var is_update = true;// 是否更新，true：更新，false：不更新
-		var price = $("#subtotal_" + cart_id).attr("data-price");// 商品单价
-
+		
 		if (max_buy == 0) {// 不限购
 			if (number < stock) {
 				// 正常情况
@@ -272,6 +271,8 @@ function change_price(cart_id, max_buy, goodsid, obj, stock, min) {
 		}
 		
 		$(obj).val(temp_num);
+	 	calculated_price(obj, temp_num, goodsid);
+		var price = $("#goods_price_" + cart_id).text().replace("￥","");// 商品单价
 		if (is_update) {
 			$("#subtotal_" + cart_id).text("￥" + temp_num * price);
 			$("#subtotal_" + cart_id).attr("data-total", temp_num * price);
@@ -279,4 +280,25 @@ function change_price(cart_id, max_buy, goodsid, obj, stock, min) {
 			updateGoodsNumber(cart_id, temp_num,$(obj));// 更新商品数量
 		}
 	}
+}
+
+//计算阶梯优惠后的价格
+function calculated_price(obj, num, goodsid){
+	var goods_ladder_preferential = $("#goods_ladder_preferential").val();
+	var arr = JSON.parse(goods_ladder_preferential);
+	var parentTr = $(obj).parents("tr");
+	var price = parseFloat(parentTr.find("[id^='goods_price_']").attr("data-price").replace("￥",""));
+
+	if(arr.length > 0){
+		for (var i = 0; i < arr.length; i++) {
+			var item = arr[i];
+			for(var v = 0; v < item.length; v++){
+				if(num >= item[v]['quantity'] && item[v]['goods_id'] == goodsid){
+					price -= item[v]['price'];
+					break;
+				}
+			}
+		}
+	}
+	parentTr.find("[id^='goods_price_']").text("￥"+price.toFixed(2));
 }

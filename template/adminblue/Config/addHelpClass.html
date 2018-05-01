@@ -10,12 +10,15 @@
 	<dl>
 		<dt>排序：</dt>
 		<dd>
-			<input id="sort" type="text" value="0" onkeyup="this.value=this.value.replace(/\D/g,'')" class="input-common" />
+			<input id="sort" type="number" value="0" onkeyup="this.value=this.value.replace(/\D/g,'')" class="input-common harf" />
 		</dd>
 	</dl>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="setConfigAjax();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="setConfigAjax();">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
 	</dl>
 </div>
 <script>
@@ -23,7 +26,7 @@ function setConfigAjax(){
 	var class_name = $("#class_name").val();
 	var sort = $("#sort").val();
 	if(class_name == ""){
-		showMessage('error', "请输入类型名称");
+		showTip("请输入类型名称",'warning');
 		return;
 	}
 	$.ajax({
@@ -32,30 +35,14 @@ function setConfigAjax(){
 		data:{ 'class_name':class_name, 'sort':sort },
 		success:function (data) {
 			if (data["code"] > 0) {
-				showMessage('success', data["message"],"{:__URL('ADMIN_MAIN/config/helpclass')}");
+				showTip(data["message"],'success');
+				location.href = "{:__URL('ADMIN_MAIN/config/helpclass')}";
 			}else{
-				showMessage('error', data["message"]);
+				showTip(data["message"],'error');
 			}
 		}
 	});
 }
 
-function testSend(){
-	var email_test = $("#email_test").val();
-	$.ajax({
-		type:"post",
-		url:"{:__URL('ADMIN_MAIN/config/testsend')}",
-		data:{
-			'email_test':email_test,
-		},
-		success:function (data) {
-			if (data["code"] > 0) {
-				showMessage('success', data["message"]);
-			}else{
-				showMessage('error', data["message"]);
-			}
-		}
-	});
-}
 </script>
 {/block}

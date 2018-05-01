@@ -9,6 +9,26 @@
 .btn p{font-size: 12px;line-height: 20px;background-color: #F5F5F5;color: #999;text-align: center;color: #666;width: 78px;height: 20px;padding: 4px 0;border: solid 1px;border-color: #DCDCDC #DCDCDC #B3B3B3 #DCDCDC;position: absolute;left: 12px;top: 9px;z-index: 1;}
 .style0page{padding:20px;}
 .width-margin{width:880px;margin:0 auto;}
+.upload-box{
+	padding:10px 0px;
+	line-height:31px;
+}
+.upload-box:after{
+	content:'';
+	display:block;
+	clear:both;
+}
+.upload-box>span{
+	display:inline-block;
+	float:left;
+}
+.upload-btn-common{
+	line-height:30px;
+	float:left;
+}
+.upload-btn-common em{
+	top:1px;
+}
 </style>
 {/block}
 {block name="main"}
@@ -78,14 +98,16 @@
 			</div>
 			<div class="overflow width-margin">
 				<ul class="overflow" id="Template_All" style="overflow:hidden;">
-					{if condition="$print neq ''"}
-					{foreach name="print" item="v" }
-					<li style="float:left;width:140px;margin-bottom:5px;">
-						<input id="ckb_{$v.field_name}" {if condition="$v['is_print'] eq 1"}checked="checked"{/if} type="checkbox" onclick="javascript:ckbClick(event);" style="float:left;margin:4px 4px 0 0;" >
-						<label for="ckb_{$v.field_name}">{$v.field_display_name}</label>
-					</li>
-					{/foreach}
-					{/if}
+				{if condition="$print neq ''"}
+				{foreach name="print" item="v" }
+				<li style="float:left;width:140px;margin-bottom:5px;">
+					<label for="ckb_{$v.field_name}">
+					<i class="checkbox-common {if condition="$v['is_print'] eq 1"}selected{/if}"><input type="checkbox" id="ckb_{$v.field_name}" {if condition="$v['is_print'] eq 1"}checked="checked"{/if} onclick="javascript:ckbClick(event);"/></i>
+					{$v.field_display_name}
+					</label>
+				</li>
+				{/foreach}
+				{/if}
 				</ul>
 				<div class="clear"></div>
 				<!--设置快递单 begin-->
@@ -97,12 +119,27 @@
 						<img id="imgLogo" src="{:__IMG($express_shipping_select.image)}" style="width: 100%; height: 480px;">
 						{/if}
 						<input type="hidden"id="Logo"value="{$express_shipping_select.image}"/>
-						<div class="upload-btn">
+						<!-- <div class="upload-btn">
 							<span>
 								<input class="input-file" name="file_upload" id="fileUploadImg" type="file" onchange="javascript:btnUploadFile();">
 							</span>
 							<p><i class="fa fa-cloud-upload"></i>上传图片</p>
+						</div> -->
+						<div class="upload-box">
+							<span>上传背景图片：</span>
+							<div class="upload-btn-common">
+								<div>
+									<input class="input-file" name="file_upload" id="fileUploadImg" type="file" onchange="btnUploadFile();" title="上传">
+									<input type="hidden" id="Logo" value="{$express_shipping_select.image}" />
+								</div>
+								<input type="text" id="text_Logo" class="input-common" readonly="readonly" value="{$express_shipping_select.image}" />
+								<em>上传</em>
+								
+								<img id="preview_Logo" src="__STATIC__/blue/img/upload-common-select.png" data-src="{:__IMG($express_shipping_select.image)}" data-html="true" data-container="body" data-placement="top" data-trigger="manual"/>
+				
+							</div>
 						</div>
+						
 					</div>
 					<div class="templet-label" style="padding:-5px;margin:-5px;">
 						<div class="col01">
@@ -125,11 +162,13 @@
 				<div class="clear"></div>
 			</div>
 		</li>
+		<li>
+			<input type="button" id="btnSave" class="btn-common btn-big" onclick="javascript:SaveState();" value="保存">
+			<button onclick="javascript:cancel()" class="btn-common-cancle btn-big" >返回</button>
+		</li>
 	</ul>
 	<!--自定义模版 end-->
-	<div class="l156 t30 b20" style="margin:0 0 10px 0px; text-align: center;z-index:100">
-		<input type="button" id="btnSave" class="btn-common btn-big" onclick="javascript:SaveState();" value="保存">
-		<button onclick="javascript:cancel()" class="btn-common-cancle btn-big" style="margin-left:10px;">取消</button>
+	<div class="l156 t30 b20" style="margin:0 0 10px 0px;z-index:100">
 		<input type="hidden" value="869.00" id="firstPicWidth">
 		<input type="hidden" value="480.00" id="firstPicHeight">
 		<input type="hidden" value="sysTemplate" id="isSysOrSelf">
@@ -352,7 +391,9 @@ function SaveState() {
 		type: "post",
 		success: function (returnData) {
 			if(returnData>0){
-				showMessage('success', "模板修改成功!", "{:__URL('ADMIN_MAIN/express/expresscompany')}");
+				showTip("模板修改成功!",'success');
+				location.href = "{:__URL('ADMIN_MAIN/express/expresscompany')}";
+				//showMessage('success', "模板修改成功!", "{:__URL('ADMIN_MAIN/express/expresscompany')}");
 			}
 		}
 	});
@@ -475,12 +516,15 @@ function btnUploadFile() {
 		if(res.code){
 			$("#imgLogo").attr("src",__IMG(res.data));
 			$("#Logo").val(res.data);
+			$("#text_Logo").val(res.data);
+			$("#preview_Logo").attr("data-src",__IMG(res.data));
 			showTip(res.message,"success");
 		}else{
 			showTip(res.message,"error");
 		}
 	});
 }
+
 </script>
 <!--------------自定义模版结束-------->
 <!--确认信息的公用弹层 开始-->

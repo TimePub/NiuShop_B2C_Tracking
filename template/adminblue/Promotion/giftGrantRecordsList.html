@@ -1,5 +1,9 @@
 {extend name="adminblue/base" /}
-{block name="resources"/}{/block}
+{block name="resources"/}
+<style type="text/css">
+	.ns-main{margin-top: 0;}
+</style>
+{/block}
 {block name="main"}
 <table class="mytable">
 	<tr>
@@ -10,6 +14,15 @@
 	</tr>
 </table>
 <table class="table-class">
+	<colgroup>
+	<!-- <col style="width: 2%;"> -->
+	<col style="width: 15%;">
+	<col style="width: 15%;">
+	<col style="width: 15%;">
+	<col style="width: 15%;">
+	<col style="width: 20%;">
+	<col style="width: 20%;">
+	</colgroup>
 	<thead>
 		<tr align="center">
 			<th align="left">赠品名称</th>
@@ -28,18 +41,21 @@
 <script type="text/javascript">
 function LoadingInfo(page_index) {
 	var search_text = $("#search_text").val();
+	var gift_id = {$gift_id};
 	$.ajax({
 		type : "post",
 		url : "{:__URL('ADMIN_MAIN/promotion/giftGrantRecordsList')}",
 		data : {
 			"page_index" : page_index,
 			"page_size" : $("#showNumber").val(),
-			"search_text" : search_text
+			"search_text" : search_text,
+			"gift_id"	: gift_id
 		},
 		success : function(data) {
-			var html = '';
 			if (data["data"].length > 0) {
+				$(".table-class tbody").empty();
 				for (var i = 0; i < data["data"].length; i++) {
+					var html = '';
 					var current = data['data'][i];
 					html += '<tr>';
 						html += '<td align="left">' + current.gift_name + '</td>';
@@ -49,11 +65,12 @@ function LoadingInfo(page_index) {
 						html += '<td align="center">' + timeStampTurnTime(current.create_time) + '</td>';
 						html += '<td align="center">' + current.remark + '</td>';
 					html += '</tr>';
+					$(".table-class tbody").append(html);
 				}
 			} else {
-				html += '<tr align="center"><td colspan="6">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr align="center"><td colspan="6">暂无符合条件的数据记录</td></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}

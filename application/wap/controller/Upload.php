@@ -77,7 +77,6 @@ define("UPLOAD_CMS", Config::get('view_replace_str.UPLOAD_CMS'));
 // 存放视频文件
 define("UPLOAD_VIDEO", Config::get('view_replace_str.UPLOAD_VIDEO'));
 
-
 class Upload extends Controller
 {
 
@@ -101,8 +100,21 @@ class Upload extends Controller
     private $upload_type = 1;
 
     private $instance_id = "";
-    //缩略类型
+    
+    // 缩略类型
     private $thumb_type = 1;
+    
+    // 是否开启水印功能
+    private $is_watermark = false;
+    
+    // 水印图片透明度
+    private $transparency = 100;
+    
+    // 水印图片位置
+    private $waterPosition = \think\Image::WATER_SOUTHEAST;
+    
+    // 水印图片，默认图
+    private $imgWatermark = "public/static/images/show-water.png";
 
     public function __construct()
     {
@@ -112,6 +124,20 @@ class Upload extends Controller
         $picture_info = $config->getPictureUploadSetting(0);
         $this->thumb_type = $picture_info["thumb_type"];
         
+        $config_water_info = $config->getWatermarkConfig($this->instance_id);
+        
+        if (! empty($config_water_info)) {
+            if (! empty($config_water_info['watermark']) && $config_water_info['watermark'] == "1") {
+                $this->is_watermark = true;
+                $this->imgWatermark = $config_water_info['imgWatermark'];
+                if (! empty($config_water_info['transparency'])) {
+                    $this->transparency = $config_water_info['transparency'];
+                }
+                if (! empty($config_water_info['waterPosition'])) {
+                    $this->waterPosition = $config_water_info['waterPosition'];
+                }
+            }
+        }
     }
 
     /**
@@ -127,6 +153,7 @@ class Upload extends Controller
         // 重新设置文件路径
         $this->resetFilePath();
         // 检测文件夹是否存在，不存在则创建文件夹
+        
         if (! file_exists($this->reset_file_path)) {
             $mode = intval('0777', 8);
             mkdir($this->reset_file_path, $mode, true);
@@ -145,18 +172,19 @@ class Upload extends Controller
         if (! $this->validationFile()) {
             return $this->ajaxFileReturn();
         }
+        
         $guid = time();
         $file_name_explode = explode(".", $this->file_name); // 图片名称
         $suffix = count($file_name_explode) - 1;
         $ext = "." . $file_name_explode[$suffix]; // 获取后缀名
         $newfile = $guid . $ext; // 重新命名文件
-                                 // 特殊 判断如果是商品图
         
-        $ok = $this->moveUploadFile($_FILES["file_upload"]["tmp_name"], $this->reset_file_path . $newfile);
+        $ok = $this->generateImage($newfile);
+        
         if ($ok["code"]) {
             
             // 文件上传成功执行下边的操作
-            if (! strstr(UPLOAD_VIDEO, $this->reset_file_path)) {
+            if (! strstr($this->reset_file_path, UPLOAD_VIDEO) && ! strstr($this->reset_file_path, GOODS_VIDEO_PATH) && ! strstr($this->reset_file_path, UPLOAD_FILE)) {
                 @unlink($_FILES['file_upload']);
                 $image_size = @getimagesize($ok["path"]); // 获取图片尺寸
                 if ($image_size) {
@@ -167,6 +195,7 @@ class Upload extends Controller
                     
                     switch ($this->file_path) {
                         case UPLOAD_GOODS:
+                            
                             // 商品图
                             $type = request()->post("type", "");
                             $pic_name = request()->post("pic_name", $name);
@@ -186,6 +215,7 @@ class Upload extends Controller
                             $this->return['data'] = $ok["path"];
                             break;
                         case UPLOAD_GOODS_SKU:
+                            
                             // 商品SKU图片
                             $this->return['code'] = 1;
                             $this->return['data'] = $ok["path"];
@@ -198,54 +228,63 @@ class Upload extends Controller
                             // 商品品牌
                             break;
                         case UPLOAD_GOODS_GROUP:
+                            
                             // 商品分组
                             $this->return['code'] = 1;
                             $this->return['data'] = $ok["path"];
                             $this->return['message'] = "上传成功";
                             break;
                         case UPLOAD_GOODS_CATEGORY:
+                            
                             // 商品分类
                             $this->return['code'] = 1;
                             $this->return['data'] = $ok["path"];
                             $this->return['message'] = "上传成功";
                             break;
                         case UPLOAD_COMMON:
+                            
                             // 公共
-                            $this->return['code'] = 1;                           
+                            $this->return['code'] = 1;
                             $this->return['data'] = $ok["path"];
                             $this->return['message'] = "上传成功";
                             break;
                         case UPLOAD_AVATOR:
+                            
                             // 用户头像
                             $this->return['code'] = 1;
                             $this->return['data'] = $ok["path"];
                             $this->return['message'] = "上传成功";
                             break;
                         case UPLOAD_PAY:
+                            
                             // 支付
                             $this->return['code'] = 1;
                             $this->return['data'] = $ok["path"];
                             $this->return['message'] = "上传成功";
                             break;
                         case UPLOAD_ADV:
+                            
                             // 广告位
                             $this->return['code'] = 1;
                             $this->return['data'] = $ok["path"];
                             $this->return['message'] = "上传成功";
                             break;
                         case UPLOAD_EXPRESS:
+                            
                             // 物流
                             $this->return['code'] = 1;
                             $this->return['data'] = $ok["path"];
                             $this->return['message'] = "上传成功";
                             break;
                         case UPLOAD_CMS:
+                            
                             // 文章
                             $this->return['code'] = 1;
                             $this->return['data'] = $ok["path"];
                             $this->return['message'] = "上传成功";
                             break;
-                        case  UPLOAD_COMMENT:
+                        case UPLOAD_COMMENT:
+                            
                             // 评论
                             $new_key = $this->reset_file_path . md5(time() . $name) . "_375_375" . $ext;
                             $retval = $this->uploadThumbFile($this->reset_file_path . $newfile, $new_key, 375, 375, 2);
@@ -256,7 +295,40 @@ class Upload extends Controller
                                 $this->return['message'] = "上传失败";
                                 $this->return['code'] = 0;
                             }
-                            $this->return['data'] = $new_key;
+                            $this->return['data'] = $retval["path"];
+                            break;
+                        case UPLOAD_WEB_COMMON:
+                            
+                            // 系统默认图
+                            $new_key = $this->reset_file_path . md5(time() . $name) . "_360_360" . $ext;
+                            $retval = $this->uploadThumbFile($this->reset_file_path . $newfile, $new_key, 360, 360, 2);
+                            if ($retval > 0) {
+                                $this->return['message'] = "上传成功";
+                                $this->return['code'] = 1;
+                            } else {
+                                $this->return['message'] = "上传失败";
+                                $this->return['code'] = 0;
+                            }
+                            $this->return['data'] = $retval["path"];
+                            break;
+                        case UPLOAD_ICO:
+                            $new_key = $this->reset_file_path . md5(time() . $name) . "_60_60" . $ext;
+                            $retval = $this->uploadThumbFile($this->reset_file_path . $newfile, $new_key, 60, 60, 2);
+                            if ($retval > 0) {
+                                $this->return['message'] = "上传成功";
+                                $this->return['code'] = 1;
+                            } else {
+                                $this->return['message'] = "上传失败";
+                                $this->return['code'] = 0;
+                            }
+                            $this->return['data'] = $retval["path"];
+                            break;
+                        case UPLOAD_WATERMARK:
+                            
+                            // 水印图片
+                            $this->return['message'] = "上传成功";
+                            $this->return['code'] = 1;
+                            $this->return['data'] = $ok["path"];
                             break;
                     }
                 } else {
@@ -265,18 +337,32 @@ class Upload extends Controller
                     $this->return['message'] = "请检查您的上传参数配置或上传的文件是否有误";
                 }
             } else {
-                
                 switch ($this->file_path) {
                     case UPLOAD_VIDEO:
-                        // 视频文件
+                        
+                        // 公共视频文件
+                        $this->return['code'] = 1;
+                        $this->return['data'] = $ok["path"];
+                        $this->return['message'] = "上传成功";
+                        break;
+                    case GOODS_VIDEO_PATH:
+                        
+                        // 商品视频文件
+                        $this->return['code'] = 1;
+                        $this->return['data'] = $ok["path"];
+                        $this->return['message'] = "上传成功";
+                        break;
+                    case UPLOAD_FILE:
+                        
+                        // 文件
                         $this->return['code'] = 1;
                         $this->return['data'] = $ok["path"];
                         $this->return['message'] = "上传成功";
                         break;
                 }
             }
-            //删除本地的图片
-            if($this->upload_type == 2){
+            // 删除本地的图片
+            if ($this->upload_type == 2) {
                 @unlink($this->reset_file_path . $newfile);
             }
         } else {
@@ -301,10 +387,12 @@ class Upload extends Controller
                 // 商品品牌
                 break;
             case UPLOAD_GOODS_GROUP:
+                
                 // 商品分组
                 $file_path = $this->file_path;
                 break;
             case UPLOAD_GOODS_CATEGORY:
+                
                 // 商品分类
                 $file_path = $this->file_path;
                 break;
@@ -325,19 +413,49 @@ class Upload extends Controller
                 // 广告位
                 break;
             case UPLOAD_EXPRESS:
+                
                 // 物流
                 $file_path = $this->file_path;
                 break;
             case UPLOAD_CMS:
+                
                 // 文章
                 $file_path = $this->file_path;
                 break;
             case UPLOAD_VIDEO:
+                
                 // 视频
                 $file_path = $this->file_path;
                 break;
             case UPLOAD_COMMENT:
+                
                 // 评论
+                $file_path = $this->file_path;
+                break;
+            case GOODS_VIDEO_PATH:
+                
+                // 商品视频
+                $file_path = $this->file_path . request()->post("goods_id", "") . "/";
+                break;
+            case UPLOAD_WEB_COMMON:
+                
+                // 系统默认图
+                $file_path = $this->file_path;
+                break;
+            case UPLOAD_ICO:
+                
+                // 商家服务小图标
+                $file_path = $this->file_path;
+                break;
+            case UPLOAD_WATERMARK:
+                
+                // 水印图片
+                $file_path = $this->file_path;
+                break;
+            
+            case UPLOAD_FILE:
+                
+                // 商家服务小图标
                 $file_path = $this->file_path;
                 break;
         }
@@ -382,94 +500,139 @@ class Upload extends Controller
         $flag = true;
         switch ($this->file_path) {
             case UPLOAD_GOODS:
+                
                 // 商品图片
-                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg") || $this->file_size > 3000000) {
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 3000000) {
                     $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过3MB';
                     $flag = false;
                 }
                 break;
             case UPLOAD_GOODS_SKU:
+                
                 // 商品SKU图片
-                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg") || $this->file_size > 1000000) {
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 1000000) {
                     $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过1MB';
                     $flag = false;
                 }
                 break;
             case UPLOAD_GOODS_BRAND:
+                
                 // 商品品牌
-                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg") || $this->file_size > 1000000) {
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 1000000) {
                     $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过1MB';
                     $flag = false;
                 }
                 break;
             case UPLOAD_GOODS_GROUP:
+                
                 // 商品分组
-                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg") || $this->file_size > 1000000) {
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 1000000) {
                     $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过1MB';
                     $flag = false;
                 }
                 break;
             case UPLOAD_GOODS_CATEGORY:
+                
                 // 商品分类
-                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg") || $this->file_size > 1000000) {
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 1000000) {
                     $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过1MB';
                     $flag = false;
                 }
                 break;
             case UPLOAD_COMMON:
-                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg") || $this->file_size > 1000000) {
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 1000000) {
                     $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过1MB';
                     $flag = false;
                 }
                 // 公共
                 break;
             case UPLOAD_AVATOR:
+                
                 // 用户头像
-                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg") || $this->file_size > 1000000) {
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 1000000) {
                     $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过1MB';
                     $flag = false;
                 }
                 break;
             case UPLOAD_PAY:
+                
                 // 支付
-                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg") || $this->file_size > 1000000) {
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 1000000) {
                     $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过1MB';
                     $flag = false;
                 }
                 break;
             case UPLOAD_ADV:
+                
                 // 广告位
-                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg") || $this->file_size > 1000000) {
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 1000000) {
                     $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过1MB';
                     $flag = false;
                 }
                 break;
             case UPLOAD_EXPRESS:
+                
                 // 物流
-                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg") || $this->file_size > 1000000) {
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 1000000) {
                     $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过1MB';
                     $flag = false;
                 }
                 break;
             case UPLOAD_CMS:
+                
                 // 文章
-                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg") || $this->file_size > 1000000) {
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 1000000) {
                     $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过1MB';
                     $flag = false;
                 }
                 break;
             case UPLOAD_VIDEO:
+                
+                // 公共视频
                 if ($this->file_type != "video/mp4" || $this->file_size > 500000000) {
                     $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过500MB';
                     $flag = false;
                 }
                 break;
             case UPLOAD_COMMENT:
-                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg") || $this->file_size > 1000000) {
+                
+                // 评论
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 1000000) {
                     $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过1MB';
                     $flag = false;
                 }
-                // 评论
+                break;
+            case GOODS_VIDEO_PATH:
+                
+                // 商品视频
+                if ($this->file_type != "video/mp4" || $this->file_size > 500000000) {
+                    $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过500MB';
+                    $flag = false;
+                }
+                break;
+            case UPLOAD_ICO:
+                
+                // 商家服务小图标
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 1000000) {
+                    $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过1MB';
+                    $flag = false;
+                }
+                break;
+            case UPLOAD_WATERMARK:
+                
+                // 水印图片
+                if (($this->file_type != "image/gif" && $this->file_type != "image/png" && $this->file_type != "image/jpeg" && $this->file_type != "image/jpg") || $this->file_size > 1000000) {
+                    $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过1MB';
+                    $flag = false;
+                }
+                break;
+            case UPLOAD_FILE:
+                
+                // 存放文件
+                if ($this->file_size > 500000000) {
+                    $this->return['message'] = '文件上传失败,请检查您上传的文件类型,文件大小不能超过500MB';
+                    $flag = false;
+                }
                 break;
         }
         return $flag;
@@ -537,7 +700,7 @@ class Upload extends Controller
                 'type' => '4'
             )
         );
-
+        
         $photoArray["bigPath"]["path"] = $upFilePath . md5(time() . $pic_tag) . "1" . $ext;
         $photoArray["middlePath"]["path"] = $upFilePath . md5(time() . $pic_tag) . "2" . $ext;
         $photoArray["smallPath"]["path"] = $upFilePath . md5(time() . $pic_tag) . "3" . $ext;
@@ -546,9 +709,9 @@ class Upload extends Controller
         foreach ($photoArray as $k => $v) {
             if (stristr($type, $v['type'])) {
                 $result = $this->uploadThumbFile($photoPath, $v["path"], $v["width"], $v["height"]);
-                if($result["code"]){
+                if ($result["code"]) {
                     $photoArray[$k]["path"] = $result["path"];
-                }else{
+                } else {
                     return 0;
                 }
             }
@@ -563,10 +726,11 @@ class Upload extends Controller
         }
         return $retval;
     }
+
     /**
      * 用于相册多图上传
      *
-     * @return string|multitype:string NULL Ambigous <unknown, boolean, number, \think\false, string>
+     * @return string|multitype:string
      */
     public function photoAlbumUpload()
     {
@@ -616,9 +780,7 @@ class Upload extends Controller
         unset($tmp_array[$suffix]);
         $file_new_name = implode(".", $tmp_array);
         $newfile = md5($file_new_name . $guid) . $ext; // 重新命名文件
-                                                       // $ok = @move_uploaded_file($_FILES["file_upload"]["tmp_name"], $this->reset_file_path . $newfile);
-        
-        $ok = $this->moveUploadFile($_FILES["file_upload"]["tmp_name"], $this->reset_file_path . $newfile);
+        $ok = $this->generateImage($newfile);
         if ($ok["code"]) {
             @unlink($_FILES['file_upload']);
             $image_size = @getimagesize($ok["path"]); // 获取图片尺寸
@@ -636,12 +798,12 @@ class Upload extends Controller
                 $retval = $this->photoCreate($this->reset_file_path, $this->reset_file_path . $newfile, "." . $file_name_explode[$suffix], $type, $pic_name, $album_id, $width, $height, $pic_tag, $pic_id, $ok["domain"], $ok["bucket"], $ok["path"]);
                 
                 if ($retval > 0) {
-//                     $album = new Album();
-//                     $picture_info = $album->getAlubmPictureDetail([
-//                         "pic_id" => $retval
-//                     ]);
+                    // $album = new Album();
+                    // $picture_info = $album->getAlubmPictureDetail([
+                    // "pic_id" => $retval
+                    // ]);
                     $data['file_id'] = $retval;
-//                     $data['file_name'] = $picture_info["pic_cover_mid"];
+                    // $data['file_name'] = $picture_info["pic_cover_mid"];
                     $data['file_name'] = $ok["path"];
                     $data['origin_file_name'] = $this->file_name;
                     $data['file_path'] = $this->reset_file_path . $newfile;
@@ -656,8 +818,8 @@ class Upload extends Controller
                 $data['message'] = "图片上传失败";
                 $data['origin_file_name'] = $this->file_name;
             }
-            //删除本地的图片
-            if($this->upload_type == 2){
+            // 删除本地的图片
+            if ($this->upload_type == 2) {
                 @unlink($this->reset_file_path . $newfile);
             }
         } else {
@@ -759,7 +921,7 @@ class Upload extends Controller
             "domain" => '',
             "bucket" => ''
         ];
-        if($ok){
+        if ($ok) {
             if ($this->upload_type == 2) {
                 $qiniu = new QiNiu();
                 $result = $qiniu->setQiniuUplaod($key, $key);
@@ -767,32 +929,42 @@ class Upload extends Controller
         }
         return $result;
     }
+
     /**
      * 用户缩略图上传
-     * @param unknown $file_path
-     * @param unknown $key
+     *
+     * @param unknown $file_path            
+     * @param unknown $key            
      */
-    public function uploadThumbFile($photoPath, $key, $width, $height, $upload_type = null){
+    public function uploadThumbFile($photoPath, $key, $width, $height, $upload_type = null)
+    {
         try {
             $image = \think\Image::open($photoPath);
             $image->thumb($width, $height, isset($upload_type) ? $upload_type : $this->thumb_type);
-            $image->save($key,"png");
+            $image->save($key, "png");
             unset($image);
-            $result = array("code"=>true, "path"=>$key);
+            $result = array(
+                "code" => true,
+                "path" => $key
+            );
             if ($this->upload_type == 2) {
                 $qiniu = new QiNiu();
                 $result = $qiniu->setQiniuUplaod($key, $key);
                 @unlink($key);
             }
             return $result;
-        } catch (\Exception $e) {         
-            return array("code"=>false);
+        } catch (\Exception $e) {
+            return array(
+                "code" => false
+            );
         }
     }
+
     /**
      * sql文件上传读取
      */
-    public function uploadSql(){
+    public function uploadSql()
+    {
         $data = array();
         $this->file_name = $_FILES["file_upload_sql"]["name"]; // 文件原名
         $this->file_size = $_FILES["file_upload_sql"]["size"]; // 文件大小
@@ -807,19 +979,54 @@ class Upload extends Controller
             $data['message'] = "文件大小不能超过100k";
             return json_encode($data);
         }
-    
         
         $name = $_FILES["file_upload_sql"]["tmp_name"];
         $str = "";
-        if(file_exists($name)){
-            $fp = fopen($name,"r");
-            $str ="";
-            while(!feof($fp)){
-                $str .= fgets($fp);//逐行读取。如果fgets不写length参数，默认是读取1k。
+        if (file_exists($name)) {
+            $fp = fopen($name, "r");
+            $str = "";
+            while (! feof($fp)) {
+                $str .= fgets($fp); // 逐行读取。如果fgets不写length参数，默认是读取1k。
             }
-    
         }
-        $data = array("code"=>1, "sql_str"=>$str);
+        $data = array(
+            "code" => 1,
+            "sql_str" => $str
+        );
         return json_encode($data);
+    }
+
+    /**
+     * 生成图片
+     * 创建时间：2018年3月31日15:11:36 王永杰
+     */
+    private function generateImage($newfile)
+    {
+        // 开启水印功能，目前只针对商品图片添加水印
+        if ($this->is_watermark && ! empty($this->imgWatermark) && $this->file_path == UPLOAD_GOODS) {
+            
+            try {
+                $image = \think\Image::open(request()->file('file_upload'));
+                $res = $image->water($this->imgWatermark, $this->waterPosition, $this->transparency)->save($this->reset_file_path . $newfile);
+                if (! empty($res)) {
+                    $ok = [
+                        
+                        "code" => 1,
+                        "path" => $this->reset_file_path . $newfile,
+                        "domain" => '',
+                        "bucket" => ''
+                    ];
+                } else {
+                    $ok = $this->moveUploadFile($_FILES["file_upload"]["tmp_name"], $this->reset_file_path . $newfile);
+                }
+            } catch (\Exception $e) {
+                // 水印图片不存在或者其他错误，则生成正常的图片
+                $ok = $this->moveUploadFile($_FILES["file_upload"]["tmp_name"], $this->reset_file_path . $newfile);
+            }
+        } else {
+            
+            $ok = $this->moveUploadFile($_FILES["file_upload"]["tmp_name"], $this->reset_file_path . $newfile);
+        }
+        return $ok;
     }
 }

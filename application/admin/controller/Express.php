@@ -400,45 +400,11 @@ class Express extends BaseController
      */
     public function expressCompany()
     {
-        $child_menu_list = array(
-            array(
-                'url' => "express/expresscompany",
-                'menu_name' => "物流公司",
-                "active" => 1
-            ),
-            array(
-                'url' => "config/areamanagement",
-                'menu_name' => "地区管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "order/returnsetting",
-                'menu_name' => "商家地址",
-                "active" => 0
-            ),
-            array(
-                'url' => "shop/pickuppointlist",
-                'menu_name' => "自提点管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "shop/pickuppointfreight",
-                'menu_name' => "自提点运费",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/distributionareamanagement",
-                'menu_name' => "货到付款地区管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/expressmessage",
-                'menu_name' => "物流跟踪设置",
-                "active" => 0
-            )
-        );
-        
+        //获取物流配送三级菜单
+        $child_menu_list = $this->getExpressChildMenu(1);
         $this->assign('child_menu_list', $child_menu_list);
+        $express_child = $this->getExpressChild(1,1);
+        $this->assign('express_child', $express_child);
         
         $expressCompany = new ExpressService();
         if (request()->isAjax()) {
@@ -563,5 +529,149 @@ class Express extends BaseController
             }
             return AjaxReturn($retval);
         }
+    }
+    
+    /**
+     * 物流配送三级菜单
+     */
+    public function getExpressChildMenu($menu_id){
+        $child_menu_list = array(
+            array(
+                "menu_id" => 1,
+                'url' => "express/expresscompany",
+                'menu_name' => "物流配送",
+                "active" => 0
+            ),
+            array(
+                "menu_id" => 4,
+                'url' => "shop/pickuppointlist",
+                'menu_name' => "门店自提",
+                "active" => 0
+            ),
+            array(
+                "menu_id" => 8,
+                'url' => "distribution/distributionuserlist",
+                'menu_name' => "本地配送",
+                "active" => 0
+            ),
+        );
+        $is_support_o2o = IS_SUPPORT_O2O;
+        foreach($child_menu_list as $k=>$v){
+            if($menu_id == $v['menu_id']){
+                $child_menu_list[$k]['active'] = 1;
+            }
+            if($is_support_o2o != 1){
+            	if($v['menu_id'] == 8){
+            		unset($child_menu_list[$k]);
+            	}
+            }
+        }
+        return $child_menu_list;
+    }
+    
+    /**
+     * 物流配送
+     */
+    public function expressLogistics()
+    {
+    	$express_child = $this->getExpressChild(2,1);
+    	$this->assign('express_child', $express_child);
+    	dump($express_child);
+    	return view($this->style . 'Express/expressLogistics');
+    }
+    
+    /**
+     * 获取物流配送（1）或者本地配送（2）的菜单
+     * @param unknown $express_id  
+     * @param unknown $child_id
+     */
+    public function getExpressChild($express_id, $child_id=1) 
+    {	
+    
+  		switch ($express_id){
+  			case 1 :
+  				$express_child = array(
+  				   'express_id' => 1,
+  					array(
+		  					"child_id" => 1,
+		  					'url' => "express/expresscompany",
+		  					'child_name' => "物流公司",
+		  					"active" => 0
+  					),
+  					array(
+  							"child_id" => 2,
+  							'url' => "config/areamanagement",
+  							'child_name' => "地区管理",
+  							"active" => 0
+  					),
+  					array(
+  							"child_id" => 3,
+  							'url' => "order/returnsetting",
+  							'child_name' => "商家地址",
+  							"active" => 0
+  					),
+  					array(
+  							"child_id" => 4,
+  							'url' => "config/distributionareamanagement",
+  							'child_name' => "货到付款地区管理",
+  							"active" => 0
+  					),
+  					array(
+  							"child_id" => 5,
+  							'url' => "config/expressmessage",
+  							'child_name' => "物流跟踪设置",
+  							"active" => 0
+  					),
+  				);
+  				break;
+  			case 2 : 
+  					$express_child = array(
+  							'express_id' => 2,
+  							array(
+  									"child_id" => 1,
+  									'url' => "distribution/distributionuserlist",
+  									'child_name' => "配送人员",
+  									"active" => 0
+  							),
+  							array(
+  									"child_id" => 2,
+  									'url' => "distribution/distributionConfig",
+  									'child_name' => "配送费用",
+  									"active" => 0
+  							),
+  					
+  							array(
+  									"child_id" => 3,
+  									'url' => "distribution/distributionareamanagement",
+  									'child_name' => "配送地区",
+  									"active" => 0
+  							)
+  					);
+  				
+  				break;
+  				case 3 :
+  					$express_child = array(
+  					'express_id' => 3,
+  					array(
+  					"child_id" => 1,
+  					'url' => "shop/pickuppointlist",
+  					'child_name' => "门店管理",
+  					"active" => 0
+  					),
+  					array(
+  					"child_id" => 3,
+  					'url' => "shop/pickuppointfreight",
+  					'child_name' => "门店运费",
+  					"active" => 0
+  					),
+  							);
+  					break;
+  		}  	
+  		foreach($express_child as $k=>$v){
+  			if($child_id == $v['child_id']){
+  				$express_child[$k]['active'] = 1;
+  			}
+  		}
+  		return $express_child;
     }
 }

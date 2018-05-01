@@ -5,28 +5,32 @@ ul.mater{border:1px solid #e7e7eb;border-radius:5px;margin:0;}
 ul.mater li{padding:5px;border-bottom:1px solid #e7e7eb;}
 ul.mater li:first-child{padding:5px;}
 ul.mater li:last-child{border-bottom:0 solid #e7e7eb;}
-.type_name{display:inline-block;background:#01b044;color:#fff;padding:3px 8px;margin-right:10px;border-radius:3px;}
+.type_name{    display: inline-block;background: #126AE4;width: 50px;text-align: center;color: #fff;padding: 3px 8px;margin-right: 10px;border-radius: 3px;}
 .table-class tr td{vertical-align:middle;}
 .table-class tr td:frist-child{text-align:left;}
+.mytable th {padding-left: 0px;}
+.ns-main{margin-top:0px;}
 </style>
 {/block}
 {block name="main"}
 <table class="mytable">
 <tr>
 	<th width="20%" style="text-align: left;">
-		<button class="btn-common btn-small" style="margin:0 5px 0 0 !important;" onclick="location.href='{:__URL('ADMIN_MAIN/wchat/addmedia')}';">添加消息</button>
+		{if condition="!empty($type)"}
+		<button class="btn-common btn-small" style="margin:0 5px 0 0 !important;" onclick="location.href='{:__URL('ADMIN_MAIN/wchat/addmedia?type='.$type)}';">添加{$type_name}消息</button>
+		{/if}
 	</th>
 	<th width="10%">
 		<input type="text" id = 'search_text' placeholder="请输入消息名称" class="input-common"/>
-		<input type="button" onclick="searchData()" value="搜索" class="btn-common"/>
+		<button  onclick="searchData()" value="搜索" class="btn-common"/>搜索</button>
 	</th>
 </tr>
 </table>
 <table class="table-class">
 	<colgroup>
-		<col style="width: 50%;">
-		<col style="width: 30%;">
-		<col style="width: 20%;">
+		<col style="width: 74%;">
+		<col style="width: 16%;">
+		<col style="width: 10%;">
 	</colgroup>
 	<thead>
 		<tr align="center">
@@ -35,11 +39,6 @@ ul.mater li:last-child{border-bottom:0 solid #e7e7eb;}
 			<th>操作</th>
 		</tr>
 	</thead>
-	<colgroup>
-		<col style="width: 50%;">
-		<col style="width: 30%;">
-		<col style="width: 20%;">
-	</colgroup>
 	<tbody></tbody>
 </table>
 <input type="hidden" id="type" value="{$type}">
@@ -54,10 +53,10 @@ function LoadingInfo(page_index) {
 		url : "{:__URL('ADMIN_MAIN/wchat/materialmessage')}",
 		data : { "page_index" : page_index, "page_size" :$("#showNumber").val(),"search_text" : search_text, "type" : type },
 		success : function(data) {
-			var html = '';
-// 			console.log(data);
 			if (data["data"].length > 0) {
+				$(".table-class tbody").empty();
 				for (var i = 0; i < data["data"].length; i++) {
+					var html = '';
 					if(data['data'][i]['type'] == 1){
 						var type_name = '文本 ';
 					}else if(data['data'][i]['type'] == 2){
@@ -77,11 +76,13 @@ function LoadingInfo(page_index) {
 					html += '<td><a href="'+__URL('ADMIN_MAIN/wchat/updatemedia?media_id=' + data["data"][i]["media_id"])+'">修改</a>&nbsp;&nbsp; ';
 					html += '<a href="javascript:void(0);" onclick="deleteWeixinMedia(' + data["data"][i]["media_id"] + ')">删除</a></td>';
 					html += '</tr>';
+					$(".table-class tbody").append(html);
 				}
 			} else {
-				html += '<tr align="center"><td colspan="4">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr align="center"><td colspan="4">暂无符合条件的数据记录</td></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
+
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 		}
@@ -105,14 +106,15 @@ function deleteWeixinMedia(media_id){
 						data : {"media_id" : media_id},
 						success : function(res){
 							if(res>0){
-								showMessage('success', "操作成功", "{:__URL('ADMIN_MAIN/wchat/materialmessage')}");
+								showTip("操作成功",'success');
+								location.href = "{:__URL('ADMIN_MAIN/wchat/materialmessage?type='.$type)}";
 							}else{
-							showMessage('error', "操作失败");
+								showTip("操作成功",'error');
+							}
 						}
-					}
 				})
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 				return 0;
 			}

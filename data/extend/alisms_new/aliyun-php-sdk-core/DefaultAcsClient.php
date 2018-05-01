@@ -34,7 +34,7 @@ class DefaultAcsClient implements IAcsClient
         $respObject = $this->parseAcsResponse($httpResponse->getBody(), $request->getAcceptFormat());
         if(false == $httpResponse->isSuccess())
         {
-            $this->buildApiException($respObject, $httpResponse->getStatus());
+            //$this->buildApiException($respObject, $httpResponse->getStatus());
         }
         return $respObject;
     }

@@ -59,6 +59,7 @@ use data\model\BaseModel;
 use data\model\NsShopNavigationTemplateModel;
 use data\model\NsPickupPointModel;
 use data\model\NsMemberAccountModel;
+use think\Cache;
 
 class Shop extends BaseService implements IShop
 {
@@ -70,7 +71,7 @@ class Shop extends BaseService implements IShop
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IConfig::getShopAdList()
      */
@@ -83,7 +84,7 @@ class Shop extends BaseService implements IShop
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IConfig::addShopAd()
      */
@@ -103,7 +104,7 @@ class Shop extends BaseService implements IShop
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IConfig::updateShopAd()
      */
@@ -124,7 +125,7 @@ class Shop extends BaseService implements IShop
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IShop::getShopAdDetail()
      */
@@ -137,7 +138,7 @@ class Shop extends BaseService implements IShop
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IShop::delShopAd()
      */
@@ -153,12 +154,13 @@ class Shop extends BaseService implements IShop
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IShop::addShopNavigation()
      */
-    public function addShopNavigation($nav_title, $nav_url, $type, $sort, $align, $nav_type, $is_blank, $template_name)
+    public function addShopNavigation($nav_title, $nav_url, $type, $sort, $align, $nav_type, $is_blank, $template_name, $nav_icon, $is_show)
     {
+        Cache::tag("niu_shop_navigation")->clear();
         $shop_navigation = new NsShopNavigationModel();
         $data = array(
             'shop_id' => $this->instance_id,
@@ -171,7 +173,9 @@ class Shop extends BaseService implements IShop
             'is_blank' => $is_blank,
             'template_name' => $template_name,
             'create_time' => time(),
-            'modify_time' => time()
+            'modify_time' => time(),
+            'nav_icon'=> $nav_icon,
+            'is_show' => $is_show
         );
         $shop_navigation->save($data);
         $retval = $shop_navigation->nav_id;
@@ -180,12 +184,13 @@ class Shop extends BaseService implements IShop
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IShop::addShopNavigation()
      */
-    public function updateShopNavigation($nav_id, $nav_title, $nav_url, $type, $sort, $align, $nav_type, $is_blank, $template_name)
+    public function updateShopNavigation($nav_id, $nav_title, $nav_url, $type, $sort, $align, $nav_type, $is_blank, $template_name, $nav_icon, $is_show)
     {
+        Cache::tag("niu_shop_navigation")->clear();
         $shop_navigation = new NsShopNavigationModel();
         $data = array(
             'nav_title' => $nav_title,
@@ -196,7 +201,9 @@ class Shop extends BaseService implements IShop
             'nav_type' => $nav_type,
             'is_blank' => $is_blank,
             'template_name' => $template_name,
-            'modify_time' => time()
+            'modify_time' => time(),
+            'nav_icon'=> $nav_icon,
+            'is_show'=> $is_show
         );
         $shop_navigation->save($data, [
             'nav_id' => $nav_id
@@ -206,7 +213,7 @@ class Shop extends BaseService implements IShop
 
     /**
      * (non-PHPdoc)
-     * 
+     *
      * @see \data\api\IShop::updateShopSort()
      */
     public function updateShopSort($shop_id, $shop_sort)
@@ -224,7 +231,7 @@ class Shop extends BaseService implements IShop
 
     /**
      * (non-PHPdoc)
-     * 
+     *
      * @see \data\api\IShop::setRecomment()
      */
     public function setRecomment($shop_id, $shop_recommend)
@@ -242,12 +249,13 @@ class Shop extends BaseService implements IShop
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IShop::delShopNavigation()
      */
     public function delShopNavigation($nav_id)
     {
+        Cache::tag("niu_shop_navigation")->clear();
         $shop_navigation = new NsShopNavigationModel();
         $retval = $shop_navigation->destroy($nav_id);
         return $retval;
@@ -260,9 +268,22 @@ class Shop extends BaseService implements IShop
      */
     public function ShopNavigationList($page_index = 1, $page_size = 0, $condition = '', $order = '')
     {
-        $shop_navigation = new NsShopNavigationModel();
-        $list = $shop_navigation->pageQuery($page_index, $page_size, $condition, $order, '*');
-        return $list;
+        $data = array(
+            $page_index,
+            $page_size,
+            $condition,
+            $order
+        );
+        $data = json_encode($data);
+        $cache = Cache::tag("niu_shop_navigation")->get("ShopNavigationList" . $data);
+        if (empty($cache)) {
+            $shop_navigation = new NsShopNavigationModel();
+            $list = $shop_navigation->pageQuery($page_index, $page_size, $condition, $order, '*');
+            Cache::tag("niu_shop_navigation")->set("ShopNavigationList" . $data, $list);
+            return $list;
+        } else {
+            return $cache;
+        }
     }
 
     /**
@@ -272,9 +293,16 @@ class Shop extends BaseService implements IShop
      */
     public function shopNavigationDetail($nav_id)
     {
+        // $cache = Cache::tag("niu_shop_navigation")->get("shopNavigationDetail".$nav_id);
+        // if(empty($cache))
+        // {
         $shop_navigation = new NsShopNavigationModel();
         $info = $shop_navigation->get($nav_id);
+        // Cache::tag("niu_shop_navigation")->set("shopNavigationDetail".$nav_id, $info);
         return $info;
+        // }else{
+        // return $info;
+        // }
     }
 
     /**
@@ -284,6 +312,7 @@ class Shop extends BaseService implements IShop
      */
     public function modifyShopNavigationSort($nav_id, $sort)
     {
+        Cache::tag("niu_shop_navigation")->clear();
         $shop_navigation = new NsShopNavigationModel();
         $retval = $shop_navigation->save([
             'sort' => $sort
@@ -743,7 +772,7 @@ class Shop extends BaseService implements IShop
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IShop::getShopApplyDetail()
      */
@@ -877,7 +906,7 @@ class Shop extends BaseService implements IShop
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IShop::updateShopConfigByshop()
      */
@@ -903,7 +932,7 @@ class Shop extends BaseService implements IShop
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IShop::updateShopConfigByPlatform()
      */
@@ -988,13 +1017,13 @@ class Shop extends BaseService implements IShop
         $member_account = new NsMemberAccountModel();
         $money = $member_account->getInfo([
             "shop_id" => $shop_id,
-            'uid'     => $uid
+            'uid' => $uid
         ]);
-        if(!empty($money))
-        {
+        if (! empty($money)) {
+            return $money['member_cunsum'];
+        } else {
             return 0;
-        }else
-        return $money['member_cunsum'];
+        }
     }
 
     /**
@@ -1049,7 +1078,7 @@ class Shop extends BaseService implements IShop
         }
         return $info;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::getShopAccountList()
@@ -1086,7 +1115,7 @@ class Shop extends BaseService implements IShop
         // }
         // return $list;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::getShopCommissionWithdrawList()
@@ -1109,7 +1138,7 @@ class Shop extends BaseService implements IShop
         }
         return $list;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::getShopBankAccountList()
@@ -1121,7 +1150,7 @@ class Shop extends BaseService implements IShop
         $all = $shop_bank_account->getQuery($condition, "*", "");
         return $all;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::addShopBankAccount()
@@ -1142,7 +1171,7 @@ class Shop extends BaseService implements IShop
         $shop_bank_account->save($data);
         return $shop_bank_account->id;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::updateShopBankAccount()
@@ -1165,7 +1194,7 @@ class Shop extends BaseService implements IShop
         ))->update($data);
         return $retval;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::modifyShopBankAccountIsdefault()
@@ -1187,7 +1216,7 @@ class Shop extends BaseService implements IShop
         ));
         return $retval;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::deleteShopBankAccouht()
@@ -1199,7 +1228,7 @@ class Shop extends BaseService implements IShop
         $retval = $shop_bank_account->destroy($condition);
         return $retval;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::getShopAccount()
@@ -1211,7 +1240,7 @@ class Shop extends BaseService implements IShop
         $account_obj = $shop_account->getShopAccount($shop_id);
         return $account_obj;
     }
-
+    
     /*
      * 店铺申请提现
      * (non-PHPdoc)
@@ -1252,7 +1281,7 @@ class Shop extends BaseService implements IShop
             return - 1;
         }
     }
-
+    
     /*
      * 店铺提现审核
      * (non-PHPdoc)
@@ -1294,7 +1323,7 @@ class Shop extends BaseService implements IShop
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \ata\api\IWeixin::getKeyReplyDetail($id)
      */
@@ -1354,7 +1383,7 @@ class Shop extends BaseService implements IShop
         $withdraw_no = $no_base . rand(111, 999);
         return $withdraw_no;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::getShopAccountCountList()
@@ -1377,7 +1406,7 @@ class Shop extends BaseService implements IShop
         }
         return $list;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::getShopAccountRecordsList()
@@ -1400,7 +1429,7 @@ class Shop extends BaseService implements IShop
         }
         return $list;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::getShopOrderAccountRecordsList()
@@ -1411,7 +1440,7 @@ class Shop extends BaseService implements IShop
         $return = $order_goods->getOrderGoodsViewList($page_index, $page_size, $condition, $order);
         return $return;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::getShopAll()
@@ -1426,7 +1455,7 @@ class Shop extends BaseService implements IShop
             ->select();
         return $shop_all;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::getShopAccountRecordCount()
@@ -1475,7 +1504,7 @@ class Shop extends BaseService implements IShop
         );
         return $array;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::getShopAccountSales()
@@ -1498,7 +1527,7 @@ class Shop extends BaseService implements IShop
             "shop_money" => $shop_money
         ];
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::getShopGoodsSales()
@@ -1527,7 +1556,7 @@ class Shop extends BaseService implements IShop
         ]);
         return $res;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::getShopCount()
@@ -1539,7 +1568,7 @@ class Shop extends BaseService implements IShop
         $shop_list = $shop->getQuery($condition, "count(shop_id) as count", "");
         return $shop_list[0]["count"];
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::getShopWithdrawCount()
@@ -1551,7 +1580,7 @@ class Shop extends BaseService implements IShop
         $withdraw_isaudit = $shop_account_withdraw->getQuery($condition, "sum(cash) as sum", '');
         return $withdraw_isaudit[0]["sum"];
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::addShopBankAccount()
@@ -1572,7 +1601,7 @@ class Shop extends BaseService implements IShop
         $member_withdraw_setting->save($data);
         return $member_withdraw_setting->id;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IShop::updateShopBankAccount()
@@ -1614,7 +1643,7 @@ class Shop extends BaseService implements IShop
     /**
      * 得到导航的商城模块
      * (non-PHPdoc)
-     * 
+     *
      * @see \data\api\IShop::getShopNavigationTemplate()
      */
     public function getShopNavigationTemplate($use_type)
@@ -1622,14 +1651,14 @@ class Shop extends BaseService implements IShop
         $template_model = new NsShopNavigationTemplateModel();
         $template_list = $template_model->getQuery([
             "is_use" => 1,
-            "use_type" => $use_type
+            "use_type" => array("in", $use_type)
         ], "*", "");
         return $template_list;
     }
 
     /**
      * 自提点添加
-     * 
+     *
      * @param unknown $shop_id            
      * @param unknown $name            
      * @param unknown $address            
@@ -1661,7 +1690,7 @@ class Shop extends BaseService implements IShop
 
     /**
      * (non-PHPdoc)
-     * 
+     *
      * @see \data\api\IShop::updatePickupPoint()
      */
     public function updatePickupPoint($id, $shop_id, $name, $address, $contact, $phone, $province_id, $city_id, $district_id, $longitude, $latitude)
@@ -1685,7 +1714,7 @@ class Shop extends BaseService implements IShop
 
     /**
      * (non-PHPdoc)
-     * 
+     *
      * @see \data\api\IShop::getPickupPointList()
      */
     public function getPickupPointList($page_index = 1, $page_size = 0, $where = '', $order = '')
@@ -1705,7 +1734,7 @@ class Shop extends BaseService implements IShop
 
     /**
      * (non-PHPdoc)
-     * 
+     *
      * @see \data\api\IShop::deletePickupPoint()
      */
     public function deletePickupPoint($pickip_id)
@@ -1714,10 +1743,11 @@ class Shop extends BaseService implements IShop
         $retval = $pickup_point_model->destroy($pickip_id);
         return $retval;
     }
-    public function getPickupPointDetail($pickip_id){
+
+    public function getPickupPointDetail($pickip_id)
+    {
         $pickup_point_model = new NsPickupPointModel();
         $pickup_point_detail = $pickup_point_model->get($pickip_id);
         return $pickup_point_detail;
     }
-    
 }

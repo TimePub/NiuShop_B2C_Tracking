@@ -6,31 +6,36 @@
 {block name="main"}
 <div class="set-style">
 	<dl>
-		<dt><span class="required">*</span>公告标题</dt>
+		<dt><span class="required">*</span>公告标题：</dt>
 		<dd>
 			<input id="title" type="text" class="input-common" />
 			<span class="error">请输入公告标题</span>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span class="required">*</span>排序:</dt>
+		<dt><span class="required">*</span>排序：</dt>
 		<dd>
 			<p>
-				<input id="sort" type="number" onkeyup="this.value=this.value.replace(/\D/g,'')" class="input-common" value="0" />
+				<input id="sort" type="number" onkeyup="this.value=this.value.replace(/\D/g,'')" class="input-common harf" value="0" />
 				<span class="error">请输入排序号</span>
 			</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span class="required">*</span>公告内容</dt>
+		<dt><span class="required">*</span>公告内容：</dt>
 		<dd>
 			<script id="editor" type="text/plain" style="width: 100%; height: 100px;"></script>
 			<span class="error">请输入公告内容</span>
 		</dd>
 	</dl>
-	<div style="margin:auto;width:30%;">
-		<button class="btn-common" onclick="save()" style="float:left;">发布公告</button>
-	</div>
+	
+	<dl>
+		<dt></dt>
+		<dd>
+			<button class="btn-common btn-big" onclick="save()" >保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
+	</dl>
 </div>
 <script>
 var flag = false;//防止重复提交
@@ -76,9 +81,10 @@ function save(){
 				},
 				success : function(data){
 					if(data['code'] > 0){
-						showMessage("success","发布成功", "{:__URL('ADMIN_MAIN/config/userNotice')}");
+						showTip("发布成功","success");
+						location.href = "{:__URL('ADMIN_MAIN/config/userNotice')}";
 					}else{
-						showMessage("error","发布失败");
+						showTip("发布失败","error");
 					}
 					flag = false;
 				}

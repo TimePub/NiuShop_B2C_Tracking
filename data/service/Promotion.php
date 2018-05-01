@@ -38,6 +38,26 @@ use data\model\NsPromotionMansongRuleModel;
 use data\service\BaseService as BaseService;
 use data\service\promotion\GoodsDiscount;
 use data\service\promotion\GoodsMansong;
+use data\model\NsComboPackagePromotionModel;
+use data\model\NsGoodsViewModel;
+use data\model\NsPromotionGamesModel;
+use data\model\NsPromotionGameRuleModel;
+use data\model\NsPromotionTopicModel;
+use data\model\NsPromotionTopicGoodsModel;
+use data\model\NsMemberLevelModel;
+use data\model\NSPromotionGiftGrantRecordsModel;
+use data\model\NsPromotionGameTypeModel;
+use data\model\NsOrderModel;
+use data\model\NsPromotionGamesWinningRecordsModel;
+use data\model\UserModel;
+use data\model\NsMemberAccountModel;
+use data\service\Member\MemberAccount;
+use data\service\Member\MemberCoupon;
+use data\service\Order\OrderGoods;
+use data\service\Order\Order as OrderService;
+use data\model\NsOrderGoodsModel;
+use data\model\BaseModel;
+use data\model\NsPromotionGiftViewModel;
 
 class Promotion extends BaseService implements IPromotion
 {
@@ -99,7 +119,7 @@ class Promotion extends BaseService implements IPromotion
             return $e->getMessage();
         }
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\ICoupon::getCouponTypeDetail()
@@ -123,7 +143,7 @@ class Promotion extends BaseService implements IPromotion
         return $data;
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      *
@@ -161,10 +181,12 @@ class Promotion extends BaseService implements IPromotion
                 'range_type' => $range_type,
                 'start_time' => getTimeTurnTimeStamp($start_time),
                 'end_time' => getTimeTurnTimeStamp($end_time),
-                'is_show' => $is_show
+                'is_show' => $is_show,
+                "create_time" => time()
             );
             $coupon_type->save($data);
             $coupon_type_id = $coupon_type->coupon_type_id;
+            $this->addUserLog($this->uid, 1, '营销', '添加优惠券类型', '添加优惠券类型:'.$coupon_name);
             // 添加类型商品表
             if ($range_type == 0 && ! empty($goods_list)) {
                 $goods_list_array = explode(',', $goods_list);
@@ -260,6 +282,7 @@ class Promotion extends BaseService implements IPromotion
             $coupon_type->save($data, [
                 'coupon_type_id' => $coupon_type_id
             ]);
+            $this->addUserLog($this->uid, 1, '营销', '修改优惠券类型', '修改优惠券类型:'.$coupon_name);
             // 更新类型商品表
             $coupon_goods = new NsCouponGoodsModel();
             $coupon_goods->destroy([
@@ -294,7 +317,7 @@ class Promotion extends BaseService implements IPromotion
                     $retval = $coupon->save($data_coupon);
                 }
             }
-            // 修改优惠券时，更新优惠券的使用状态
+            // 修改优惠券时，更新优惠券的使用状态，金额
             $coupon = new NsCouponModel();
             $coupon_condition['state'] = array(
                 'in',
@@ -307,7 +330,8 @@ class Promotion extends BaseService implements IPromotion
             $coupon->save([
                 'end_time' => getTimeTurnTimeStamp($end_time),
                 'start_time' => getTimeTurnTimeStamp($start_time),
-                'state' => 0
+                'state' => 0,
+                'money' => $money
             ], $coupon_condition);
             $coupon_type->commit();
             return 1;
@@ -318,7 +342,7 @@ class Promotion extends BaseService implements IPromotion
         return 0;
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\ICoupon::getTypeCouponList()
@@ -334,7 +358,7 @@ class Promotion extends BaseService implements IPromotion
         return $list['data'];
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\ICoupon::useCoupon()
@@ -352,7 +376,7 @@ class Promotion extends BaseService implements IPromotion
         return $res;
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\ICoupon::getCouponDetail()
@@ -408,12 +432,13 @@ class Promotion extends BaseService implements IPromotion
             'desc' => $desc,
             'modify_time' => time()
         );
+        $this->addUserLog($this->uid, 1, '营销', '积分设置', '积分设置：'.'转化比率'.$convert_rate.','.'启用设置：'.$is_open);
         $retval = $point_model->save($data, [
             'shop_id' => $this->instance_id
         ]);
         return $retval;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IPromote::getPromotionGiftList()
@@ -441,42 +466,66 @@ class Promotion extends BaseService implements IPromotion
         return $list;
         // TODO Auto-generated method stub
     }
-
+    
     /*
+     * 添加赠品活动
+     * 修改时间：2018年1月24日10:45:28
      * (non-PHPdoc)
      * @see \data\api\IPromote::addPromotionGift()
      */
-    public function addPromotionGift($shop_id, $gift_name, $start_time, $end_time, $days, $max_num, $goods_id_array)
+    public function addPromotionGift($shop_id, $gift_name, $start_time, $end_time, $days, $max_num, $goods_id)
     {
         $promotion_gift = new NsPromotionGiftModel();
         $promotion_gift->startTrans();
         try {
+            if (empty($gift_name)) {
+                return array(
+                    "code" => 0,
+                    "message" => '赠品活动名称不能为空'
+                );
+            }
+            
             $data_gift = array(
                 'gift_name' => $gift_name,
                 'shop_id' => $shop_id,
-                'start_time' => $start_time,
-                'end_time' => $end_time,
+                'start_time' => getTimeTurnTimeStamp($start_time),
+                'end_time' => getTimeTurnTimeStamp($end_time),
                 'days' => $days,
                 'max_num' => $max_num,
                 'create_time' => time()
             );
             $promotion_gift->save($data_gift);
+            
             $gift_id = $promotion_gift->gift_id;
+            $this->addUserLog($this->uid, 1, '营销', '赠品管理', '添加赠品：'.$gift_name);
             // 当前功能只能选择一种商品
             $promotion_gift_goods = new NsPromotionGiftGoodsModel();
+            $promotion_gift_view = new NsPromotionGiftViewModel();
+            if (! empty($goods_id)) {
+                $count = $promotion_gift_view->getViewCount([
+                    "npgg.goods_id" => $goods_id,
+                    "npg.end_time" => array(">", time())
+                ]);
+                if ($count > 0) {
+                    return GOODS_HAVE_BEEN_GIFT;
+                }
+            }
+            
             // 查询商品名称图片
-            $goods = new NsGoodsModel();
+            $goods = new NsGoodsModel(); 
             $goods_info = $goods->getInfo([
-                'goods_id' => $goods_id_array
+                'goods_id' => $goods_id
             ], 'goods_name,picture');
             $data_goods = array(
                 'gift_id' => $gift_id,
-                'goods_id' => $goods_id_array,
+                'goods_id' => $goods_id,
                 'goods_name' => $goods_info['goods_name'],
                 'goods_picture' => $goods_info['picture']
             );
+            
             $promotion_gift_goods->save($data_goods);
             $promotion_gift->commit();
+            
             return $gift_id;
         } catch (\Exception $e) {
             $promotion_gift->rollback();
@@ -484,21 +533,30 @@ class Promotion extends BaseService implements IPromotion
         }
         // TODO Auto-generated method stub
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \data\api\IPromote::updatePromotionGift()
      */
-    public function updatePromotionGift($gift_id, $shop_id, $gift_name, $start_time, $end_time, $days, $max_num, $goods_id_array)
+    public function updatePromotionGift($gift_id, $shop_id, $gift_name, $start_time, $end_time, $days, $max_num, $goods_id)
     {
         $promotion_gift = new NsPromotionGiftModel();
+        $promotion_gift_goods = new NsPromotionGiftGoodsModel();
+        $promotion_gift_view = new NsPromotionGiftViewModel();
+        
         $promotion_gift->startTrans();
         try {
+            if (empty($gift_name)) {
+                return array(
+                    "code" => 0,
+                    "message" => '赠品活动名称不能为空'
+                );
+            }
             $data_gift = array(
                 'gift_name' => $gift_name,
                 'shop_id' => $shop_id,
-                'start_time' => $start_time,
-                'end_time' => $end_time,
+                'start_time' => getTimeTurnTimeStamp($start_time),
+                'end_time' => getTimeTurnTimeStamp($end_time),
                 'days' => $days,
                 'max_num' => $max_num,
                 'modify_time' => time()
@@ -506,19 +564,32 @@ class Promotion extends BaseService implements IPromotion
             $promotion_gift->save($data_gift, [
                 'gift_id' => $gift_id
             ]);
+            $this->addUserLog($this->uid, 1, '营销', '赠品管理', '修改赠品：'.$gift_name);
             // 当前功能只能选择一种商品
-            $promotion_gift_goods = new NsPromotionGiftGoodsModel();
+            if (! empty($goods_id)) {
+                $count = 0;
+                $count = $promotion_gift_view->getViewCount([
+                    "npgg.goods_id" => $goods_id,
+                    "npg.end_time" => array(">", time()),
+                    "npgg.gift_id"=> array("<>", $gift_id)
+                ]);
+                
+                if ($count > 0) {
+                    return GOODS_HAVE_BEEN_GIFT;
+                }
+            }
+            
             $promotion_gift_goods->destroy([
                 'gift_id' => $gift_id
             ]);
             // 查询商品名称图片
             $goods = new NsGoodsModel();
             $goods_info = $goods->getInfo([
-                'goods_id' => $goods_id_array
+                'goods_id' => $goods_id
             ], 'goods_name,picture');
             $data_goods = array(
                 'gift_id' => $gift_id,
-                'goods_id' => $goods_id_array,
+                'goods_id' => $goods_id,
                 'goods_name' => $goods_info['goods_name'],
                 'goods_picture' => $goods_info['picture']
             );
@@ -548,14 +619,90 @@ class Promotion extends BaseService implements IPromotion
             'gift_id' => $gift_id
         ]);
         $picture = new AlbumPictureModel();
+        $goods = new NsGoodsModel();
         $pic_info = array();
         $pic_info['pic_cover'] = '';
         if (! empty($gift_goods['goods_picture'])) {
             $pic_info = $picture->get($gift_goods['goods_picture']);
         }
-        $gift_goods['picture'] = $pic_info;
+        $gift_goods['picture_info'] = $pic_info;
+        
+        $gift_goods["price"] = "";
+        $gift_goods["stock"] = "";
+        
+        $goods_info = $goods->getInfo([
+            'goods_id' => $gift_goods['goods_id']
+        ], 'price, stock');
+        if (! empty($goods_info)) {
+            $gift_goods["price"] = $goods_info["price"];
+            $gift_goods["stock"] = $goods_info["stock"];
+        }
+        
         $data['gift_goods'] = $gift_goods;
         return $data;
+    }
+
+    /**
+     * 根据赠品id，返回商品规格
+     *
+     * @param unknown $gift_id            
+     * @param unknown $number            
+     */
+    public function getGoodsSkuByGiftId($gift_id, $num)
+    {
+        $res = "";
+        $promotion_gift_goods_model = new NsPromotionGiftGoodsModel();
+        $goods_id = $promotion_gift_goods_model->getInfo([
+            'gift_id' => $gift_id
+        ], "goods_id");
+        if (! empty($goods_id['goods_id'])) {
+            $goods_sku_model = new NsGoodsSkuModel();
+            $sku_id = $goods_sku_model->getInfo([
+                'goods_id' => $goods_id['goods_id']
+            ], 'sku_id');
+            if (! empty($sku_id['sku_id'])) {
+                $res = $sku_id['sku_id'] . ":" . $num;
+            }
+        }
+        return $res;
+    }
+
+    /**
+     * 删除赠品
+     * 创建时间：2018年1月24日11:45:50 王永杰
+     * (non-PHPdoc)
+     *
+     * @see \data\api\IPromotion::deletePromotionGift()
+     */
+    public function deletePromotionGift($gift_id)
+    {
+        $res = array();
+        $promotion_gift = new NsPromotionGiftModel();
+        $info = $promotion_gift->getInfo([
+            'gift_id' => $gift_id
+        ], "start_time,end_time");
+        if (! empty($info)) {
+            // 未开始、已结束的赠品不能删除
+            if ($info['start_time'] > time() || time() > $info['end_time']) {
+                
+                $promotion_gift_goods = new NsPromotionGiftGoodsModel();
+                $promotion_gift->destroy([
+                    'gift_id' => $gift_id
+                ]);
+                $promotion_gift_goods->destroy([
+                    'gift_id' => $gift_id
+                ]);
+                $res['code'] = 1;
+                $res['message'] = "赠品删除成功";
+            } else {
+                $res['code'] = 0;
+                $res['message'] = '进行中的赠品不能删除';
+            }
+        } else {
+            $res['code'] = 0;
+            $res['message'] = '赠品不存在';
+        }
+        return $res;
     }
 
     /**
@@ -620,6 +767,7 @@ class Promotion extends BaseService implements IPromotion
             );
             $promot_mansong->save($data);
             $mansong_id = $promot_mansong->mansong_id;
+            $this->addUserLog($this->uid, 1, '营销', '满减送管理', '添加满减送：'.$mansong_name);
             // 添加活动规则表
             $rule_array = explode(';', $rule);
             foreach ($rule_array as $k => $v) {
@@ -704,6 +852,7 @@ class Promotion extends BaseService implements IPromotion
             $promot_mansong->save($data, [
                 'mansong_id' => $mansong_id
             ]);
+            $this->addUserLog($this->uid, 1, '营销', '满减送管理', '修改满减送：'.$mansong_name);
             // 添加活动规则表
             $promot_mansong_rule = new NsPromotionMansongRuleModel();
             $promot_mansong_rule->destroy([
@@ -807,6 +956,8 @@ class Promotion extends BaseService implements IPromotion
                 $rule_list['data'][$k]['gift_name'] = $gift_name['gift_name'];
             }
         }
+        $list = array();
+        $goods_id_array = array();
         $data['rule'] = $rule_list['data'];
         if ($data['range_type'] == 0) {
             $mansong_goods = new NsPromotionMansongGoodsModel();
@@ -830,13 +981,12 @@ class Promotion extends BaseService implements IPromotion
                     $v['stock'] = $goods_info['stock'];
                 }
             }
-            $data['goods_list'] = $list;
-            $goods_id_array = array();
             foreach ($list as $k => $v) {
                 $goods_id_array[] = $v['goods_id'];
             }
-            $data['goods_id_array'] = $goods_id_array;
         }
+        $data['goods_list'] = $list;
+        $data['goods_id_array'] = $goods_id_array;
         return $data;
     }
 
@@ -864,6 +1014,7 @@ class Promotion extends BaseService implements IPromotion
             );
             $promotion_discount->save($data);
             $discount_id = $promotion_discount->discount_id;
+            $this->addUserLog($this->uid, 1, '营销', '限时折扣', '添加限时折扣：'.$discount_name);
             $goods_id_array = explode(',', $goods_id_array);
             $promotion_discount_goods = new NsPromotionDiscountGoodsModel();
             $promotion_discount_goods->destroy([
@@ -930,6 +1081,7 @@ class Promotion extends BaseService implements IPromotion
             $promotion_discount->save($data, [
                 'discount_id' => $discount_id
             ]);
+            $this->addUserLog($this->uid, 1, '营销', '限时折扣', '修改限时折扣：'.$discount_name);
             $goods_id_array = explode(',', $goods_id_array);
             $promotion_discount_goods = new NsPromotionDiscountGoodsModel();
             $promotion_discount_goods->destroy([
@@ -1047,6 +1199,9 @@ class Promotion extends BaseService implements IPromotion
     {
         $promotion_discount = new NsPromotionDiscountModel();
         $list = $promotion_discount->pageQuery($page_index, $page_size, $condition, $order, '*');
+        foreach($list['data'] as $v ){
+        	
+        }
         return $list;
     }
 
@@ -1086,7 +1241,7 @@ class Promotion extends BaseService implements IPromotion
 
     /**
      *
-     * {@inheritdoc}
+     * @ERROR!!!
      *
      * @see \data\api\IPromote::delPromotionDiscount()
      */
@@ -1131,6 +1286,7 @@ class Promotion extends BaseService implements IPromotion
             'shop_id' => $this->instance_id
         ]);
         if ($retval == 1) {
+            $this->addUserLog($this->uid, 1, '营销', '满减送管理', '关闭满减送：id'.$mansong_id);
             $promotion_mansong_goods = new NsPromotionMansongGoodsModel();
             
             $retval = $promotion_mansong_goods->save([
@@ -1173,7 +1329,7 @@ class Promotion extends BaseService implements IPromotion
             }
             $promotion_mansong->commit();
             return 1;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $promotion_mansong->rollback();
             return $e->getMessage();
         }
@@ -1229,4 +1385,874 @@ class Promotion extends BaseService implements IPromotion
         ]);
         return 1;
     }
+
+    /**
+     * 添加或编辑组合套餐
+     */
+    public function addOrEditComboPackage($id, $combo_package_name, $combo_package_price, $goods_id_array, $is_shelves, $shop_id, $original_price, $save_the_price)
+    {
+        $data = array(
+            "combo_package_name" => $combo_package_name,
+            "combo_package_price" => $combo_package_price,
+            "goods_id_array" => $goods_id_array,
+            "is_shelves" => $is_shelves,
+            "shop_id" => $shop_id,
+            "original_price" => $original_price,
+            "save_the_price" => $save_the_price
+        );
+        $nsComboPackage = new NsComboPackagePromotionModel();
+        if ($id == 0) {
+            $data["create_time"] = time();
+            $nsComboPackage->save($data);
+            $this->addUserLog($this->uid, 1, '营销', '组合套餐', '添加组合套餐：'.$combo_package_name);
+            return $nsComboPackage->id;
+        } else 
+            if ($id > 0) {
+                $data["update_time"] = time();
+                $res = $nsComboPackage->save($data, [
+                    "id" => $id,
+                    "shop_id" => $shop_id
+                ]);
+                $this->addUserLog($this->uid, 1, '营销', '组合套餐', '修改组合套餐：'.$combo_package_name);
+                return $res;
+            }
+    }
+
+    /**
+     * 获取组合套餐详情
+     */
+    public function getComboPackageDetail($id)
+    {
+        $nsComboPackage = new NsComboPackagePromotionModel();
+        $info = $nsComboPackage->getInfo([
+            "id" => $id
+        ]);
+        return $info;
+    }
+
+    /**
+     * 获取组合套餐列表
+     *
+     * @param unknown $page_index            
+     * @param unknown $page_size            
+     * @param unknown $condition            
+     * @param string $order            
+     * @param string $field            
+     * @return number[]|unknown[]
+     */
+    public function getComboPackageList($page_index, $page_size, $condition, $order = "", $field = "*")
+    {
+        $nsComboPackage = new NsComboPackagePromotionModel();
+        $list = $nsComboPackage->pageQuery($page_index, $page_size, $condition, $order, $field);
+        return $list;
+    }
+
+    /**
+     * 删除组合套餐
+     */
+    public function deleteComboPackage($ids)
+    {
+        $nsComboPackage = new NsComboPackagePromotionModel();
+        $res = $nsComboPackage->destroy([
+            "id" => array(
+                "in",
+                $ids
+            )
+        ]);
+        return $res;
+    }
+
+    /**
+     * 获取组合套餐商品列表
+     *
+     * @param unknown $goods_id            
+     */
+    public function getComboPackageGoodsArray($goods_id)
+    {
+        $nsComboPackage = new NsComboPackagePromotionModel();
+        $condition = "FIND_IN_SET($goods_id, goods_id_array ) AND is_shelves = 1";
+        $list = $nsComboPackage->getQuery($condition, "*", "");
+        $goods = new NsGoodsViewModel();
+        foreach ($list as $k => $v) {
+            $main_goods = $goods->getGoodsViewQuery(1, 1, [
+                "ng.state" => 1,
+                "ng.goods_id" => $goods_id,
+                "ng.goods_type" => 1
+            ], "");
+            $list[$k]["main_goods"] = $main_goods[0];
+            $goods_array = $goods->getGoodsViewQuery(1, 0, [
+                "ng.state" => 1,
+                "ng.goods_id" => array(
+                    array(
+                        "in",
+                        $v["goods_id_array"]
+                    ),
+                    array(
+                        "neq",
+                        $goods_id
+                    )
+                ),
+                "ng.goods_type" => 1
+            ], "");
+            $goods_count = $goods->getGoodsrViewCount([
+                "ng.goods_id" => array(
+                    array(
+                        "in",
+                        $v["goods_id_array"]
+                    ),
+                    array(
+                        "neq",
+                        $goods_id
+                    )
+                ),
+                "ng.goods_type" => 1
+            ]);
+            // 计算原价
+            $list[$k]["original_price"] = $goods->getSum([
+                "goods_id" => array(
+                    "in",
+                    $v["goods_id_array"]
+                ),
+                "goods_type" => 1
+            ], "price");
+            
+            $list[$k]["save_the_price"] = $list[$k]["original_price"] - $v["combo_package_price"];
+            $list[$k]["goods_array"] = $goods_array;
+            // 如果套餐中有商品已下架，则整个套餐都不予显示
+            if (count($goods_array) != $goods_count) {
+                unset($list[$k]);
+            }
+        }
+        return $list;
+    }
+
+    /**
+     * 获取指定组合套餐商品列表
+     *
+     * @param 组合套餐id $id            
+     * @param 当前访问的goods_id $curr_goods_id            
+     * @return list
+     */
+    public function getComboPackageGoodsById($id, $curr_goods_id)
+    {
+        $combo_package_model = new NsComboPackagePromotionModel();
+        $combo_package_condition = "id = $id AND is_shelves = 1";
+        $combo_package = $combo_package_model->getInfo($combo_package_condition, "id,combo_package_name,combo_package_price,goods_id_array,is_shelves,shop_id,original_price,save_the_price", "");
+        if (! empty($combo_package)) {
+            // 查询组合套餐中的商品信息
+            $goods_condition = "goods_id in(" . $combo_package['goods_id_array'] . ")";
+            $combo_package['goods_list'] = array();
+            if (! empty($curr_goods_id)) {
+                $curr_goods = $this->getCollatingGoodsDetail($curr_goods_id);
+                array_push($combo_package['goods_list'], $curr_goods);
+            }
+            $goods_id_array = explode(",", $combo_package['goods_id_array']);
+            foreach ($goods_id_array as $k => $v) {
+                if ($v != $curr_goods_id) {
+                    $item = $this->getCollatingGoodsDetail($v);
+                    array_push($combo_package['goods_list'], $item);
+                }
+            }
+        }
+        return $combo_package;
+    }
+
+    public function getCollatingGoodsDetail($goods_id)
+    {
+        $goods = new Goods();
+        $curr_goods = $goods->getGoodsDetail($goods_id);
+        $default_gallery_img = $curr_goods["img_list"][0]["pic_cover_big"];
+        $curr_goods['default_gallery_img'] = $default_gallery_img;
+        $spec_list = $curr_goods["spec_list"];
+        if (! empty($spec_list)) {
+            $album = new Album();
+            foreach ($spec_list as $k => $v) {
+                foreach ($v["value"] as $t => $m) {
+                    if ($m["spec_show_type"] == 3) {
+                        if (is_numeric($m["spec_value_data"])) {
+                            $picture_detail = $album->getAlubmPictureDetail([
+                                "pic_id" => $m["spec_value_data"]
+                            ]);
+                            
+                            if (! empty($picture_detail)) {
+                                $spec_list[$k]["value"][$t]["picture_id"] = $picture_detail['pic_id'];
+                                $spec_list[$k]["value"][$t]["spec_value_data"] = $picture_detail["pic_cover_micro"];
+                                $spec_list[$k]["value"][$t]["spec_value_data_big_src"] = $picture_detail["pic_cover_big"];
+                            } else {
+                                $spec_list[$k]["value"][$t]["spec_value_data"] = '';
+                                $spec_list[$k]["value"][$t]["spec_value_data_big_src"] = '';
+                                $spec_list[$k]["value"][$t]["picture_id"] = 0;
+                            }
+                        } else {
+                            $spec_list[$k]["value"][$t]["spec_value_data_big_src"] = $m["spec_value_data"];
+                            $spec_list[$k]["value"][$t]["picture_id"] = 0;
+                        }
+                    }
+                }
+            }
+            $curr_goods['spec_list'] = $spec_list;
+        }
+        return $curr_goods;
+    }
+
+    /**
+     * (non-PHPdoc)
+     *
+     * @see \data\api\IPromotion::getCouponTypeList()
+     */
+    public function getCouponTypeInfoList($page_index = 1, $page_size = 0, $condition = '', $order = '', $uid = 0)
+    {
+        $coupon_type = new NsCouponTypeModel();
+        $coupon = new NsCouponModel();
+        $coupon_type_list = $coupon_type->pageQuery($page_index, $page_size, $condition, $order, 'coupon_type_id, coupon_name, money, count, max_fetch, at_least, need_user_level, range_type, start_time, end_time, create_time, update_time,is_show');
+        foreach ($coupon_type_list['data'] as $k => $v) {
+            // 剩余数量
+            $surplus_num = $coupon->getCount([
+                "coupon_type_id" => $v["coupon_type_id"],
+                "state" => 0
+            ]);
+            $coupon_type_list["data"][$k]["surplus_num"] = $surplus_num;
+            // 当前用户已领取数量
+            $received_num = 0;
+            if(!empty($uid)){
+                $received_num = $coupon->getCount([
+                    "coupon_type_id" => $v["coupon_type_id"],
+                    "uid" => $uid
+                ]); 
+            }
+            $coupon_type_list["data"][$k]["received_num"] = $received_num;
+            // 计算优惠券未领取百分比
+            $surplus_percentage = 0;
+            if ($v["count"] > 0) {
+                $surplus_percentage = floor($surplus_num / $v["count"] * 100);
+            }
+            $coupon_type_list["data"][$k]["surplus_percentage"] = $surplus_percentage;
+        }
+        return $coupon_type_list;
+        // TODO Auto-generated method stub
+    }
+
+    /**
+     * 获取营销游戏列表
+     *
+     * @param number $page_index            
+     * @param number $page_size            
+     * @param string $condition            
+     * @param string $order            
+     */
+    public function getPromotionGamesList($page_index = 1, $page_size = 0, $condition = '', $order = '')
+    {
+        $promotion_games = new NsPromotionGamesModel();
+        $list = $promotion_games->pageQuery($page_index, $page_size, $condition, $order, '*');
+        
+        foreach ($list['data'] as $item) {
+            
+            $game_type_info = $this->getPromotionGameTypeInfo($item['game_type']);
+            $item['game_type_name'] = $game_type_info['type_name'];
+            
+            switch ($item['status']) {
+                case 0:
+                    $item['status_name'] = '未开始';
+                    break;
+                case 1:
+                    $item['status_name'] = '已开始';
+                    break;
+                case - 1:
+                    $item['status_name'] = '已结束';
+                    break;
+                default:
+                    break;
+            }
+        }
+        return $list;
+    }
+
+    /**
+     * 营销游戏列表
+     *
+     * @param unknown $game_type            
+     */
+    public function getPromotionGameTypeInfo($game_type)
+    {
+        $game_type_model = new NsPromotionGameTypeModel();
+        $info = $game_type_model->getInfo([
+            'game_type' => $game_type
+        ], '*');
+        return $info;
+    }
+
+    /**
+     * 获取营销游戏详情
+     *
+     * @param unknown $game_id            
+     */
+    public function getPromotionGameDetail($game_id)
+    {
+        $promotion_games = new NsPromotionGamesModel();
+        $game_info = $promotion_games->getInfo([
+            'game_id' => $game_id
+        ], '*');
+        $promotion_games_rule = new NsPromotionGameRuleModel();
+        $rule_list = $promotion_games_rule->getQuery([
+            'game_id' => $game_id
+        ], '*', '');
+        
+        $game_info['rule'] = $rule_list;
+        return $game_info;
+    }
+
+    /**
+     * 添加营销游戏
+     *
+     * @param unknown $shop_id            
+     * @param unknown $name            
+     * @param unknown $type            
+     * @param unknown $member_level            
+     * @param unknown $points            
+     * @param unknown $start_time            
+     * @param unknown $end_time            
+     * @param unknown $remark            
+     * @param unknown $rule_array            
+     */
+    public function addUpdatePromotionGame($game_id, $shop_id, $name, $type, $member_level, $points, $start_time, $end_time, $remark, $winning_rate, $no_winning_des, $rule_json, $activity_images, $winning_list_display, $join_type, $join_frequency, $winning_type, $winning_max)
+    {
+        $promotion_games = new NsPromotionGamesModel();
+        $promotion_games->startTrans();
+        
+        try {
+            $member_level_model = new NsMemberLevelModel();
+            if ($member_level == 0) {
+                $level_name = '所有用户';
+            } else {
+                $level_info = $member_level_model->getInfo([
+                    'level_id' => $member_level
+                ], 'level_name');
+                $level_name = $level_info['level_name'];
+            }
+            
+            $data = array(
+                'shop_id' => $shop_id,
+                'name' => $name,
+                'game_type' => $type,
+                'member_level' => $member_level,
+                'level_name' => $level_name,
+                'points' => $points,
+                'start_time' => getTimeTurnTimeStamp($start_time),
+                'end_time' => getTimeTurnTimeStamp($end_time),
+                'remark' => $remark,
+                'winning_rate' => $winning_rate,
+                'no_winning_des' => $no_winning_des,
+                'activity_images' => $activity_images,
+                "winning_list_display" => $winning_list_display,
+                "join_type" => $join_type,
+                "join_frequency" => $join_frequency,
+                "winning_type" => $winning_type,
+                "winning_max" => $winning_max
+            );
+            
+            if (empty($game_id)) {
+                $this->addUserLog($this->uid, 1, '营销', '营销游戏', '添加游戏：'.$name);
+                $game_id = $promotion_games->save($data);
+            } else {
+                $this->addUserLog($this->uid, 1, '营销', '营销游戏', '修改游戏：'.$name);
+                $promotion_games->save($data, [
+                    'game_id' => $game_id
+                ]);
+            }
+            
+            // 删除已有的规则
+            $this->delPromotionGameRule($game_id);
+            
+            // 添加规则表
+            $rule_array = json_decode($rule_json, true);
+            foreach ($rule_array as $item) {
+                
+                $this->addPromotionGameRule($game_id, $item['rule_name'], $item['rule_num'], $item['type'], $item['type_value'], $item['points'], $item['coupon_type_id'], $item['hongbao'], $item['gift_id']);
+            }
+            
+            $promotion_games->commit();
+            
+            return 1;
+        } catch (\Exception $e) {
+            
+            $promotion_games->rollback();
+            return $e->getMessage();
+        }
+    }
+
+    /**
+     * 添加活动规则
+     *
+     * @param unknown $game_id            
+     * @param unknown $rule_num            
+     * @param unknown $type            
+     * @param unknown $sum            
+     * @param string $remark            
+     */
+    public function addPromotionGameRule($game_id, $rule_name, $rule_num, $type, $type_value, $points, $coupon_type_id, $hongbao, $gift_id, $remark = '')
+    {
+        $game_rule_model = new NsPromotionGameRuleModel();
+        $data = array(
+            'game_id' => $game_id,
+            'rule_name' => $rule_name,
+            'rule_num' => $rule_num,
+            'remaining_number' => $rule_num, // 剩余奖品数量
+            'type' => $type,
+            'remark' => $remark,
+            'points' => $points,
+            'coupon_type_id' => $coupon_type_id,
+            'hongbao' => $hongbao,
+            'gift_id' => $gift_id,
+            'type_value' => $type_value,
+            'create_time' => time()
+        );
+        
+        $res = $game_rule_model->save($data);
+        return $res;
+    }
+
+    /**
+     * 删除活动规则
+     *
+     * @param unknown $game_id            
+     */
+    public function delPromotionGameRule($game_id)
+    {
+        $game_rule_model = new NsPromotionGameRuleModel();
+        $res = $game_rule_model->destroy([
+            'game_id' => $game_id
+        ]);
+        return $res;
+    }
+
+    /**
+     *
+     * @param unknown $game_id            
+     * @param unknown $shop_id            
+     * @param unknown $name            
+     * @param unknown $type            
+     * @param unknown $member_level            
+     * @param unknown $points            
+     * @param unknown $start_time            
+     * @param unknown $end_time            
+     * @param unknown $remark            
+     * @param unknown $rule_array            
+     */
+    public function updatePromotionGame($game_id, $shop_id, $name, $type, $member_level, $points, $start_time, $end_time, $remark, $rule_array)
+    {
+        $promotion_games = new NsPromotionGamesModel();
+        $member_level_model = new NsMemberLevelModel();
+        if ($member_level == 0) {
+            $level_name = '所有用户';
+        } else {
+            $level_info = $member_level_model->getInfo([
+                'level_id' => $member_level
+            ], 'level_name');
+            $level_name = $level_info['level_name'];
+        }
+        
+        $data = array(
+            'shop_id' => $shop_id,
+            'name' => $name,
+            'type' => $type,
+            'member_level' => $member_level,
+            'level_name' => $level_name,
+            'points' => $points,
+            'start_time' => $start_time,
+            'end_time' => $end_time,
+            'remark' => $remark
+        );
+        $promotion_games->save($data, [
+            'game_id' => $game_id
+        ]);
+        $promotion_games_rule = new NsPromotionGameRuleModel();
+        $promotion_games_rule->destroy([
+            'game_id' => $game_id
+        ]);
+        // 添加规则表
+    }
+
+    /**
+     * 添加赠品发放记录
+     * 创建时间：2018年1月25日11:28:18
+     *
+     * (non-PHPdoc)
+     *
+     * @see \data\api\IPromotion::addPromotionGiftGrantRecords()
+     */
+    public function addPromotionGiftGrantRecords($shop_id, $uid, $nick_name, $gift_id, $gift_name, $goods_name, $goods_picture, $type, $type_name, $relate_id, $remark)
+    {
+        $res = array();
+        // 验证
+        if (empty($nick_name) || empty($gift_name) || empty($goods_name) || empty($type_name)) {
+            $res['code'] = 0;
+            $res['message'] = '缺少必要参数';
+        } else {
+            
+            $model = new NSPromotionGiftGrantRecordsModel();
+            $data = array();
+            $data['shop_id'] = $shop_id;
+            $data['uid'] = $uid;
+            $data['nick_name'] = $nick_name;
+            $data['gift_id'] = $gift_id;
+            $data['gift_name'] = $gift_name;
+            $data['goods_picture'] = $goods_picture;
+            $data['goods_name'] = $goods_name;
+            $data['type'] = $type;
+            $data['type_name'] = $type_name;
+            $data['relate_id'] = $relate_id;
+            $data['remark'] = $remark;
+            $data['create_time'] = time();
+            $res['code'] = $model->save($data);
+            $res['message'] = '添加赠品发放记录成功';
+        }
+        return $res;
+    }
+
+    /**
+     * 获取商品查询数量，分页用
+     * 创建时间：2018年1月4日16:52:45
+     *
+     * @param unknown $condition            
+     * @return unknown
+     */
+    public function getPromotionGiftGrantRecordsQueryCount($condition, $where_sql = "")
+    {
+        $model = new NSPromotionGiftGrantRecordsModel();
+        $viewObj = $model->alias('pgr');
+        if (! empty($where_sql)) {
+            $count = $model->viewCountNew($viewObj, $condition, $where_sql);
+        } else {
+            $count = $model->viewCount($viewObj, $condition);
+        }
+        return $count;
+    }
+
+    /**
+     * 获取赠品发放记录列表
+     * 创建时间：2018年1月25日15:47:43
+     * (non-PHPdoc)
+     *
+     * @see \data\api\IPromotion::getPromotionGiftGrantRecordsList()
+     */
+    public function getPromotionGiftGrantRecordsList($page_index, $page_size, $condition, $order)
+    {
+        $condition_sql = "";
+        $model = new NSPromotionGiftGrantRecordsModel();
+        $viewObj = $model->alias("pgr")
+            ->join('sys_album_picture ng_sap', 'ng_sap.pic_id = pgr.goods_picture', 'left')
+            ->field("pgr.id,pgr.shop_id,pgr.uid,pgr.nick_name,pgr.gift_id,pgr.gift_name,pgr.goods_name,pgr.type,pgr.type_name,pgr.relate_id,pgr.remark,pgr.create_time,ng_sap.pic_cover_mid,ng_sap.pic_id,ng_sap.pic_cover_small");
+        
+        $queryList = $model->viewPageQueryNew($viewObj, $page_index, $page_size, $condition, $condition_sql, $order);
+        
+        $queryCount = $this->getPromotionGiftGrantRecordsQueryCount($condition);
+        
+        $list = $model->setReturnList($queryList, $queryCount, $page_size);
+        
+        return $list;
+    }
+
+    /**
+     * 获取营销游戏类型列表
+     *
+     * @param number $page_index            
+     * @param number $page_size            
+     * @param string $condition            
+     * @param string $order            
+     * @param string $field            
+     */
+    public function getPromotionGameTypeList($page_index = 1, $page_size = 0, $condition = '', $order = '', $field = '*')
+    {
+        $game_type_model = new NsPromotionGameTypeModel();
+        $game_type_list = $game_type_model->pageQuery($page_index, $page_size, $condition, $order, $field);
+        return $game_type_list;
+    }
+
+    /**
+     * 删除营销游戏
+     *
+     * @param unknown $game_id            
+     */
+    public function delPromotionGame($game_id)
+    {
+        $condition = array(
+            'game_id' => $game_id
+        );
+        $promotion_games = new NsPromotionGamesModel();
+        $game_rule = new NsPromotionGameRuleModel();
+        $game_rule->destroy($condition);
+        $res = $promotion_games->destroy($condition);
+        return $res;
+    }
+
+    /**
+     * 获取中奖记录表
+     *
+     * @param unknown $page_index            
+     * @param unknown $page_size            
+     * @param unknown $condition            
+     * @param unknown $order            
+     * @param unknown $field            
+     * @return number[]|unknown[]
+     */
+    public function getPromotionGameWinningRecordsList($page_index, $page_size, $condition, $order, $field)
+    {
+        $WinningRecords = new NsPromotionGamesWinningRecordsModel();
+        $list = $WinningRecords->pageQuery($page_index, $page_size, $condition, $order, $field);
+        return $list;
+    }
+
+    /**
+     * 获取奖项
+     *
+     * @param unknown $game_id            
+     */
+    public function getRandAward($game_id)
+    {
+        // 获取游戏详情
+        $promotionGameDetail = $this->getPromotionGameDetail($game_id);
+        if (! empty($promotionGameDetail)) {
+            // 中奖概率 按百分比
+            $winning_rate = round($promotionGameDetail["winning_rate"]);
+            // 取一个 1 到 100 的随机数 如果这个数组小于概率则通过 第一步
+            $rand_num = mt_rand(1, 100);
+            if ($rand_num <= $winning_rate) {
+                $rule_list = $promotionGameDetail["rule"];
+                $retval = $this->getRandAwardRules($rule_list);
+                if (count($retval) > 0) {
+                    return $result = array(
+                        "is_winning" => 1,
+                        "winning_info" => $retval,
+                        "no_winning_instruction" => $promotionGameDetail["no_winning_des"]
+                    );
+                } else {
+                    return $result = array(
+                        "is_winning" => 0,
+                        "no_winning_instruction" => $promotionGameDetail["no_winning_des"],
+                        "winning_info" => [
+                            "rule_id" => 0
+                        ]
+                    );
+                }
+            } else {
+                return $result = array(
+                    "is_winning" => 0,
+                    "no_winning_instruction" => $promotionGameDetail["no_winning_des"],
+                    "winning_info" => [
+                        "rule_id" => 0
+                    ]
+                );
+            }
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * 获取随机奖项
+     *
+     * @param unknown $rule_list            
+     */
+    public function getRandAwardRules($rule_list)
+    {
+        $result = array();
+        if (count($rule_list) > 0) {
+            $roll_array = array(); //根据奖品数量生成权重区间
+            $total_number = 0;
+            foreach ($rule_list as $k => $v) {
+                $roll_array[$k][0] = $total_number;
+                if ($v["remaining_number"] > 0) {
+                    $total_number += $v["remaining_number"];
+                }
+                $roll_array[$k][1] = $total_number;
+            }
+            $rand_num = mt_rand(0, $total_number);
+            if(count($roll_array) > 1){
+                foreach ($roll_array as $k=>$v){
+                    if($v[0]<= $rand_num && $rand_num < $v[1]){
+                        $result = [
+                            "rule_id" => $rule_list[$k]["rule_id"],
+                            "type" => $rule_list[$k]["type"],
+                            "coupon_type_id" => $rule_list[$k]["coupon_type_id"],
+                            "points" => $rule_list[$k]["points"],
+                            "hongbao" => $rule_list[$k]["hongbao"],
+                            "gift_id" => $rule_list[$k]["gift_id"],
+                            "rule_name" => $rule_list[$k]["rule_name"],
+                            "type_value" => $rule_list[$k]["type_value"]
+                        ];
+                        return $result;
+                    }
+                }
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * 会员获取赠品
+     * 创建时间：2018年1月31日19:44:48
+     *
+     * @param 用户id $uid            
+     * @param 赠品记录id $gift_records_id            
+     * @param 收货人的手机号码 $receiver_mobile            
+     * @param 收货人所在省 $receiver_province            
+     * @param 收货人所在城市 $receiver_city            
+     * @param 收货人所在街道 $receiver_district            
+     * @param 收货人详细地址 $receiver_address            
+     * @param 收货人邮编 $receiver_zip            
+     * @param 收货人姓名 $receiver_name            
+     * @param 买家附言 $buyer_message            
+     * @param 固定电话 $fixed_telephone            
+     * @return string|Ambigous
+     */
+    public function userAchieveGift($uid, $gift_records_id, $receiver_mobile, $receiver_province, $receiver_city, $receiver_district, $receiver_address, $receiver_zip, $receiver_name, $buyer_message, $fixed_telephone = "")
+    {
+        $gift_records_model = new NSPromotionGiftGrantRecordsModel();
+        $gift_records_info = $gift_records_model->getInfo([
+            'id' => $gift_records_id
+        ], '*');
+        if (empty($gift_records_info)) {
+            return $result = array(
+                "code" => 0,
+                "message" => '信息不存在'
+            );
+        } elseif ($gift_records_info['uid'] != $uid) {
+            return $result = array(
+                "code" => 0,
+                "message" => '领取人错误'
+            );
+        } elseif ($gift_records_info['relate_id'] != 0) {
+            return $result = array(
+                "code" => 0,
+                "message" => '赠品已领取'
+            );
+        }
+        $gift_records_model->startTrans();
+        try {
+            $promotion_gift_goods_model = new NsPromotionGiftGoodsModel();
+            $promotion_gift_goods_info = $promotion_gift_goods_model->getInfo([
+                'gift_id' => $gift_records_info['gift_id']
+            ], "goods_id,goods_name");
+            if (! empty($promotion_gift_goods_info['goods_id'])) {
+                $goods_sku_model = new NsGoodsSkuModel();
+                $sku_info = $goods_sku_model->getInfo([
+                    'goods_id' => $promotion_gift_goods_info['goods_id']
+                ], 'sku_id, sku_name,stock');
+            } else {
+                return $result = array(
+                    "code" => 0,
+                    "message" => '商品信息丢失'
+                );
+            }
+            // 单店版查询网站内容
+            $web_site = new WebSite();
+            $web_info = $web_site->getWebSiteInfo();
+            $shop_name = $web_info['title'];
+            // 添加订单
+            $order_model = new NsOrderModel();
+            $order_service = new OrderService();
+            $data_order = array(
+                'order_type' => 1,
+                'order_no' => $order_service->createOrderNo($gift_records_info['shop_id']),
+                'out_trade_no' => '',
+                'payment_type' => 1,
+                'shipping_type' => 1,
+                'order_from' => 1,
+                'buyer_id' => $uid,
+                'user_name' => $gift_records_info['nick_name'],
+                'buyer_ip' => '',
+                'buyer_message' => $buyer_message,
+                'buyer_invoice' => '',
+                'shipping_time' => '', // datetime NOT NULL COMMENT '买家要求配送时间',
+                'receiver_mobile' => $receiver_mobile, // varchar(11) NOT NULL DEFAULT '' COMMENT '收货人的手机号码',
+                'receiver_province' => $receiver_province, // int(11) NOT NULL COMMENT '收货人所在省',
+                'receiver_city' => $receiver_city, // int(11) NOT NULL COMMENT '收货人所在城市',
+                'receiver_district' => $receiver_district, // int(11) NOT NULL COMMENT '收货人所在街道',
+                'receiver_address' => $receiver_address, // varchar(255) NOT NULL DEFAULT '' COMMENT '收货人详细地址',
+                'receiver_zip' => $receiver_zip, // varchar(6) NOT NULL DEFAULT '' COMMENT '收货人邮编',
+                'receiver_name' => $receiver_name, // varchar(50) NOT NULL DEFAULT '' COMMENT '收货人姓名',
+                'shop_id' => $gift_records_info['shop_id'], // int(11) NOT NULL COMMENT '卖家店铺id',
+                'shop_name' => $shop_name, // varchar(100) NOT NULL DEFAULT '' COMMENT '卖家店铺名称',
+                'goods_money' => 0, // decimal(19, 2) NOT NULL COMMENT '商品总价',
+                'tax_money' => 0, // 税费
+                'order_money' => 0, // decimal(10, 2) NOT NULL COMMENT '订单总价',
+                'point' => 0, // int(11) NOT NULL COMMENT '订单消耗积分',
+                'point_money' => 0, // decimal(10, 2) NOT NULL COMMENT '订单消耗积分抵多少钱',
+                'coupon_money' => 0, // _money decimal(10, 2) NOT NULL COMMENT '订单代金券支付金额',
+                'coupon_id' => 0, // int(11) NOT NULL COMMENT '订单代金券id',
+                'user_money' => 0, // decimal(10, 2) NOT NULL COMMENT '订单预存款支付金额',
+                'promotion_money' => 0, // decimal(10, 2) NOT NULL COMMENT '订单优惠活动金额',
+                'shipping_money' => 0, // decimal(10, 2) NOT NULL COMMENT '订单运费',
+                'pay_money' => 0, // decimal(10, 2) NOT NULL COMMENT '订单实付金额',
+                'refund_money' => 0, // decimal(10, 2) NOT NULL COMMENT '订单退款金额',
+                'give_point' => 0, // int(11) NOT NULL COMMENT '订单赠送积分',
+                'order_status' => 1, // tinyint(4) NOT NULL COMMENT '订单状态',
+                'pay_status' => 1, // tinyint(4) NOT NULL COMMENT '订单付款状态',
+                'shipping_status' => 0, // tinyint(4) NOT NULL COMMENT '订单配送状态',
+                'review_status' => 0, // tinyint(4) NOT NULL COMMENT '订单评价状态',
+                'feedback_status' => 0, // tinyint(4) NOT NULL COMMENT '订单维权状态',
+                'user_platform_money' => 0, // 平台余额支付
+                'coin_money' => 0,
+                'create_time' => time(),
+                "give_point_type" => 0,
+                'shipping_company_id' => 0,
+                'fixed_telephone' => $fixed_telephone
+            );
+            $order_model->save($data_order);
+            $order_id = $order_model->order_id;
+            $order_goods = new OrderGoods();
+            $res_order_goods = $order_goods->addOrderGiftGoods($order_id, $sku_info['sku_id'] . ':1');
+            // 订单项
+            $order_goods_module = new NsOrderGoodsModel();
+            $order_goods_id = $order_goods_module->getInfo([
+                "order_id" => $order_id
+            ], "order_goods_id")["order_goods_id"];
+            
+            if ($res_order_goods > 0) {
+                // 订单赠品发放记录 关联订单项id
+                $gift_records_model->save([
+                    'relate_id' => $order_goods_id
+                ], [
+                    'id' => $gift_records_id
+                ]);
+                // 获奖记录表更新使用状态
+                $ns_winning_records = new NsPromotionGamesWinningRecordsModel();
+                $ns_winning_records->save([
+                    "is_use" => 1
+                ], [
+                    "associated_gift_record_id" => $gift_records_id
+                ]);
+            } else {
+                $gift_records_model->rollback();
+                return $result = array(
+                    "code" => 0,
+                    "message" => '赠品创建订单失败'
+                );
+            }
+            $order_service->addOrderAction($order_id, $uid, '创建赠品订单');
+            $gift_records_model->commit();
+            return $result = array(
+                "code" => 1,
+                "message" => '奖品领取成功！请到我的订单中查看'
+            );
+        } catch (\Exception $e) {
+            $gift_records_model->rollback();
+            return $e->getMessage();
+        }
+    }
+
+
+
+    /**
+     * 获取活动名称
+     * @param unknown $coupon_type_id
+     */
+    public function getCouponTypeName($coupon_type_id)
+    {
+    	$coupon_type = new NsCouponTypeModel();
+    	$coupon_type_info = $coupon_type->getInfo(['coupon_type_id'=>$coupon_type_id], 'coupon_name');
+    	return $coupon_type_info['coupon_name'];
+    }
+    
+
 }

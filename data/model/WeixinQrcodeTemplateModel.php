@@ -19,7 +19,7 @@ namespace data\model;
 
 use data\model\BaseModel as BaseModel;
 /**
- * 用户组
+ * 微信推广二维码模板管理
  *
  */
 class WeixinQrcodeTemplateModel extends BaseModel {

@@ -50,14 +50,14 @@
 .areaTable .areaTr .areaTd .sort {
 	color: #666;
 	width: 206px;
-	margin-bottom: 0px;
+	margin-bottom: 0;
 	border: 1px solid #ccc
 }
 
 .style0list table input {
 	color: #666;
 	width: 206px;
-	margin-bottom: 0px;
+	margin-bottom: 0;
 	border: 1px solid #ccc;
 }
 

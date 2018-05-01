@@ -648,12 +648,8 @@ class Notify
         if(!empty($mobile) && $this->mobile_is_open==1){
             $template_obj=$this->getTemplateDetail($shop_id, "bind_mobile", "sms");
             if(!empty($template_obj) && $template_obj["is_enable"]==1){
-                $user_model=new UserModel();
-                $user_obj=$user_model->get($user_id);
                 $sms_params=array(
                     "number"=>$rand."",
-                    "user_name"=>$user_obj["nick_name"],
-                    "username"=>$user_obj["nick_name"]
                 );
                 $this->result["param"]=$rand;
                 if(!empty($this->appKey) && !empty($this->secretKey) && !empty($template_obj["sign_name"]) && !empty($template_obj["template_title"])){
@@ -691,11 +687,8 @@ class Notify
         if(!empty($email) && $this->email_is_open==1){
             $template_obj=$this->getTemplateDetail($shop_id, "bind_email", "email");
             if(!empty($template_obj) && $template_obj["is_enable"]==1){
-                $user_model=new UserModel();
-                $user_obj=$user_model->get($user_id);
                 $content=$template_obj["template_content"];
                 $content=str_replace("{验证码}", $rand, $content);
-                $content=str_replace("{用户名称}", $user_obj["nick_name"], $content);
                 $this->result["param"]=$rand;
                 if(!empty($this->email_host) && !empty($this->email_id) && !empty($this->email_pass) && !empty($this->email_addr)){
                     $result=emailSend($this->email_host, $this->email_id, $this->email_pass, $this->email_port, $this->email_is_security, $this->email_addr, $email, $template_obj["template_title"], $content, $this->shop_name);

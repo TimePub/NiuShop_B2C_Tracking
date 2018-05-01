@@ -72,6 +72,30 @@ class PayParam extends BaseService
      * ********************************************支付宝支付参数结束****************************************
      */
     
+    /**
+     * ********************************************小程序支付参数支付参数******************************************
+     */
+    //小程序appid
+    protected $applet_appid;
+    //支付商户号
+    protected $applet_mchid;
+    //小程序key    
+    protected $applet_key;
+    /**
+     * ********************************************小程序参数结束****************************************
+     */
+    
+    /**
+     * ********************************************银联支付参数开始********************************************
+     */
+    //银联商户号
+    protected $union_merid;
+    //证书签名密码
+    protected $union_cert_pwd;
+    /**
+     * ********************************************银联支付参数结束********************************************
+     */
+    
     // 构造函数如果是多用户系统需要传入对应的实例ID
     function __construct($instance = 0)
     {
@@ -105,12 +129,24 @@ class PayParam extends BaseService
         $this->apiclient_key = $wchat_pem_config['apiclient_key'];
         Log::write("this->apiclient_cert:".$this->apiclient_cert);
         Log::write("this->apiclient_key:".$this->apiclient_key);
-                                                                   
+        
+        // 获取微信小程序支付参数(统一支付到平台账户)
+        $applet_config = $config->getInstanceAppletConfig($instance);
+        $this->applet_appid = $applet_config['value']['appid'];
+        $this->applet_mchid = $this->pay_mchid;
+        $this->applet_key = $this->pay_mchkey;
+        
         // 获取支付宝支付参数(统一支付到平台账户)
         $alipay_config = $config->getAlipayConfig($instance);
         $this->ali_partnerid = $alipay_config['value']['ali_partnerid'];
         $this->ali_seller = $alipay_config['value']['ali_seller'];
         $this->ali_key = $alipay_config['value']['ali_key'];
+        
+        // 获取银联支付参数(统一支付到平台账号 )
+        $unionpay_config = $config->getUnionpayConfig($instance);
+        $this->union_merid = $unionpay_config['value']['merchant_number'];
+        $this->union_cert_pwd = $unionpay_config['value']['certificate_key'];
+        
     }
 
     /**
@@ -184,7 +220,44 @@ class PayParam extends BaseService
     {
         return $this->ali_key;
     }
-/**
- * ***********************************************获取支付宝支付参数结束***********************************
- */
+    /**
+     * ***********************************************获取支付宝支付参数结束***********************************
+     */
+    
+    /**
+     * ***********************************************小程序支付参数开始***********************************
+     */
+    public function getAppletAppid()
+    {
+        return $this->applet_appid;
+    }
+    
+    public function getAppletMchid()
+    {
+        return $this->applet_mchid;
+    }
+    
+    public function getAppletKey(){
+        return $this->applet_key;
+    }
+    /**
+     * ***********************************************小程序支付参数结束***********************************
+     */
+    
+    /**
+     * ********************************************获取银联支付参数开始********************************************
+     */
+    
+    public function getUnionMerid(){
+        
+        return $this->union_merid; 
+    }
+    public function getUnionCertPwd(){
+        
+        return $this->union_cert_pwd;
+    }
+    /**
+     * ********************************************获取银联支付参数结束********************************************
+     */
+    
 }

@@ -5,23 +5,24 @@
 </style>
 {/block}
 {block name="main"}
+<div class="space-10"></div>
 <div class="set-style">
 	<dl>
-		<dt><span class="color-red">*</span>商品分类名称:</dt>
+		<dt><span class="color-red">*</span>商品分类名称：</dt>
 		<dd>
-			<p><input id="category_name" type="text" placeholder="请输入商品分类" class="input-common"/></p>
+			<p><input id="category_name" type="text" placeholder="请输入商品分类名称" class="input-common"/></p>
 			<p class="error">商品分类不能为空，且长度不能超过30个字</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span class="color-red">*</span>商品分类简称:</dt>
+		<dt><span class="color-red">*</span>商品分类简称：</dt>
 		<dd>
 			<p><input id="short_name" type="text" placeholder="请输入商品分类简称" class="input-common"/></p>
 			<p class="error">商品分类简称不能为空，且长度不能超过20个字</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>上级分类:</dt>
+		<dt>上级分类：</dt>
 		<dd>
 			<select name="search_type" id="pid" class="select-common">
 				<option value="0">顶级分类</option>
@@ -34,7 +35,7 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>商品类型:</dt>
+		<dt>商品类型：</dt>
 		<dd>
 			<select name="attr" id="attr_id" class="select-common">
 				<option value="">选择类型</option>
@@ -45,49 +46,71 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>是否可见:</dt>
+		<dt>是否可见：</dt>
 		<dd>
 			<input id="is_visible" type="checkbox" class="checkbox" checked="checked" />
 			<span class="help-inline" id="is_menuPrompt" style="display: none;"></span>
 		</dd>
 	</dl>
 	<dl>
-		<dt>关键字:</dt>
+		<dt>排序：</dt>
 		<dd>
-			<p><input id="keywords" type="text" placeholder="请输入关键字" class="input-common"/></p>
+			<p><input id="sort" type="number" placeholder="请输入序号" class="input-common harf" /></p>
+		</dd>
+	</dl>
+	<dl>
+		<dt>图片：</dt>
+		<dd>
+			<div class="upload-btn-common">
+				<div>
+					<input class="input-file" name="file_upload" id="uploadImg" type="file" onchange="imgUpload(this);" title="上传">
+					<input type="hidden" id="logo" value="" />
+				</div>
+				<input type="text" id="text_logo" class="input-common" readonly="readonly" value="" />
+				<em>上传</em>
+				
+				<img id="preview_logo" src="__STATIC__/blue/img/upload-common-select.png" data-html="true" data-container="body" data-placement="top" data-trigger="manual"/>
+
+			</div>
+			<p class="hint">
+				<span>建议使用<i class="important-note">宽100</i>像素-<i class="important-note">高50</i>像素内的<i class="important-note">GIF</i>或<i class="important-note">PNG</i>透明图片；点击下方"保存"按钮后生效。</span>
+			</p>
+		</dd>
+	</dl>
+	<dl>
+		<dt>关键字：</dt>
+		<dd>
+			<p><input id="keywords"  placeholder="请输入关键字" class="input-common long"></p>
 			<p class="error">关键字不能为空， </p>
 			<p class="hint">用于网站搜索引擎的优化，关键字之间请用英文逗号分隔</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>排序:</dt>
+		<dt>描述：</dt>
 		<dd>
-			<p><input id="sort" type="text" placeholder="请输入序号" class="input-common"/></p>
+			<p><textarea id="description" placeholder="请输入描述" class="textarea-common"></textarea></p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>图片:</dt>
+		<dt>电脑端分类页面模板：</dt>
 		<dd>
-			<div class="class-logo"><p><img id="imglogo"></p></div>
-			<div class="upload-btn"> 
-				<span>
-					<input class="input-file" name="file_upload" id="uploadImg" type="file" onchange="imgUpload(this,'logo')">
-					<input type="hidden"id="logo"/>
-				</span>
-				<p><i class="fa fa-cloud-upload"></i>上传图片</p>
-			</div>
-			<p class="hint"><br><span style="color:orange;">建议使用宽100像素*高50像素内的GIF或PNG透明图片；点击下方"提交"按钮后生效。</span></p>
+			{$template_url['pc_template_url']}&nbsp;<input type="text" class="input-common harf" name="" id="pc_custom_template" style="width: 80px;" onkeyup="value=value.replace(/[^\w\.\/]/ig,'')">&nbsp;.html
+			<p class="hint">用户自定义模板必须存放在{$template_url['pc_template_url']}下，模板名只能由英文组成</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>描述:</dt>
+		<dt>手机端分类页面模板：</dt>
 		<dd>
-			<p><textarea id="description" placeholder="请输入描述" class="input-common"></textarea></p>
+			{$template_url['wap_template_url']}&nbsp;<input type="text" class="input-common harf" name="" id="wap_custom_template" style="width: 80px;" onkeyup="value=value.replace(/[^\w\.\/]/ig,'')">&nbsp;.html
+			<p class="hint">用户自定义模板必须存放在{$template_url['wap_template_url']}下，模板名只能由英文组成</p>
 		</dd>
 	</dl>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="addGoodsCategoryAjax();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="addGoodsCategoryAjax();">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);">返回</button>
+		</dd>
 	</dl>
 </div>
 <script src="__STATIC__/js/ajax_file_upload.js" type="text/javascript"></script>
@@ -96,12 +119,13 @@
 //图片上传
 function imgUpload(event) {
 	var fileid = $(event).attr("id");
-	var str = $(event).next().attr("id");
+	var id = $(event).next().attr("id");
 	var data = { 'file_path' : UPLOADGOODSCATEGORY };
 	uploadFile(fileid,data,function(res){
 		if(res.code){
-			$("#img"+str).attr("src",__IMG(res.data));
-			$("#"+str).val(res.data);
+			$("#"+id).val(res.data);
+			$("#text_" + id).val(res.data);
+			$("#preview_" + id).attr("data-src",__IMG(res.data));
 			showTip(res.message,"success");
 		}else{
 			showTip(res.message,"error");
@@ -153,6 +177,9 @@ function addGoodsCategoryAjax() {
 	}else{
 		var attr_name = '';
 	}
+	var pc_custom_template = $("#pc_custom_template").val();
+	var wap_custom_template = $("#wap_custom_template").val();
+
 	if(verify(category_name,short_name, keywords, sort, description)){
 		if(flag) return;
 		flag = true;
@@ -169,13 +196,16 @@ function addGoodsCategoryAjax() {
 				"category_pic" : category_pic,
 				"short_name" : short_name,
 				"attr_id" : attr_id,
-				"attr_name" : attr_name
+				"attr_name" : attr_name,
+				"pc_custom_template" : pc_custom_template,
+				"wap_custom_template" : wap_custom_template
 			},
 			success : function(data) {
 				if (data["code"] > 0) {
-					showMessage('success', data["message"],"{:__URL('ADMIN_MAIN/goods/goodscategorylist')}");
+					showTip(data['message'],"success");
+					location.href = "{:__URL('ADMIN_MAIN/goods/goodscategorylist')}";
 				}else{
-					showMessage('error', data["message"]);
+					showTip(data['message'],"error");
 					flag = false;
 				}
 			}

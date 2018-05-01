@@ -21,55 +21,45 @@ tr{text-align:center;}
 .is_show + label,.is_show_brand + label,.is_show_lower_category + label{display: inline-block;width: 15px;height: 15px;background: url("ADMIN_IMG/un_checked.png") center no-repeat;background-size: 15px 15px;margin-bottom: 0;}
 .is_show + label + span,.is_show_brand + label + span,.is_show_lower_category + label + span{color: #777;position: relative;margin-left: 5px;top: -2px;}
 .is_show:checked + label,.is_show_brand:checked + label,.is_show_lower_category:checked + label{background: url("ADMIN_IMG/checked.png") center no-repeat;background-size: 15px 15px;}
-.is_show:checked + label + span,.is_show_brand:checked + label + span,.is_show_lower_category:checked + label + span{color: #0072D2;}
+.is_show:checked + label + span,.is_show_brand:checked + label + span,.is_show_lower_category:checked + label + span{color: #126AE4;}
+.modal-dialog dl dd{width:370px;}
 </style>
 {/block}
 {block name="main"}
+<div class="space-10"></div>
 <div class="mod-table">
 	<div class="mod-table-head">
 		<div class="con style0list">
 				<table class="table-class">
 					<colgroup>
-<!-- 						<col style="width: 5%;"> -->
+						<col style="width: 2%;">
+						<col style="width: 25%;">
 						<col style="width: 10%;">
 						<col style="width: 10%;">
 						<col style="width: 10%;">
+						<col style="width: 5%;">
+						<col style="width: 7%;">
+						<col style="width: 7%;">
 						<col style="width: 10%;">
-						<col style="width: 6%;">
-						<col style="width: 8%;">
-						<col style="width: 12%;">
-						<col style="width: 8%;">
-						<col style="width: 8%;">
+						<col style="width: 4%;">
 						<col style="width: 10%;">
 					</colgroup>
 					<thead>
 						<tr>
-<!-- 							<th><label style="margin-left: 5px;"> <input type="checkbox"  onclick="CheckAll(this)"></label></th> -->
+							<th><i class="checkbox-common"><input type="checkbox"  onclick="CheckAll(this)"></i></th>
 							<th class="tal" align="left">分类名称</th>
-							<th class="tal">是否显示</th>
+							
 							<th class="tal">别名</th>
 							<th class="tal">简称</th>
+							<th class="tal">商品排序</th>
 							<th class="tal">颜色</th>
+							<th class="tal">是否显示</th>
 							<th class="tal">品牌显示</th>
 							<th class="tal">下级分类显示</th>
 							<th class="tal">排序</th>
-							<th class="tal">商品排序</th>
 							<th class="tal">广告图</th>
 						</tr>
 					</thead>
-					<colgroup>
-<!-- 						<col style="width: 5%;"> -->
-						<col style="width: 10%;">
-						<col style="width: 10%;">
-						<col style="width: 10%;">
-						<col style="width: 10%;">
-						<col style="width: 6%;">
-						<col style="width: 8%;">
-						<col style="width: 12%;">
-						<col style="width: 8%;">
-						<col style="width: 8%;">
-						<col style="width: 10%;">
-					</colgroup>
 					<tbody id="list"></tbody>
 				</table>
 		</div>
@@ -82,54 +72,49 @@ tr{text-align:center;}
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-				<h4 class="modal-title" id="myModalLabel">广告添加</h4>
+				<h3 class="modal-title" id="myModalLabel">广告添加</h3>
 			</div>
 			<div class="modal-body">
 				<div class="set-style">
 					<dl>
-						<dt>主标题:</dt>
+						<dt>主标题：</dt>
 						<dd>
-							<p><input id="title" type="text" value=""> </p>
+							<p><input id="title" type="text" value="" class="input-common"> </p>
 							<p class="error">请输入标题</p>
 						</dd>
 					</dl>
 					<dl>
-						<dt>副标题:</dt>
+						<dt>副标题：</dt>
 						<dd>
-							<p><input  id="subtitle" type="text" value=""> </p>
+							<p><input  id="subtitle" type="text" value="" class="input-common"> </p>
 							<p class="error">请输入副标题</p>
 						</dd>
 					</dl>
 					<dl>
-						<dt>图片:</dt>
+						<dt>图片：</dt>
 						<dd>
-							<div class="class-logo"><p><img id="imgLogo" src="" ></p></div>
-							<div class="ncsc-upload-btn"> 
-								<a href="javascript:void(0);">
-									<span>
-										<input hidefocus="true" size="1" class="input-file" name="file_upload" id="uploadImg" nc_type="change_store_label" type="file" onchange="imgUpload(this);">
-									</span>
-									<p><i class="icon-upload-alt"></i>上传图片</p>
-								</a> 
-							</div>
-							<input type="hidden"id="Logo" value=""/>
-							<p class="error">请输入设置广告图片</p>
-						</dd>
-					</dl>
-					<dl>
-						<dt>背景色:</dt>
-						<dd>
-							<div class="ncsc-upload-btn">
-								<a href="javascript:void(0);">
-									<input id="background" type="color" style="width:60px;height:25px;" value="#ffffff"/>
-								</a>
+							<div class="upload-btn-common">
+								<div>
+									<input class="input-file" name="file_upload" id="uploadAdv" type="file" onchange="imgUpload(this);" title="上传">
+									<input type="hidden" id="adv" value="">
+								</div>
+								
+								<input type="text" id="text_adv" class="input-common" readonly="readonly" value="">
+								<em>上传</em>
+								<img id="preview_adv" src="__STATIC__/blue/img/upload-common-select.png" data-src="" data-html="true" data-container="body" data-placement="top" data-trigger="manual" data-original-title="" title="">
 							</div>
 						</dd>
 					</dl>
 					<dl>
-						<dt>链接地址:</dt>
+						<dt>背景色：</dt>
 						<dd>
-							<p><input  id="url" type="text" value=""> </p>
+							<input id="background" type="color" value="#000000" class="input-common-color"/>
+						</dd>
+					</dl>
+					<dl>
+						<dt>链接地址：</dt>
+						<dd>
+							<p><input  id="url" type="text" value="" class="input-common"> </p>
 							<p class="error">请输入链接地址</p>
 						</dd>
 					</dl>
@@ -137,8 +122,8 @@ tr{text-align:center;}
 				<input type="hidden" id="id" value=""/>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-default" onclick="addGoodsAdv();">保存</button>
-				<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn-common btn-big" onclick="addGoodsAdv();">保存</button>
+				<button type="button" class="btn btn-big" data-dismiss="modal">关闭</button>
 			</div>
 		</div>
 	</div>
@@ -160,10 +145,10 @@ function LoadingInfo() {
 		url : "{:__URL('ADMIN_MAIN/system/getGoodsCategoryBlock')}",
 		async : false,
 		success : function(data) {
-// 			console.log(JSON.stringify(data));
-			var html = '';
 			if (data.length > 0) {
+				$("#list").empty();
 				for (var i = 0; i < data.length; i++) {
+					var html = '';
 					var show_html ="";
 					var is_show = "否";
 					if(data[i]["is_show"] == 1){
@@ -184,16 +169,19 @@ function LoadingInfo() {
 					}
 					var goods_sort_type = data[i]['goods_sort_type'];
 					html += '<tr>';  
-// 					html += '<td><label style="margin-left:10px;"> <input type="checkbox" name="sub" value="'+ data[i]['id']+'"></label></td>';
+					html += '<td><i class="checkbox-common"><input type="checkbox" name="sub" value="'+ data[i]['id']+'"></i></td>';
 					html += '<td class="tal" align="left">'+ data[i]['category_name']+'</td>';
+					
+					html += '<td class="tal category_alias'+data[i]['id']+'"><input type="text"class="category_alias input-common middle"  value="' + data[i]["category_alias"] + '" onchange="setGoodsCategoryField(this, '+data[i]['id']+');"/></td>';
+					html += '<td class="tal short_name'+data[i]['id']+'"><input type="text" class="short_name input-common harf" value="' + data[i]["short_name"] + '" onchange="setGoodsCategoryField(this, '+data[i]['id']+');" maxlength="4"/></td>';
+					html += '<td class="tal"><select class="floor_goods_sort_type select-common harf" onchange="setGoodsCategoryField(this, '+data[i]['id']+');"><option value="0" '+ is_selected(0,goods_sort_type) +'>默认排序</option><option value="1" '+ is_selected(1,goods_sort_type) +'>按发布时间排序</option><option value="2" '+ is_selected(2,goods_sort_type) +'>按销量排序</option><option value="3" '+ is_selected(3,goods_sort_type) +'>按排序号排序</option><option value="4" '+ is_selected(4,goods_sort_type) +'>按人气排序</option></select></td>';
+
+					html += '<td class="tal"><input type="color" class="input-common-color color"  onchange="setGoodsCategoryField(this, '+data[i]['id']+');"  value="'+data[i]["color"]+'"></td>';
 					html += '<td class="tal"><label style="margin-bottom:0;margin-top: 5px;"><input type="checkbox" class="is_show" onchange="setGoodsCategoryField(this, '+data[i]['id']+')" '+show_html+'/><label></label><span>'+ is_show +'</span></label></td>';
-					html += '<td class="tal category_alias'+data[i]['id']+'"><input type="text"class="category_alias input-common"  value="' + data[i]["category_alias"] + '" onchange="setGoodsCategoryField(this, '+data[i]['id']+');"/></td>';
-					html += '<td class="tal short_name'+data[i]['id']+'"><input type="text" class="short_name input-common" value="' + data[i]["short_name"] + '" onchange="setGoodsCategoryField(this, '+data[i]['id']+');" maxlength="4"/></td>';
-					html += '<td class="tal"><input type="color" class="color input-common input-common-sort"style="width:30px;margin-top:5px;"  onchange="setGoodsCategoryField(this, '+data[i]['id']+');"  value="'+data[i]["color"]+'"></td>';
 					html += '<td class="tal"><label style="margin-bottom:0;margin-top: 5px;"><input type="checkbox" class="is_show_brand input-common" onchange="setGoodsCategoryField(this, '+data[i]['id']+');" '+show_brand_html+'/><label></label><span>'+ is_show_brand +'</span></label></td>';
 					html += '<td class="tal"><label style="margin-bottom:0;margin-top: 5px;"><input type="checkbox" class="is_show_lower_category" onchange="setGoodsCategoryField(this, '+data[i]['id']+');" '+lower_category_html+'/><label></label><span>'+ is_show_lower_category +'</span></label></td>';
+					
 					html += '<td class="tal"><input type="number" style="text-align:center;" class="sort input-common input-common-sort" onchange="setGoodsCategoryField(this, '+data[i]['id']+');" value="'+data[i]['sort']+'"/></td>';
-					html += '<td class="tal"><select class="floor_goods_sort_type select-common" onchange="setGoodsCategoryField(this, '+data[i]['id']+');"><option value="0" '+ is_selected(0,goods_sort_type) +'>默认排序</option><option value="1" '+ is_selected(1,goods_sort_type) +'>按发布时间排序</option><option value="2" '+ is_selected(2,goods_sort_type) +'>按销量排序</option><option value="3" '+ is_selected(3,goods_sort_type) +'>按排序号排序</option><option value="4" '+ is_selected(4,goods_sort_type) +'>按人气排序</option></select></td>';
 					html += '<td class="tal">';
 					if(data[i]['ad_picture'] != undefined && data[i]['ad_picture'] !=''){
 						var ad_picture = data[i]['ad_picture'];
@@ -210,11 +198,12 @@ function LoadingInfo() {
 					}
 					html +='</td>';
 					html += '</tr>';
+					$("#list").append(html);
 				}
 			} else {
-				html += '<tr><th colspan="8">暂无符合条件的数据记录</th></tr>';
+				var html = '<tr><td colspan="11">暂无符合条件的数据记录</td></tr>';
+				$("#list").html(html);
 			}
-			$("#list").html(html);
 		}
 	});
 	$(".checkbox").simpleSwitch({
@@ -296,13 +285,15 @@ function editgoodsAd(id, title, subtitle, picture, background, url){
 	//	ad_picture = eval(ad_picture);
 	$("#add_adv").find("#title").val(title);
 	$("#add_adv").find("#subtitle").val(subtitle);
-	$("#add_adv").find("#Logo").val(picture);
 	$("#add_adv").find("#background").val(background);
 	$("#add_adv").find("#url").val(url);
-	$("#add_adv").find("#imgLogo").attr("src",__IMG(picture));
+	$("#add_adv").find("#adv").val(picture);
+	$("#add_adv").find("#text_adv").val(picture);
+	$("#add_adv").find("#preview_adv").attr("data-src",__IMG(picture));
 	//	}
 
 }
+
 /**
 *添加商品分类广告
 */
@@ -310,7 +301,7 @@ function addGoodsAdv(){
 	var id = $("#id").val();
 	var title = $("#add_adv").find("#title").val();
 	var subtitle = $("#add_adv").find("#subtitle").val();
-	var picture = $("#add_adv").find("#Logo").val();
+	var picture = $("#add_adv").find("#adv").val();
 	var background = $("#add_adv").find("#background").val();
 	var url = $("#add_adv").find("#url").val();
 	var ad_picture = {
@@ -371,10 +362,12 @@ function addGoodsAdv(){
 function imgUpload(event) {
 	var fileid = $(event).attr("id");
 	var data = { 'file_path' : UPLOADADV };
+	var id = $(event).next().attr("id");
 	uploadFile(fileid,data,function(res){
 		if(res.code){
-			$("#imgLogo").attr("src",__IMG(res.data));
-			$("#Logo").val(res.data);
+			$("#" + id).val(res.data);
+			$("#text_" + id).val(res.data);
+			$("#preview_"+ id).attr("data-src",__IMG(res.data));
 			showTip(res.message,"success");
 		}else{
 			showTip(res.message,"error");
@@ -389,7 +382,7 @@ function clearBlock(){
 	$("#add_adv").find("#title").val('');
 	$("#add_adv").find("#subtitle").val('');
 	$("#add_adv").find("#Logo").val('');
-	$("#add_adv").find("#background").val('#ffffff');
+	$("#add_adv").find("#background").val('#000000');
 	$("#add_adv").find("#url").val('');
 	$("#add_adv").find("#imgLogo").attr("src",'');
 	$("#id").val('');
@@ -412,6 +405,12 @@ function deleteGoodsAd(id){
 			}
 		}
 	});
+}
+function CheckAll(event){
+	var checked = event.checked;
+	$(".table-class tbody input[name = 'sub']").prop("checked",checked);
+	if(checked) $(".table-class tbody input[type = 'checkbox']").parent().addClass("selected");
+	else $(".table-class tbody input[type = 'checkbox']").parent().removeClass("selected");
 }
 </script>
 {/block}

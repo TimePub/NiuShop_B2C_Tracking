@@ -48,9 +48,9 @@
 <section class="face-box">
 	<div class="face">
 		{notempty name="$member_img"}
-		<img src="{:__IMG($member_img)}" alt="" class="facepic"   id="imgLogo">
+		<img src="{:__IMG($default_headimg)}" class="lazy_load facepic" data-original="{:__IMG($member_img)}" alt=""  id="imgLogo">
 		{else/}
-		<img src="__TEMP__/{$style}/public/images/member_default.png" alt="" class="facepic" id="imgLogo">
+		<img src="{:__IMG($default_headimg)}" alt="" class="facepic" id="imgLogo">
 		{/notempty}
 	</div>
 	<a href="javascript:void(0);">
@@ -84,9 +84,9 @@ function imgUpload(event) {
 		if(res.code){
 			$("#imgLogo").attr("src",__IMG(res.data));
 			$("#Logo").val(res.data);
-			showBox(res.message);
+			showBox(res.message,"success");
 		}else{
-			showBox(res.message);
+			showBox(res.message,"error");
 		}
 	}, 1);
 }

@@ -5,7 +5,7 @@
 // JavaScript Document
     //entra92-45
     (function(global){
-        var g=[[]],d='http://static.gtimg.com',m={},blankjs="",grays={},mdebug = location.href.indexOf("mdebug=1")!=-1;
+        var g=[[]],d='https://static.gtimg.com',m={},blankjs="",grays={},mdebug = location.href.indexOf("mdebug=1")!=-1;
         m.alias = {};
         var a={},p={},c=[];
         g["1"]=["\/js\/version\/201403\/lazyload.201403071104.js","\/js\/version\/201306\/loadscript.201306251923.js","\/js\/version\/201309\/url.201309101641.js","\/js\/version\/201405\/wd.scroll.201405261106.js","\/js\/version\/201402\/zepto.201402121740.js"];

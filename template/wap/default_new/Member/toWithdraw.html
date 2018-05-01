@@ -23,118 +23,126 @@ input {width: 100%;height: 23px;}
 	<a class="head_back" href="javascript:window.history.go(-1);"><i class="icon-back"></i></a>
 	<div class="head-title" >{:lang('apply_for_cash')}</div>
 </section>
+<div data-alert class="alert-box alert" id="errerMsg" style="display: none;"><a href="#" class="close">&times;</a></div>
+<div class="panel extract">
+	<div class="commision-total">
+		<span class="span-title" style="color:#000000;">{:lang('member_cash_available')}：</span>
+		<span class="number" style="font-size:18px;color:#FF4040;"id="Amount">¥{$account}</span>
+	</div>
+</div>
 
-<!--submit errow tip begin-->
-    <div data-alert class="alert-box alert" id="errerMsg" style="display: none;"><a href="#" class="close">&times;</a></div>
-    <!--submit errow tip end-->
-    <!--content begin-->
-        <div class="panel extract">
-		        <div class="commision-total"><span class="span-title" style="color:#000000;">{:lang('member_cash_available')}：</span><span class="number" style="font-size:18px;color:#FF4040;"id="Amount">¥{$account}</span></div>
-        </div>
-        
-        <div class="panel extract-account" style="border:0px;">
-            <ul class="side-nav" >
-                 {if condition="count($account_list) eq 0"}
-                	<li ><a href="{:__URL('APP_MAIN/member/accountlist?shop_id='.$shop_id)}" style="padding:6px 15px;"><span>{:lang('please_add_a_cash_account')} <br></span><i class="arrow"></i></a></li>
-                {else/}
-                	<li>
-                	 {volist name="account_list" id="vo"}
-					          <a href="{:__URL('APP_MAIN/member/accountlist?shop_id='.$shop_id)}" style="padding:6px 15px;" >
-					               <span>{$vo.branch_bank_name}<br>{$vo.account_number} </span>
-					               <i class="arrow" ></i></a>
-					          </a>
-					          <input type="hidden" value="{$vo.id}" id="bank_account_id"/>
-	                 {/volist} 
-	                </li>
-                {/if}
-            </ul>
-        </div>
-        <div class="row extract-monynumber">
-            <div class="large-12 columns">
-                <input type="text" class="" style="border:0px;" id="money" placeholder="{:lang('member_enter_amount')}">
-            </div>
-            {if condition="$cash neq '' && $poundage neq ''"}
-            <div class="tip-text">{:lang('member_minimum_withdrawal')}<span id="MinaAmountCash">{$cash}</span>{:lang('element')}，{:lang('member_must_serve')}<span id="IntTimes">{$poundage}</span>{:lang('member_integral_multiple')}</div>
-            {else/}
-            <div class="tip-text">{:lang('member_minimum_withdrawal')}<span id="MinaAmountCash">0</span>{:lang('element')} ，{:lang('member_must_serve')}<span id="IntTimes">1</span>{:lang('member_integral_multiple')}</div>
-            {/if}
-        </div>
-        <div class="btn_all">
-	        <a href="javascript:;" onclick="btnSave()" class="button red">{:lang('member_apply_immediately')}</a>
-            {if condition="$withdraw_message neq ''"}
-	        <div class="horn-text"> {:lang('member_notes')}:{$withdraw_message}</div> 
-            {/if}
-        </div>
-    
-     <input type="hidden" value="{$shop_id}" id="id"/>
+<div class="panel extract-account" style="border:0px;">
+	<ul class="side-nav" >
+		{if condition="count($account_list) eq 0"}
+		<li>
+			<a href="{:__URL('APP_MAIN/member/accountlist?shop_id='.$shop_id)}" style="padding:6px 15px;">
+				<span>{:lang('please_add_a_cash_account')} <br></span>
+				<i class="arrow"></i>
+			</a>
+		</li>
+		{else/}
+		<li>
+		{volist name="account_list" id="vo"}
+			{if condition="$vo.account_type == 1"}
+			<a href="{:__URL('APP_MAIN/member/accountlist?shop_id='.$shop_id)}" style="padding:6px 15px;">
+				<span>{$vo.branch_bank_name}<br>{$vo.account_number}</span>
+				<i class="arrow"></i>
+			</a>
+			
+			{elseif condition="$vo.account_type == 2" /}
+			<a href="{:__URL('APP_MAIN/member/accountlist?shop_id='.$shop_id)}" style="padding:6px 15px;">
+				<span>{$vo.account_type_name}</span>
+				<i class="arrow" style="top:36%;"></i>
+			</a>
+			{elseif condition="$vo.account_type == 3" /}
+			<a href="{:__URL('APP_MAIN/member/accountlist?shop_id='.$shop_id)}" style="padding:6px 15px;">
+				<span>{$vo.account_type_name}<br>{$vo.account_number}</span>
+				<i class="arrow"></i>
+			</a>
+			{/if}
+			<input type="hidden" value="{$vo.id}" id="bank_account_id"/>
+		{/volist}
+		</li>
+		{/if}
+	</ul>
+</div>
+
+<div class="row extract-monynumber">
+	<div class="large-12 columns">
+		<input type="text" class="" style="border:0px;" id="money" placeholder="{:lang('member_enter_amount')}">
+	</div>
+	{if condition="$cash neq '' && $poundage neq ''"}
+	<div class="tip-text">{:lang('member_minimum_withdrawal')}<span id="MinaAmountCash">{$cash}</span>{:lang('element')}，{:lang('member_must_serve')}<span id="IntTimes">{$poundage}</span>{:lang('member_integral_multiple')}</div>
+	{else/}
+	<div class="tip-text">{:lang('member_minimum_withdrawal')}<span id="MinaAmountCash">0</span>{:lang('element')} ，{:lang('member_must_serve')}<span id="IntTimes">1</span>{:lang('member_integral_multiple')}</div>
+	{/if}
+</div>
+
+<div class="btn_all">
+	<a href="javascript:;" onclick="btnSave()" class="button red">{:lang('member_apply_immediately')}</a>
+	{if condition="$withdraw_message neq ''"}
+	<div class="horn-text"> {:lang('member_notes')}:{$withdraw_message}</div>
+	{/if}
+</div>
+
+<input type="hidden" value="{$shop_id}" id="id"/>
 {/block}
 {block name="bottom"}{/block}
 {block name="javascript"}
- <script type="text/javascript">
-   function btnSave(){
-	        var shop_id = $("#id").val();
-        	var bank_account_id = $("#bank_account_id").val();
-            var cash = $.trim($("#money").val());
-            var MaxCashAmount = $.trim($("#Amount").text());
-            var MinaAmountCash = $.trim($("#MinaAmountCash").text());
-            var IntTimes = $.trim($("#IntTimes").html());
-
-            MaxCashAmount = MaxCashAmount.substr(1);
-            if(bank_account_id == null || bank_account_id == ""){
-            	showBox("{:lang('no_withdrawals_account_was_added')}");
-	            return;
-            }
-            var reg = /^\+?[1-9][0-9]*$/;
-      
-            if (reg.test(cash)) {
-            	cash = Number(cash);
-                MaxCashAmount = Number(MaxCashAmount);
-                MinaAmountCash = Number(MinaAmountCash);
-                if (cash > 0) {
-                    if (cash <= MaxCashAmount) {
-                        if (cash >= MinaAmountCash) {
-                            if (cash % parseInt(IntTimes) == 0) {
-                            
-                                $.ajax({
-                                	type:"post",
-                                    url: "{:__URL('APP_MAIN/member/towithdraw')}",
-                                    data: { "bank_account_id": bank_account_id, "cash": cash},
-                                    success: function (res) {
-                                        if (res['code'] >0) {
-                                        	showBox("{:lang('member_submitted_for_review')}...");
-                                            window.location.href = __URL("APP_MAIN/member/balancewater?shop_id="+shop_id) ;
-                                        } else {
-                                        	showBox(res.outmessage);
-                                        } 
-                                    }
-                                })
-                            } else {
-                                //$("#CashAmount").focus();
-                                showBox("{:lang('member_withdrawals_must_be')}" + IntTimes + "{:lang('member_integral_multiple')}");
-                                return false;
-                            }
-                        } else {
-                            //$("#CashAmount").focus();
-                            showBox("{:lang('member_withdrawals_must_greater')}" + MinaAmountCash);
-                            return false;
-                        }
-
-
-                    } else {
-                        //$("#CashAmount").focus();
-                        showBox("{:lang('member_maximum_amount')}" + MaxCashAmount);
-                        return false;
-                    }
-                } else {
-                    //$("#CashAmount").focus();
-                    showBox("{:lang('member_not_present')}");
-                    return false;
-                }
-            } else {
-                //$("#CashAmount").focus();
-                showBox("{:lang('member_amount_not_legal')}");
-                return false;
-            }
-        }
-    </script>
+<script type="text/javascript">
+function btnSave(){
+	var shop_id = $("#id").val();
+	var bank_account_id = $("#bank_account_id").val();
+	var cash = $.trim($("#money").val());
+	var MaxCashAmount = $.trim($("#Amount").text());
+	var MinaAmountCash = $.trim($("#MinaAmountCash").text());
+	var IntTimes = $.trim($("#IntTimes").html());
+	MaxCashAmount = MaxCashAmount.substr(1);
+	if(bank_account_id == null || bank_account_id == ""){
+		showBox("{:lang('no_withdrawals_account_was_added')}","warning");
+		return;
+	}
+	var reg = /^\+?[1-9][0-9]*$/;
+	if (reg.test(cash)) {
+		cash = Number(cash);
+		MaxCashAmount = Number(MaxCashAmount);
+		MinaAmountCash = Number(MinaAmountCash);
+		if (cash > 0) {
+			if (cash <= MaxCashAmount) {
+				if (cash >= MinaAmountCash) {
+					if (cash % parseInt(IntTimes) == 0) {
+						$.ajax({
+							type:"post",
+							url: "{:__URL('APP_MAIN/member/towithdraw')}",
+							data: { "bank_account_id": bank_account_id, "cash": cash},
+							success: function (res) {
+								if (res['code'] >0) {
+									showBox("{:lang('member_submitted_for_review')}...","success", __URL("APP_MAIN/member/balancewater?shop_id="+shop_id));
+								} else {
+									showBox(res.outmessage,"error");
+								}
+							}
+						});
+					} else {
+						showBox("{:lang('member_withdrawals_must_be')}" + IntTimes + "{:lang('member_integral_multiple')}","warning");
+						return false;
+					}
+				} else {
+					showBox("{:lang('member_withdrawals_must_greater')}" + MinaAmountCash,"warning");
+					return false;
+				}
+			} else {
+				showBox("{:lang('member_maximum_amount')}" + MaxCashAmount,"warning");
+				return false;
+			}
+		} else {
+			showBox("{:lang('member_not_present')}","warning");
+			return false;
+		}
+	} else {
+		showBox("{:lang('member_amount_not_legal')}","warning");
+		return false;
+	}
+}
+</script>
 {/block}

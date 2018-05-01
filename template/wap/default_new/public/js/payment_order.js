@@ -45,7 +45,7 @@ $(function() {
 			$(".mask-layer").fadeIn(300);
 			$(".mask-layer-control[data-flag='"+flag+"']").slideDown(300);
 			if(getCurrMaskLayer() != null){
-				getCurrMaskLayer().find("li").click(function(){
+				getCurrMaskLayer().find("li").one("click",function(){
 					var curr_li = $(this);
 					getCurrMaskLayer().find("li").removeClass("active");
 					curr_li.addClass("active");
@@ -90,6 +90,11 @@ $(function() {
 						case "invoice-content":
 							//当前打开的是选择发票内容
 							break;
+							
+						case "shipping_time":
+							//当前打开的是指定配送时间
+							updateShippingTime(curr_li);
+							break;
 					}
 
 					curr_options.children("span").text(msg);
@@ -117,12 +122,39 @@ $(function() {
 	});
 	
 	/**
+	 * 用户输入积分，进行验证并矫正，同时更新总优惠、应付金额等数据
+	 * 规则：
+	 * 1、可用积分，不可超过订单最大可使用积分
+	 * 2、不可超过用户最大可用积分
+	 * 3、只能输入正整数
+	 */
+	$("#use_point").keyup(function(){
+		if(validationMemberPoint()){
+			calculateTotalAmount();
+		}
+	});
+
+	/**
 	 * 关闭弹出框（包括点击遮罩层、确定按钮、右上角X按钮）
 	 * 2017年6月21日 14:18:15 王永杰
 	 */
-	$(".mask-layer,.btn-green,.mask-layer-control .close").click(function() {
+	$(".mask-layer,.btn-green,.mask-layer-control .close,.firm-select").click(function() {
+		
 		getCurrMaskLayer().slideUp(300);
 		$(".mask-layer").fadeOut(300);
+	});
+
+	/**
+	 * 删除已选择的指定配送时间
+	 * 创建时间：2018年1月22日12:25:41 全栈小学生
+	 */
+	$("#shipping_time .delete").click(function(){
+		var default_time = $("#shipping_time .time").attr('data-default');
+		$("#shipping_time .time").html(default_time);
+		$("#hidden_shipping_time").val(0);
+		$("#shipping_time .delete").hide();
+		$(".date-list p").removeClass('on');
+		return false;
 	});
 
 });
@@ -133,6 +165,12 @@ $(function() {
  * 2017年6月22日 14:59:33 王永杰
  */
 function init(){
+	
+	/**
+	 * 初始化载入未来一个月的配送时间
+	 * 2018年1月6日 10:20:20 赵海雷
+	 */
+	loading_shipping_time();
 	
 	//商品数量
 	$(".js-goods-num").text($("div[data-subtotal]").length);
@@ -159,10 +197,9 @@ function init(){
 					//如果后台开启了选择物流则显示
 					if(parseInt($(".mask-layer-control[data-flag='distribution']").attr("data-is-logistics")) === 1) $(".item-options[data-flag='express_company']").slideDown(300);//物流公司显示
 					else  $(".item-options[data-flag='express_company']").slideUp(300);//物流公司隐藏
-					
+					$(".item-options[data-flag='shipping_time']").slideDown(300);
 					break;
 				case 2:
-					
 					//门店自提
 					var pickup_address = $(".item-options[data-flag='pickup_address']");//自提地址
 					var pickup_count = parseInt(pickup_address.attr("data-count"));//自提列表数量
@@ -182,6 +219,10 @@ function init(){
 					$(".item-options[data-flag='distribution']").attr("data-select",1);//只有是门店自提，就免邮
 					pickup_address.slideDown(300);//自提列表显示
 					
+					break;
+				case 3:
+					//本地配送
+					$(".item-options[data-flag='distribution']").attr("data-select",2);
 					break;
 				}
 				$(this).addClass("active");
@@ -209,6 +250,17 @@ function init(){
 	init_total_money += parseFloat($("#hidden_express").val());//运费
 	$("#realprice").attr("data-old-total-money",init_total_money.toFixed(2));//原合计（不包含优惠）
 	$("#realprice").attr("data-old-keep-total-money",init_total_money.toFixed(2));//保持原合计
+	
+	var curr_options = $(".item-options[data-flag='use-coupon']");//当前点击的项
+	var curr_li = $(".mask-layer-control[data-flag='use-coupon'] li.active");
+	var msg = curr_li.children("div:last").text();//内容
+	updateUseCoupon(curr_li,curr_options);
+	msg = "不使用优惠券";
+	var money = 0;
+	if(curr_li.attr("data-id") != undefined && curr_li.attr("data-money") != undefined){
+		msg = "￥"+parseFloat(curr_li.attr("data-money")).toFixed(2);
+	}
+	curr_options.children("span").text(msg);
 	
 	calculateTotalAmount();
 }
@@ -319,13 +371,16 @@ function updateDistribution(curr_li){
 	var express_company = $(".item-options[data-flag='express_company']");//物流公司（配送方式显示，门店自提隐藏）
 	var pickup_address_mask = $(".mask-layer-control[data-flag='pickup_address']");//自提地址弹出框
 	var active_li = pickup_address_mask.find("li.active");
-	express_company.slideUp(300);//物流公司隐藏
+
 	switch(flag){
 	case 1:
 		$(".item-options[data-flag='distribution']").attr("data-select",0);
 		pickup_address.slideUp(300);//隐藏自提地址
 		//如果后台开启了选择物流则显示
 		if(parseInt($(".mask-layer-control[data-flag='distribution']").attr("data-is-logistics")) === 1) express_company.slideDown(300);//物流公司显示
+		else express_company.hide();//物流公司隐藏
+		$("#distribution_time").slideUp(300);//本地配送时间隐藏
+		$(".item-options[data-flag='shipping_time']").slideDown(300);
 		break;
 	case 2:
 		$(".item-options[data-flag='distribution']").attr("data-select",1);
@@ -343,6 +398,19 @@ function updateDistribution(curr_li){
 		}
 		pickup_address_span.html(address);//设置选择后的自提地址
 		pickup_address.slideDown(300);//显示自提地址
+		express_company.hide();//物流公司隐藏
+		$("#distribution_time").slideUp(300);//本地配送时间隐藏
+		
+		$(".item-options[data-flag='shipping_time']").slideUp(300);
+		break;
+	case 3:
+		pickup_address.slideUp(300);//隐藏自提地址
+		express_company.slideUp(300);//隐藏物流公司
+		$(".item-options[data-flag='shipping_time']").slideUp(300);//隐藏配送时间
+		$(".item-options[data-flag='distribution']").attr("data-select",2);
+		$("#distribution_time").slideDown(300);//显示本地配送时间
+		calculateTotalAmount();
+		
 		break;
 	}
 }
@@ -393,6 +461,14 @@ function getPickupId(){
 	return id;
 }
 
+// 获取用户选择的是否是本地配送
+function getO2o_distributionId(){
+	var res = false;
+	if($(".item-options[data-flag='distribution']").attr("data-select") == 2){
+		res = true;
+	}
+	return res;
+}
 
 /**
  * 更新发票
@@ -421,6 +497,19 @@ function updateInvoice(curr_li){
 	invoice_content.children("span").text(text);
 }
 
+/**
+ * 更新指定配送时间
+ * 创建时间：2018年1月22日12:17:20 全栈小学生
+ * @param curr_li
+ */
+function updateShippingTime(curr_li){
+
+	var shipping_time = $(curr_li).attr('data-shipping-time');
+	$("#hidden_shipping_time").val(shipping_time);
+	$("#shipping_time .time").html($(curr_li).html());
+	$("#shipping_time .delete").show();
+}
+
 
 /**
  * 获取选择的发票内容，返回拼装好的格式
@@ -443,7 +532,7 @@ function getInvoiceContent(){
 function validationMemberBalance(){
 	if($("#account_balance").val() != undefined){
 		if(isNaN($("#account_balance").val())){
-			showBox("余额输入错误");
+			showBox("余额输入错误","warning");
 			$("#account_balance").val("");
 			calculateTotalAmount();
 			return true;
@@ -452,14 +541,14 @@ function validationMemberBalance(){
 		var account_balance = $("#account_balance").val() == "" ? 0 : parseFloat($("#account_balance").val());//可用余额
 		var max_total = parseFloat($("#realprice").attr("data-old-total-money")).toFixed(2);//总计
 		if(!r.test(account_balance)){
-			showBox("余额输入错误");
+			showBox("余额输入错误","warning");
 			$("#account_balance").val(account_balance.toString().substr(0,account_balance.toString().length-1));
 			return true;
 		}
 		
 		var user_money = $("#account_balance").attr("data-max");// 最大可用余额
 		if (account_balance > user_money) {
-			showBox("不能超过可用余额！");
+			showBox("不能超过可用余额！","warning");
 			$("#account_balance").val($("#account_balance").attr("data-max"));
 			calculateTotalAmount();
 			return true;
@@ -478,6 +567,28 @@ function validationMemberBalance(){
 }
 
 /**
+ *验证输入的积分
+ */
+function validationMemberPoint(){
+	//最大可用积分
+	var member_account_point = parseInt($(".account_point").text());
+	var max_use_point = $("#max_use_point").val(); 
+	//使用积分
+	var use_point = parseInt($("#use_point").val());
+
+	if(use_point < 0 || use_point == NaN) $("#use_point").val(0);
+
+	if(use_point > max_use_point){
+		if(member_account_point > max_use_point){
+			$("#use_point").val(max_use_point); 
+		}else{
+			$("#use_point").val(member_account_point); 
+		}
+	}
+	return true;
+}
+
+/**
  * 验证订单数据
  * 2017年6月22日 15:08:10 王永杰
  * 
@@ -489,12 +600,12 @@ function validationOrder(){
 	}
 
 	if ($("#addressid").val() == undefined ||$("#addressid").val() == '' ) {
-		showBox("请先选择收货地址");
+		showBox("请先选择收货地址","warning");
 		return false;
 	}
 	
 	if(parseInt($(".item-options[data-flag='distribution']").attr("data-select")) == -1){
-		showBox("商家未配置配送方式");
+		showBox("商家未配置配送方式","warning");
 		return false;
 	}
 	if(parseInt($(".item-options[data-flag='distribution']").attr("data-select")) == 0){
@@ -519,7 +630,7 @@ function validationOrder(){
 			break;
 		}
 		if(express_company_flag){
-			showBox(express_company_msg);
+			showBox(express_company_msg,"warning");
 			return false;
 		}
 	}
@@ -527,13 +638,13 @@ function validationOrder(){
 	if(parseInt($(".item-options[data-flag='invoice']").attr("data-select")) == 1){
 		//如果选择需要发票，则发票抬头必填、发票内容必选
 		if($("#invoice-title").val().length == 0){
-			showBox("请输入个人或公司发票抬头");
+			showBox("请输入个人或公司发票抬头","warning");
 			$("#invoice-title").focus();
 			return false;
 		}
 		
 		if($(".item-options[data-flag='invoice-content']").children("span").text().length == 0){
-			showBox("请选择发票内容");
+			showBox("请选择发票内容","warning");
 			return false;
 		}
 	}
@@ -541,7 +652,7 @@ function validationOrder(){
 	if(parseInt($(".item-options[data-flag='distribution']").attr("data-select")) == 1){
 		//选择门店自提
 		if(parseInt($(".item-options[data-flag='pickup_address']").attr("data-count"))==0){
-			showBox("商家未配置自提点，请选择其他配送方式");
+			showBox("商家未配置自提点，请选择其他配送方式","warning");
 			return false;
 		}
 	}
@@ -559,15 +670,32 @@ function calculateTotalAmount(){
 	var tax_sum = parseFloat($("#hidden_count_money").val());//计算发票税额计算：（商品总计+运-优惠活动-优惠券）*发票税率
 	var account_balance = 0;//可用余额
 	var old_total_money = parseFloat($("#realprice").attr("data-old-keep-total-money"));//原合计
+
 	//如果选择的是门店自提，则不计算运费
-	if($(".item-options[data-flag='distribution']").attr("data-select")>0){
+	if(getPickupId() > 0){
 		money += parseFloat($("#hidden_pick_up_money").val());
 		tax_sum += parseFloat($("#hidden_pick_up_money").val());
+		old_total_money += parseFloat($("#hidden_pick_up_money").val());
 		$("#express").text(parseFloat($("#hidden_pick_up_money").val()).toFixed(2));
+	}else if(getO2o_distributionId()){
+		money += parseFloat($("#hidden_o2o_distribution").val());
+		tax_sum += parseFloat($("#hidden_o2o_distribution").val());
+		old_total_money += parseFloat($("#hidden_o2o_distribution").val());
+		$("#express").text(parseFloat($("#hidden_o2o_distribution").val()).toFixed(2));
 	}else{
-		money += parseFloat($("#hidden_express").val());
-		tax_sum += parseFloat($("#hidden_express").val());
-		$("#express").text(parseFloat($("#hidden_express").val()).toFixed(2));
+		//满额包邮开启
+		var init_total_money = parseFloat($("#hidden_count_money").val());//商品金额
+		if($("#hidden_full_mail_is_open").val()==1 && init_total_money >=parseFloat($("#hidden_full_mail_money").val())){
+			money += 0;
+			tax_sum += 0;
+			old_total_money += 0;
+			$("#express").text(0.00);
+		}else{
+			money += parseFloat($("#hidden_express").val());
+			tax_sum += parseFloat($("#hidden_express").val());
+			old_total_money += parseFloat($("#hidden_express").val());
+			$("#express").text(parseFloat($("#hidden_express").val()).toFixed(2));
+		}
 	}
 	
 	var init_total_money = parseFloat($("#hidden_count_money").val());//商品金额
@@ -616,6 +744,25 @@ function calculateTotalAmount(){
 			money -= account_balance;
 		}
 	}
+
+	//是否开启积分抵现
+	var integral_balance_is_open = $("#integral_balance_is_open").val();
+	if(integral_balance_is_open == 1){
+		var use_point = $("#use_point").val();
+		var point_convert_rate = $("#point_convert_rate").val();
+		var point_money = use_point * point_convert_rate;
+		$("#point_money").text(parseFloat(point_money).toFixed(2));
+		money = parseFloat((money - point_money).toFixed(2));
+		if(money < 0){
+			var overflow_money = 0 - money;
+				use_point = use_point - parseInt((overflow_money / point_convert_rate));
+				point_money = use_point * point_convert_rate;
+				$("#point_money").text(parseFloat(point_money).toFixed(2));
+				$("#use_point").val(use_point);	
+			money = 0;
+		}
+		old_total_money -= point_money;
+	}
 	
 	//应付金额
 	if(money<0){
@@ -632,6 +779,7 @@ function calculateTotalAmount(){
 		money = 0;
 	}
 	old_total_money += parseFloat(order_invoice_tax_money);
+	old_total_money = old_total_money < 0 ? 0 : old_total_money;
 	$("#realprice").attr("data-old-total-money",old_total_money.toFixed(2));//原合计（包括税额,不包含优惠）
 	$("#realprice").text(money.toFixed(2));//合计
 	$("#realprice").attr("data-total-money",money.toFixed(2));//合计[实际付款金额]（包含优惠券、运费）
@@ -661,12 +809,20 @@ function submitOrder() {
 		if($("#account_balance").val() != undefined){
 			account_balance = $("#account_balance").val() == "" ? 0 : $("#account_balance").val();
 		}
-		var integral = $("#hidden_count_point_exchange").val() == "" ? 0 : $("#hidden_count_point_exchange").val();//积分
+		//var integral = $("#hidden_count_point_exchange").val() == "" ? 0 : $("#hidden_count_point_exchange").val();//积分
+		var integral = $("#use_point").val();
 		var pay_type = parseInt($(".item-options[data-flag='pay']").attr("data-select"));//支付方式 0：在线支付，4：货到付款
 		var buyer_invoice = getInvoiceContent();//发票
 		var shipping_company_id = $(".item-options[data-flag='express_company']").attr("data-select");
+		var shipping_type = 1; //配送方式 1商家配送 2用户自提 3本地配送
+		if(getPickupId() > 0){
+			shipping_type = 2;
+		}else if(getO2o_distributionId() > 0){
+			shipping_type = 3;
+		}
+
 		$.ajax({
-			url : __URL(APPMAIN + "/order/ordercreate/"),
+			url : __URL(APPMAIN + "/order/ordercreate"),
 			type : "post",
 			data : {
 				'goods_sku_list' : goods_sku_list,
@@ -677,7 +833,9 @@ function submitOrder() {
 				'pay_type' : pay_type,
 				'buyer_invoice' : buyer_invoice,
 				'pick_up_id' : getPickupId(),
-				'shipping_company_id' : shipping_company_id
+				'shipping_company_id' : shipping_company_id,
+				'shipping_time' : $("#hidden_shipping_time").val(),
+				'shipping_type' : shipping_type
 			},
 			success : function(res) {
 				if (res.code > 0) {
@@ -690,10 +848,36 @@ function submitOrder() {
 						location.href = __URL(APPMAIN + '/pay/getpayvalue?out_trade_no=' + res.code);
 					}
 				} else {
-					showBox(res.message);
+					showBox(res.message,"error");
 					flag = false;
 				}
 			}
 		});
 	}
+}
+
+/**
+ * 生成未来一个月的配送时间
+ * 2018年1月6日 10:20:20 赵海雷
+ */
+function loading_shipping_time(){
+	
+	var week_arr = ["周日","周一","周二","周三","周四","周五","周六"];
+	var MIN = 1;//配送时间至少需要两天
+	var html = '';
+	html += '<ul>';
+	for(var i = MIN;i < 30 + MIN;i ++){
+		var date = new Date();
+		date.setDate(date.getDate() + i);
+		var year = date.getFullYear();
+		var month = date.getMonth() + 1;
+		var day = date.getDate();
+		var week = week_arr[date.getDay()];
+		var time = Math.round(date.getTime()/1000);
+		
+		html += '<li data-shipping-time="'+ time +'" >'+ year +'-'+ month +'-'+ day +'&nbsp;'+ week +'</li>';
+	}
+	html += '</ul>';
+	
+	$(".mask-layer-control .date-list").html(html);
 }

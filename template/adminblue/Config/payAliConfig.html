@@ -3,15 +3,24 @@
 <div class="set-style">
 	<dl>
 		<dt>账号：</dt>
-		<dd><input id="ali_seller" type="text" value="{$config['value']['ali_seller']}" class="input-common" /></dd>
+		<dd>
+			<input id="ali_seller" type="text" value="{$config['value']['ali_seller']}" class="input-common long" />
+			<p class="hint">支付宝账户</p>
+		</dd>
 	</dl>
 	<dl>
 		<dt>合作者身份ID：</dt>
-		<dd><input id="ali_partnerid" type="text" value="{$config['value']['ali_partnerid']}" class="input-common" /></dd>
+		<dd>
+			<input id="ali_partnerid" type="text" value="{$config['value']['ali_partnerid']}" class="input-common long" />
+			<p class="hint">支付宝合作者身份ID（PID）</p>
+		</dd>
 	</dl>
 		<dl>
 		<dt>安全校验码：</dt>
-		<dd><input id="ali_key" type="text" value="{$config['value']['ali_key']}" class="input-common" /></dd>
+		<dd>
+			<input id="ali_key" type="text" value="{$config['value']['ali_key']}" class="input-common long" />
+			<p class="hint">支付宝老版MD5密钥</p>
+		</dd>
 	</dl>
 	<dl>
 		<dt>是否启用支付：</dt>
@@ -28,22 +37,25 @@
 			<p><input id="refund_is_use" type="checkbox" class="checkbox"
 			{if condition="$original_road_refund_setting_info.is_use"}checked="checked"{/if}
 			/></p>
-			<span style="color: #FF9800;">开启支付宝支付才可以进行后续操作</span>
+			<p class="hint">开启支付宝支付才可以进行后续操作</p>
 		</dd>
 	</dl>
-	<dl style="display: none;">
+	<dl style="display:none">
 		<dt>是否启用转账：</dt>
 		<dd>
 			<p><input id="transfer_is_use" type="checkbox" class="checkbox"
 			{if condition="$transfer_accounts_setting_info.is_use"}checked="checked"{/if}
 			/></p>
-			<span style="color: #FF9800;">开启支付宝支付才可以进行后续操作</span>
+			<p class="hint">开启支付宝支付才可以进行后续操作</p>
 		</dd>
 	</dl>
 	
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="setConfigAjax()">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="setConfigAjax()">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+		</dd>
 	</dl>
 </div>
 <script>
@@ -77,10 +89,10 @@ function setConfigAjax(){
 		},
 		success:function (data) {
 			if (data["code"] > 0) {
-				showMessage('success', data["message"]);
+				showTip(data["message"],"success");
 				location.href=__URL("ADMIN_MAIN/config/paymentconfig");
 			}else{
-				showMessage('error', data["message"]);
+				showTip(data["message"],"error");
 			}
 		}
 	});

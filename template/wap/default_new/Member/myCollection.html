@@ -23,7 +23,7 @@
 	
 </section>
 <input type="hidden" id="page_count"><!-- 总页数 -->
-<input type="hidden" id="page"><!-- 当前页数 -->
+<input type="hidden" id="page" value="1"><!-- 当前页数 -->
 <input type="hidden" id="type" value="0">
 
 <script>
@@ -49,17 +49,14 @@ function loadingInfo(page,type){
 		type : "post",
 		url : __URL(APPMAIN + "/member/myCollection"),
 		data : {"page" : page, "type" : type},
-		beforeSend:function(){
-			showLoadMaskLayer();
-		},
 		success : function(data){
-			hiddenLoadMaskLayer();
 			$("#page_count").val(data['page_count']);//总页数
 			if(page == 1){
 				var html="";
 			}else if(page > 1){
 				var html = $('.collection_goods_list').html();
 			}
+			$(".collection_goods_list").empty();
 			if(data['data'].length > 0){
 				for (var i = 0; i < data['data'].length; i++) {
 					var item = data['data'][i];
@@ -72,15 +69,17 @@ function loadingInfo(page,type){
 						html += '<div class="data_info">';
 						html += '<p class="goods_name" onclick="location.href=\''+__URL('APP_MAIN/goods/goodsdetail?id='+item.goods_id)+'\'">'+item['goods_name']+'</p>';
 						html += '<div class="price_share">';
-						html += '<span class="price">￥'+item['promotion_price']+'</span>';
+						html += '<span class="price">'+item['display_price']+'</span>';
 						html += '<span class="cancel_collection" onclick="javascript:cancelFavorites('+item['fav_id']+',\'goods\',this);">取消收藏</span>';
 						html += '</div>';
 						html += '</div>';
 						html += '</div>';
+						$(".collection_goods_list").append(html);
 					}
 				}
+			}else{
+				$(".collection_goods_list").html(html);
 			}
-			$(".collection_goods_list").html(html);
 			var goods_info_width = parseInt($(".goods_info").width());
 			var	goods_img_width = parseInt($('.goods_img').width());
 			var data_info_width = goods_info_width - goods_img_width -15;
@@ -101,7 +100,7 @@ function cancelFavorites(fav_id, fav_type, obj) {
 		},
 		success : function(data) {
 			$(".fav_id_"+fav_id).fadeOut();
-			showBox("{:lang('member_abolish_successful')}");
+			showBox("{:lang('member_abolish_successful')}","success");
 			FavoritesGoodsIsEmpty();
 		}
 	});

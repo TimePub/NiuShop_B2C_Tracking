@@ -9,9 +9,10 @@ input[type="radio"]{margin-top:6px;}
 </style>
 {/block}
 {block name="main"}
+<div class="space-10"></div>
 <div class="set-style">
 	<dl>
-		<dt><span class="required" style="color:red;">*</span>&nbsp;&nbsp;名称:</dt>
+		<dt><span class="required" style="color:red;">*</span>&nbsp;&nbsp;名称：</dt>
 		<dd>
 			<input type="text" id="coupon_name" maxlength="10" class="input-common">
 			<p class="error">请输入优惠券名称</p>
@@ -19,57 +20,76 @@ input[type="radio"]{margin-top:6px;}
 		</dd>
 	</dl>
 	<dl>
-		<dt><span style="color:red;">*</span>&nbsp;&nbsp;面额:</dt>
-		<dd><input class="input-mini w70 input-common" onkeyup="value=value.replace(/[^\d+(\.\d+)?]/g,'')" type="text" id="money"><span class="help-inline">元</span>
+		<dt><span style="color:red;">*</span>&nbsp;&nbsp;面额：</dt>
+		<dd><input class="input-mini w70 input-common harf" onkeyup="value=value.replace(/[^\d+(\.\d+)?]/g,'')" type="number" id="money"
+		/><em class="unit">元</em>
 			<p class="error">请输入面额</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span style="color:red;">*</span>&nbsp;&nbsp;发放数量:</dt>
-		<dd><input class="input-mini w70 input-common" onkeyup='this.value=this.value.replace(/\D/gi,"")' type="text" id="count"><span class="help-inline">份</span>
+		<dt><span style="color:red;">*</span>&nbsp;&nbsp;发放数量：</dt>
+		<dd><input class="input-mini w70 input-common harf" onkeyup='this.value=this.value.replace(/\D/gi,"")' type="number" id="count"
+		/><em class="unit">份</em>
 			<p class="error">请输入发放数量</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt><span style="color:red;">*</span>&nbsp;&nbsp;每人最大领取数:<br/>(0无限制)</dt>
-		<dd><input class="input-mini w70 input-common" onkeyup='this.value=this.value.replace(/\D/gi,"")' type="text" id="max_fetch"><span class="help-inline">份</span>
+		<dt><span style="color:red;">*</span>&nbsp;&nbsp;每人最大领取数：<br/></dt>
+		<dd><input class="input-mini w70 input-common harf" onkeyup='this.value=this.value.replace(/\D/gi,"")' type="number" id="max_fetch" 
+		/><em class="unit">份</em>
+		<p class="hint">输入0表示无限制</p>
 			<p class="error">请输入每人最大领取数</p>
 		</dd>
 	</dl>
 	<dl>
-		<dt>满多少元使用:</dt>
-		<dd><input class="input-mini w70 input-common" onkeyup="value=value.replace(/[^\d+(\.\d+)?]/g,'')" type="text" id="at_least"><span class="help-inline">元</span>
+		<dt>满多少元使用：</dt>
+		<dd><input class="input-mini w70 input-common harf" onkeyup="value=value.replace(/[^\d+(\.\d+)?]/g,'')" type="number" id="at_least"
+		/><em class="unit">元</em>
 			<p class="error">请输入满足金额</p>
 		</dd>
 	</dl>
 	<dl style="display:none;">
-		<dt>领取人等级:</dt>
+		<dt>领取人等级：</dt>
 		<dd><input class="input-mini w70 input-common" onkeyup='this.value=this.value.replace(/\D/gi,"")' type="text" id="need_user_level"><span class="help-inline">级</span></dd>
 	</dl>
 	<dl>
-		<dt><span style="color:red;">*</span>&nbsp;&nbsp;有效时间:</dt>
+		<dt><span style="color:red;">*</span>&nbsp;&nbsp;有效时间：</dt>
 		<dd>
-			<input class="input-medium input-common" type="text" id="start_time" style="width:250px;"onclick="WdatePicker({skin:'twoer',dateFmt:'yyyy-MM-dd HH:mm:ss'})">
+			<input class="input-medium input-common harf" type="text" id="start_time" style="width:250px;"onclick="WdatePicker({skin:'twoer',dateFmt:'yyyy-MM-dd HH:mm:ss'})">
 			<span class="mlr5">-</span> 
-			<input class="input-medium input-common" size="15"type="text" id="end_time" style="width:250px;"onclick="WdatePicker({skin:'twoer',dateFmt:'yyyy-MM-dd HH:mm:ss'})">
+			<input class="input-medium input-common harf" size="15"type="text" id="end_time" style="width:250px;"onclick="WdatePicker({skin:'twoer',dateFmt:'yyyy-MM-dd HH:mm:ss'})">
 			<p class="error">请输入有效时间</p>
 			<p class="hint">生效前买家可以领取但不能使用</p>
 		</dd>
 	</dl>
 	
 	<dl>
-		<dt>是否允许首页显示:</dt>
+		<dt>是否允许首页显示：</dt>
 		<dd>
-			<div class="total">
-				<label for="navigationtype1" class="in"><input type="radio" value="1" name="navigationtype" id="navigationtype1" checked/>开启</label>
-				<label for="navigationtype2" class="out"><input type="radio" value="0" name="navigationtype" id="navigationtype2" />关闭</label>
-			</div>
+			<p>
+				<input id="is_show" type="checkbox"  class="checkbox"  />
+			</p>
 		</dd>
 	</dl>
-	{include file="adminblue/Promotion/selectGoods" /}
+	<!-- 所有决定商品弹框内容的条件和存放商品id的隐藏域 -->
+	<span id="goods-condition">
+		<input type="hidden" name="type" value="2"/>
+		<input type="hidden" name="stock" value="1"/>
+		<input type="hidden" name="goods_type" value="1"/>
+		<input type="hidden" name="is_have_sku" value="1"/>
+		<input type="hidden" name="state" value="1"/>
+		<input type="hidden" id="goods_id_array" value="">
+		<input type="hidden" id="range_type" value="">
+		<input type="hidden" id="is_show_select" value="1">
+		<input type="hidden" id="action" value="">
+	</span>
+	{include file="adminblue/Promotion/goodsSelectDialog" /}
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="addCouponType();">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="addCouponType();">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);">返回</button>
+		</dd>
 	</dl>
 </div>
 
@@ -85,14 +105,11 @@ function addCouponType(){
 	var range_type = $("input[name='range_type']:checked").val();
 	var start_time = $("#start_time").val();
 	var end_time = $("#end_time").val();
-	var is_show = $("input[name='navigationtype']:checked").val();
+	var is_show = $("#is_show").prop('checked') ? 1 : 0 ;
 	var obj = $(".select-two table tbody tr");
-	var goods_id_array = '';
-	obj.each(function(i){
-		goods_id_array += ','+obj.eq(i).attr("goodsid");
-	});
-	goods_id_array = goods_id_array.substring(1);
-	if(verify(coupon_name, money, count, max_fetch, at_least, start_time, end_time)){
+	
+	var goods_id_array = $("#goods_id_array").val();
+	if(verify(coupon_name, money, count, max_fetch, at_least, start_time, end_time, range_type)){
 		if(flag){
 			return;
 		}
@@ -126,7 +143,7 @@ function addCouponType(){
 	}
 }
 
-function verify(coupon_name, money, count, max_fetch, at_least, start_time, end_time){
+function verify(coupon_name, money, count, max_fetch, at_least, start_time, end_time, range_type){
 	if(coupon_name == ''){
 		$("#coupon_name").parent().find('.error').show();
 		return false;
@@ -163,7 +180,15 @@ function verify(coupon_name, money, count, max_fetch, at_least, start_time, end_
 	}else{
 		$(".error").hide();
 	}
+	if(range_type == 0 && BatchSend.length == 0){
+		$(".js-select-goods").find(".error").html('请至少选择一件商品').show();
+		return false;
+	}else{
+		$(".error").hide();
+	}
 	return true;
 }
+
+
 </script>
 {/block}

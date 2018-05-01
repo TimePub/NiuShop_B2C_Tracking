@@ -1,14 +1,7 @@
 <script type="text/javascript" src="__TEMP__/{$style}/public/js/shopping_cart.js"></script>
 <link type="text/css" rel="stylesheet" href="__TEMP__/{$style}/public/css/user.css" />
 <style>
-.member-menu .user-info .logo {
-    height: 80px;
-	line-height:80px;
-    border-radius: 55px;
-    overflow: hidden;
-    text-align: center;
-    border: 1px solid #e6e6e6;
-}
+.member-menu .user-info .logo {height: 80px;line-height:80px;border-radius: 55px;overflow: hidden;text-align: center;border: 1px solid #e6e6e6;}
 </style>
 <div class="breadcrumb">
 	<a href="{:__URL('SHOP_MAIN')}" class="index">{:lang('home_page')}</a>
@@ -22,13 +15,13 @@
 			<span class="exit" onclick="logout()" title="{:lang('login_out')}{:lang('login')}"><i class="icon i-exit"></i>{:lang('login_out')}</span>
 		</header>
 		<div class="logo" onclick="location.href='{:__URL('SHOP_MAIN/member/person')}';" title="{:lang('member_view_personal_data')}">
-			{if condition="$member_img neq '' and $member_img neq '0'"}
-			<img id="headImagePath" src="{:__IMG($member_img)}" style="border-radius: 0;display: block;"/>
+			{if condition="$member_detail['user_info']['user_headimg'] neq '' and $member_detail['user_info']['user_headimg'] neq '0'"}
+			<img id="headImagePath" src="{:__IMG($default_headimg)}" class="lazy_load" data-original="{:__IMG($member_detail['user_info']['user_headimg'])}" style="border-radius: 0;display: block;"/>
 			{else/}
-			<img id="headImagePath" src="__TEMP__/{$style}/public/images/temp_default_user_portrait_0.png" style="border-radius: 0;display: block;"/>
+			<img id="headImagePath" src="{:__IMG($default_headimg)}" style="border-radius: 0;display: block;"/>
 			{/if}
 		</div>
-		<strong onclick="location.href='{:__URL('SHOP_MAIN/member/person')}';" title="{:lang('member_view_personal_data')}">{$member_info['user_info']['nick_name']}</strong>
+		<strong onclick="location.href='{:__URL('SHOP_MAIN/member/person')}';" title="{:lang('member_view_personal_data')}">{$member_detail['user_info']['nick_name']}</strong>
 	</div>
 	<article class="list">
 		<div class="item">
@@ -65,8 +58,17 @@
 					<span>{:lang('member_my_coupon')}</span>
 					<i class="icon i-arrow"></i>
 				</li>
+				<li onclick="location.href='{:__URL('SHOP_MAIN/member/virtualgoodslist')}';" data-href="{:__URL('SHOP_MAIN/member/virtualgoodslist')}">
+					<span>{:lang('member_my_virtual_code')}</span>
+					<i class="icon i-arrow"></i>
+				</li>
+
 				<li onclick="location.href='{:__URL('SHOP_MAIN/member/integrallist')}';" data-href="{:__URL('SHOP_MAIN/member/integrallist')}">
 					<span>{:lang('member_my_points')}</span>
+					<i class="icon i-arrow"></i>
+				</li>
+				<li onclick="location.href='{:__URL('SHOP_MAIN/member/newmypath')}';" data-href="{:__URL('SHOP_MAIN/member/newmypath')}">
+					<span>{:lang('new_my_path')}</span>
 					<i class="icon i-arrow"></i>
 				</li>
 			</ul>
@@ -79,6 +81,10 @@
 			<ul>
 				<li onclick="location.href='{:__URL('SHOP_MAIN/member/orderlist')}';" data-href="{:__URL('SHOP_MAIN/member/orderlist')}">
 					<span>{:lang('member_my_order')}</span>
+					<i class="icon i-arrow"></i>
+				</li>
+				<li onclick="location.href='{:__URL('SHOP_MAIN/member/presellorderlist')}';" data-href="{:__URL('SHOP_MAIN/member/presellorderlist')}">
+					<span>{:lang('presell_my_order')}</span>
 					<i class="icon i-arrow"></i>
 				</li>
 				{if condition="$is_open_virtual_goods"}

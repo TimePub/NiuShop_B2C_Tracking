@@ -34,6 +34,8 @@ use data\model\WeixinUserMsgModel;
 use data\model\WeixinUserMsgReplayModel;
 use data\service\BaseService;
 use think\Log;
+use think\Request;
+use data\model\BaseModel;
 
 class Weixin extends BaseService implements IWeixin
 {
@@ -270,6 +272,10 @@ class Weixin extends BaseService implements IWeixin
      */
     public function addWeixinFans($source_uid, $instance_id, $nickname, $nickname_decode, $headimgurl, $sex, $language, $country, $province, $city, $district, $openid, $groupid, $is_subscribe, $memo, $unionid)
     {
+        if(empty($openid))
+        {
+            return 1;
+        }
         $weixin_fans = new WeixinFansModel();
         $count = $weixin_fans->where([
             'openid' => $openid
@@ -817,7 +823,7 @@ class Weixin extends BaseService implements IWeixin
                 if (strstr($media_info['item_list'][0]['cover'], "http")) {
                     $pic_url = $media_info['item_list'][0]['cover'];
                 } else {
-                    $pic_url = 'http://' . $_SERVER['HTTP_HOST'] . '/' . $media_info['item_list'][0]['cover'];
+                    $pic_url = Request::instance()->domain() . '/' . $media_info['item_list'][0]['cover'];
                 }
                 $contentStr[] = array(
                     "Title" => $media_info['item_list'][0]['title'],
@@ -833,7 +839,7 @@ class Weixin extends BaseService implements IWeixin
                     if (strstr($v['cover'], "http")) {
                         $pic_url = $v['cover'];
                     } else {
-                        $pic_url = 'http://' . $_SERVER['HTTP_HOST'] . '/' . $v['cover'];
+                        $pic_url = Request::instance()->domain() . '/' . $v['cover'];
                     }
                     $contentStr[$k] = array(
                         "Title" => $v['title'],
@@ -978,7 +984,7 @@ class Weixin extends BaseService implements IWeixin
      */
     public function updateWeixinQrcodeConfig($instance_id, $background, $nick_font_color, $nick_font_size, $is_logo_show, $header_left, $header_top, $name_left, $name_top, $logo_left, $logo_top, $code_left, $code_top)
     {
-        $weixin_qrcode = new WeixinQrcodeConfigModel();
+        $weixin_qrcode = new WeixinQrcodeTemplateModel();
         $num = $weixin_qrcode->where([
             'instance_id' => $instance_id
         ])->count();
@@ -1503,24 +1509,43 @@ class Weixin extends BaseService implements IWeixin
     public function addUserMessage($openid, $content, $msg_type)
     {
         $weixin_user_msg = new WeixinUserMsgModel();
-        $uid = $this->getWeixinUidByOpenid($openid);
-        $data = array(
-            'uid' => $uid,
-            'msg_type' => $msg_type,
-            'content' => $content,
-            'create_time' => time()
-        );
-        if ($uid > 0) {
+        $fans_model = new WeixinFansModel();
+        $fans_info = $fans_model->getInfo(['openid' => $openid], 'nickname,headimgurl,uid');
+        if(!empty($fans_info))
+        {
+            $data = array(
+                'uid' => $fans_info['uid'],
+                'openid' => $openid,
+                'nickname' => $fans_info['nickname'],
+                'headimgurl' => $fans_info['headimgurl'],
+                'msg_type' => $msg_type,
+                'content' => $content,
+                'create_time' => time()
+            );
             $weixin_user_msg->save($data);
             return $weixin_user_msg->msg_id;
-        } else {
+        }else{
             return 0;
         }
     }
-
+    /**
+     * 获取会员留言列表
+     * @param number $page_index
+     * @param number $page_size
+     * @param string $condition
+     * @param string $order
+     * @return multitype:number unknown
+     */
+    public function getUserMessageList($page_index = 1, $page_size = 0, $condition = '', $order = '')
+    {
+        $weixin_user_msg = new WeixinUserMsgModel();
+        $list = $weixin_user_msg->pageQuery($page_index, $page_size, $condition, $order, '*');
+        return $list;
+    }
+    
     /**
      * (non-PHPdoc)
-     *
+     *微信客服消息
      * @see \ata\api\IWeixin::addUserMessageReplay()
      */
     public function addUserMessageReplay($msg_id, $replay_uid, $replay_type, $content)

@@ -10,12 +10,12 @@
 			
 				<div class="refunds-block">
 					<label>退款金额：</label>
-					<input type="text" id="refund_money_input" class="form-control" placeholder="请填写退款金额">
+					<input type="text" id="refund_money_input" class="input-common" placeholder="请填写退款金额">
 					<span class="operating-hint">请输入退款金额</span>
 				</div>
 				<div class="refunds-block">
 					<label>退款方式：</label>
-					<select id="refund_way_select"></select>
+					<select id="refund_way_select" class="select-common"></select>
 				</div>
 				<div class="refunds-block">
 					<label class="w130">买家申请退款金额：</label>
@@ -37,7 +37,7 @@
 				<input type="hidden" id="confirm_order_id">
 				<input type="hidden" id="confirm_order_goods_id">
 				<input type="hidden" id="refund_require_money">
-				<button class="btn btn-primary js-confirm-refund-ok disabled">确认</button>
+				<button class="btn-common js-confirm-refund-ok disabled">确认</button>
 				<button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
 			</div>
 		</div>
@@ -60,7 +60,7 @@
 				<div class="refunds-block js-confirmation-prompt"></div>
 			</div>
 			<div class="modal-footer">
-				<button class="btn btn-primary disabled" id="countdown_refund_confirm">确定</button>
+				<button class="btn-common disabled" id="countdown_refund_confirm">确定</button>
 				<button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
 			</div>
 		</div>
@@ -79,7 +79,7 @@
 			<div class="modal-footer">
 				<input type="hidden" id="refuse_order_id" />
 				<input type="hidden" id="refuse_order_goods_id" />
-				<button class="btn btn-primary" onclick="refuseRefundType(1)">拒绝本次</button>
+				<button class="btn-common" onclick="refuseRefundType(1)">拒绝本次</button>
 				<button class="btn" onclick="refuseRefundType(2)">永久拒绝</button>
 			</div>
 		</div>
@@ -98,7 +98,7 @@
 			<div class="modal-footer">
 				<input type="hidden" id="agreee_order_id" />
 				<input type="hidden" id="agree_order_goods_id" />
-				<button class="btn btn-primary" onclick="agreeRefund()">同意</button>
+				<button class="btn-common" onclick="agreeRefund()">同意</button>
 				<button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
 			</div>
 		</div>

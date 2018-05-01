@@ -30,9 +30,6 @@ table{background-color:#eeeeee;border:0;width:100%;}
 				</span>
 				
 				<div class="right-function">
-					{if condition="$account !=null && $account>0"}
-					<a href="javascript:;" id="extract">{:lang('member_exchange_balance')}</a>&nbsp;|
-					{/if}
 					<a href="{:__URL('SHOP_MAIN/member/integrallist')}">{:lang('member_my_points')}</a>
 				</div>
 			</div>
@@ -62,7 +59,7 @@ table{background-color:#eeeeee;border:0;width:100%;}
 			</div>
 			{/if}
 		</div>
-		<div class="box" id="secondpage" style="display:none;">
+		<!-- <div class="box" id="secondpage" style="display:none;">
 			
 			<div class="tabmenu">
 				<ul class="tab">
@@ -118,7 +115,7 @@ table{background-color:#eeeeee;border:0;width:100%;}
 					</tr>
 				</table>
 			</form>
-		</div>
+		</div> -->
 	</div>
 </div>
 <input type="hidden" value="{$sum}" id="hidden_sum_integral" />

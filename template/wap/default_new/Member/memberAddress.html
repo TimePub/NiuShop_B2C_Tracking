@@ -25,6 +25,8 @@
 <section class="head">
 	{if $flag==1}
 	<a class="head_back" id="backoutapp" href="{:__URL('APP_MAIN/member/index')}"><i class="icon-back"></i></a>
+	{elseif $flag==4}
+	<a class="head_back" id="backoutapp"  href="{:__URL('APP_MAIN/PintuanOrder/paymentorder')}"><i class="icon-back"></i></a>
 	{else}
 	<a class="head_back" id="backoutapp"  href="{:__URL('APP_MAIN/order/paymentorder')}"><i class="icon-back"></i></a>
 	{/if}
@@ -84,6 +86,12 @@ function selectAddress(id,obj){
 				//选择银行的时候也用到了，但是单店版没有
 				if(flag == "1"){
 					return;
+				}else if(flag == "2"){
+					window.location.href = __URL("APP_MAIN/member/toReceiveThePrize");
+					return;
+				}else if(flag == "4"){
+					window.location.href = __URL("APP_MAIN/PintuanOrder/paymentorder");
+					return;
 				}
 				if(ref_url == 'cart'){
 					window.location.href = __URL("APP_MAIN/order/paymentorder");
@@ -91,14 +99,14 @@ function selectAddress(id,obj){
 					window.location.reload();
 				}
 			}else{
-				showBox(res["message"]);
+				showBox(res["message"],"error");
 			}
 		}
 	})
 }
 function address_delete(id,is_default){
 	if(is_default == 1){
-		showBox("{:lang('the_default_address_cannot_be_deleted')}");
+		showBox("{:lang('the_default_address_cannot_be_deleted')}","warning");
 		return;
 	}
 	$.ajax({
@@ -108,10 +116,9 @@ function address_delete(id,is_default){
 		success: function (res) {
 			//alert(JSON.stringify(res));
 			if (res["code"] == 1) {
-				window.location.href=window.location.href;
-				showBox("{:lang('member_delete_successfully')}!");
+				showBox("{:lang('member_delete_successfully')}!","success",window.location.href);
 			} else {
-				showBox(res["outmessage"]);
+				showBox(res["outmessage"],"error");
 			}
 		}
 	})

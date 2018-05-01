@@ -85,28 +85,24 @@
 			url : "{:__URL('APP_MAIN/Goods/integralCenterListAjax')}",
 			async : true,
 			data : {"id":sear_type},
-			beforeSend : function() {
-				showLoadMaskLayer();
-			},
 			success : function(data) {
 				if (data != null) {
-					 					var html = '';
-					 					 html +='<ul>';
-					 					 	for(i=0; i<data.length;i++)
-					 					 		{
-					 					 			html+='<li class="gooditem"><div class="img"> <a href="'+__URL('APP_MAIN/goods/goodsdetail?id='+data[i]['goods_id'])+'">';
-					 					 			html+='<img class="lazy" src="'+__IMG(data[i]['pic_cover_small'])+'" >';
-					 					 			html+='</a></div><div class="info">';
-					 					 			html+='<p class="goods-title"><a href="'+__URL('APP_MAIN/goods/goodsdetail?id='+data[i]['goods_id'])+'" >'+data[i]['goods_name']+'</a></p>';
-					 					 			html+='<p class="goods-price"><em>￥'+data[i]['promotion_price']+'</em></p>';
-					 					 			html+=' <a href="'+__URL('APP_MAIN/goods/goodsdetail?id='+data[i]['goods_id'])+'"><div class="goods-buy"></div></a> </div></li>';	 			
-					 					 		}
+ 					var html = '';
+ 					 html +='<ul>';
+ 					 	for(i=0; i<data.length;i++)
+ 					 		{
+ 					 			html+='<li class="gooditem"><div class="img"> <a href="'+__URL('APP_MAIN/goods/goodsdetail?id='+data[i]['goods_id'])+'">';
+ 					 			html+='<img class="lazy" src="'+__IMG(data[i]['pic_cover_small'])+'" >';
+ 					 			html+='</a></div><div class="info">';
+ 					 			html+='<p class="goods-title"><a href="'+__URL('APP_MAIN/goods/goodsdetail?id='+data[i]['goods_id'])+'" >'+data[i]['goods_name']+'</a></p>';
+ 					 			html+='<p class="goods-price"><em>￥'+data[i]['promotion_price']+'</em></p>';
+ 					 			html+=' <a href="'+__URL('APP_MAIN/goods/goodsdetail?id='+data[i]['goods_id'])+'"><div class="goods-buy"></div></a> </div></li>';	 			
+ 					 		}
 
-					 		      		html +='</ul>';
-					 		      		html += '<div class="h50"></div>';
-					 		      		$("#main_list").html(html);
+ 		      		html +='</ul>';
+ 		      		html += '<div class="h50"></div>';
+ 		      		$("#main_list").html(html);
 
-					hiddenLoadMaskLayer();
 				}
 			}
 		})

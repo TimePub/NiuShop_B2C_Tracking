@@ -277,7 +277,7 @@ class WebSite extends BaseService implements IWebSite
             'module' => \think\Request::instance()->module(),
             'is_control_auth' => 1
         );
-        $moduelList = $this->getSystemModuleList(1, 0, $condition_module);
+        $moduelList = $this->getSystemModuleList(1, 0, $condition_module,'sort asc');
         return $moduelList['data'];
     }
 

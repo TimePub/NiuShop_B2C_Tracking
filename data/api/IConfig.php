@@ -215,7 +215,23 @@ interface IConfig
      * @param unknown $token
      */
     function setInstanceWchatConfig($instance_id, $appid, $appsecret, $token);
-
+    
+    /**
+     * 对于单店铺系统获取小程序配置
+     * 
+     * @param unknown $instance_id  
+     */
+    function getInstanceAppletConfig($instance_id);
+    
+    /**
+     * 对于单店铺系统设置小程序配置
+     * 
+     * @param unknown $instance_id
+     * @param unknown $appid
+     * @param unknown $appsecret
+     */
+    function setInstanceAppletConfig($instance_id, $appid, $appsecret);
+    
     /**
      * 获取其他支付方式配置
      */
@@ -443,7 +459,7 @@ interface IConfig
      * @param unknown $appkey            
      * @param unknown $is_use            
      */
-    function updateOrderExpressMessageConfig($shop_id, $appid, $appkey, $back_url, $is_use);
+    function updateOrderExpressMessageConfig($shop_id, $appid, $appkey, $back_url, $is_use, $type);
 
     /**
      * 获取当前使用的手机端模板
@@ -488,21 +504,6 @@ interface IConfig
      */
     function setPickupPointFreight($is_enable, $pickup_freight, $manjian_freight);
 
-    /**
-     * 开启关闭自定义模板
-     * 2017年8月9日 14:42:21
-     *
-     * @param 店铺id $shop_id            
-     * @param 1：开启，0：禁用 $is_enable            
-     */
-    function setIsEnableCustomTemplate($shop_id, $is_enable);
-
-    /**
-     * 获取自定义模板是否启用，0 不启用 1 启用
-     *
-     * @param unknown $shop_id            
-     */
-    function getIsEnableCustomTemplate($shop_id);
 
     /**
      * 首页商品促销版块显示设置
@@ -594,4 +595,47 @@ interface IConfig
      *            wechat/alipay(微信/支付宝)
      */
     function checkPayConfigEnabled($shop_id, $type);
+    
+    /**
+     * 设置默认图片
+     * @param unknown $shop_id
+     * @param unknown $value
+     */
+    function setDefaultImages($shop_id, $value);
+    
+    /**
+     * 获取默认图片配置
+     * @param unknown $instanceid
+     */
+    function getDefaultImages($instanceid);
+    
+    /**
+     * 设置图片水印
+     * (non-PHPdoc)
+     */
+    function setPictureWatermark($shop_id, $value);
+    /**
+     * 获取水印配置
+     * @param unknown $instanceid
+     */
+    function getWatermarkConfig($instanceid);
+    
+    /**
+     * 设置本地配送时间设置
+     */
+    function setDistributionTimeConfig($shop_id, $value);
+    /**
+     * 获取本地配送时间设置
+     */
+    function getDistributionTimeConfig($instanceid);
+    
+    /**
+     * 设置快捷菜单
+     */
+    function setShortcutMenu($shop_id,$uid,$menu_ids);
+    /**
+     * 获取快捷菜单
+     */
+    function getShortcutMenu($shop_id,$uid);
+    
 }

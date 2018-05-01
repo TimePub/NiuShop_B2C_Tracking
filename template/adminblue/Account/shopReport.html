@@ -7,39 +7,39 @@
 .h30{height: 30px !important;}
 .mt5 li{font-size: 12px;}
 .alert-info{border-radius: 0;}
-.tabmenu{margin:10px 0 0 20px;border-bottom: 1px solid #e5e5e5;background-color: #FFF;width: 100%;height: 37px;display: block;position: relative;z-index: 90;}
-.tabmenu .tab .ui-tabs-selected a{color: #FFFFFF;background-color: #FFF;display: inline-block;padding: 0px 10px;border: 0px;background-color: #0072D2;}
-.tabmenu .tab a, .tabmenu .tab .active a{font-size: 14px;display: inline-block;padding: 0 30px;text-align: center;height: 36px;line-height:36px;cursor:pointer;}
-.tabmenu .tab li:FIRST-CHILD{border-left: 1px solid #E3E3E3;}
-.tabmenu .tab li{float: left;border-top: 1px solid #E3E3E3;border-right: 1px solid #E3E3E3;}
+.ui-tabs-panel{
+	border:1px solid #E1E6F0;
+	border-top:0;
+}
+.ns-main{margin-top:0px;}
+.option-nav{margin-top:10px;}
 </style>
 {/block}
+{block name="alert_info"}
+1、符合以下任何一种条件的订单即为有效订单：1）采用在线支付方式支付并且已付款；2）采用货到付款方式支付并且交易已完成<br/>
+2、统计图展示了符合搜索条件的有效订单中的下单总金额和下单数量在时间段内的走势情况及与前一个时间段的趋势对比
+{/block}
 {block name="main"}
-<div class="alert">
-	<ul class="mt5">
-		<li>1、符合以下任何一种条件的订单即为有效订单：1）采用在线支付方式支付并且已付款；2）采用货到付款方式支付并且交易已完成</li>
-		<li>2、统计图展示了符合搜索条件的有效订单中的下单总金额和下单数量在时间段内的走势情况及与前一个时间段的趋势对比</li>
-	</ul>
-</div>
 <input type="hidden" name="act" value="statistics_sale" />
 <input type="hidden" name="op" value="sale" />
 
 <table class="mytable">
 	<tr>
 		<td>
-			<select name="search_type" id="search_type" class="select-common" >
+			<span>统计方式：</span>
+			<select name="search_type" id="search_type" class="select-common middle" >
 				<option value="1">按照天统计</option>
 				<option value="3">按照周统计</option>
 				<option value="4">按照月统计</option>
 			</select>
-			<input type="submit" class="btn-common" value="搜索" onclick="search();">
+			<button class="btn-common" value="搜索" onclick="search();">搜索</button>
 		</td>
 	</tr>
 </table>
 <div class="alert alert-info">
 	<ul class="mt5">
 		<li>
-			<span class="w210 fl h30" style="display:block;">
+			<span class="w210 fl h30 " style="display:block;">
 				<i title="店铺符合搜索条件的订单总金额" class="tip icon-question-sign"></i>
 				总下单金额：<strong id="money">0元</strong>
 			</span>
@@ -51,23 +51,18 @@
 	</ul>
 </div>
 
-<div id="stat_tabs" class="ui-tabs ui-tabs-nav" style="min-height:500px;padding-top:10px;">
-	<div class="tabmenu">
-	<ul class="tab pngFix">
-		<li class="ui-tabs-selected">
-			<a class="a-nav"onclick="getGoodsSalesCharts(1)">下单金额</a>
-		</li>
-		<li>
-			<a class="a-nav" onclick="getGoodsSalesCharts(2)">下单量</a>
-		</li>
+<nav class="option-nav">
+	<ul>
+		<li class="selected" ><a href="javascript:;" onclick="getGoodsSalesCharts(1)">下单金额</a></li>
+		<li ><a href="javascript:;" onclick="getGoodsSalesCharts(2)">下单量</a></li>
 	</ul>
-</div>
+</nav>
 <!-- 下单金额 -->
 	<div id="money_div" class="ui-tabs-panel" data-highcharts-chart="1">
 		<div class="highcharts-container" id="highcharts-2" style="width:99%;position:relative;overflow:hidden;height:400px;font-size:12px;"></div>
 	</div>
 	<!-- 下单量 -->
-	<div id="num_div" class="ui-tabs-panel ui-tabs-hide hide">
+	<div id="num_div" class="ui-tabs-panel ui-tabs-hide hide" style="display: none;">
 		<div class="highcharts-container" id="highcharts-3" style="width:99%;position:relative;overflow:hidden;height:400px;font-size:12px;"></div>
 	</div>
 </div>
@@ -142,7 +137,7 @@ $(function() {
 	
 	saleMoneyChart = new Highcharts.Chart("highcharts-3",{
 		title : {
-			text : "订单量统计",
+			text : "下单量统计",
 			align : "center",
 			useHTML : true
 		},
@@ -195,11 +190,10 @@ $(function() {
 var var_type = 1;
 //走势图数据
 function getGoodsSalesCharts(type){
-	$(".a-nav").css("background-color","#ffffff");
-	$(".a-nav").css("color","#0072D2");
+	
 	var num = type-1;
-	$(".a-nav:eq("+num+")").css("background-color","#0072D2");
-	$(".a-nav:eq("+num+")").css("color","#ffffff");
+	$('.option-nav ul li').eq(num).addClass('selected').siblings().removeClass('selected');
+	
 	var date = $("#search_type").val();
 	var_type = type;//type 走势图类型 1 金额 2 数量
 	$.ajax({
@@ -218,7 +212,7 @@ function getGoodsSalesCharts(type){
 						 valueSuffix : saleUnit
 					},
 					series : [ {
-						name : "订单金额",
+						name : "下单金额",
 						data : data[1]
 					}],
 					yAxis : {
@@ -246,7 +240,7 @@ function getGoodsSalesCharts(type){
 						 valueSuffix : saleUnit
 					},
 					series : [ {
-						name : "订单量",
+						name : "下单量",
 						data : data[1]
 					}],
 					yAxis : {

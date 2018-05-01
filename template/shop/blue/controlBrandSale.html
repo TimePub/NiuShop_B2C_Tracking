@@ -13,9 +13,9 @@
 	var slideshtml='';
 	for(var i=0;i<data.length;i++){
 			if(i==0){
-				str+='<li style="background:'+data[i]['background']+' url('+__IMG(data[i]['adv_image'])+') 50% 50%;"><a href="'+data[i]['adv_url']+'" target="_blank" title="">&nbsp;</a> </li>';
+				str+='<li style="background:'+data[i]['background']+' url('+__IMG(data[i]['adv_image'])+') no-repeat 50% 50%;"><a href="'+data[i]['adv_url']+'" target="_blank" title="">&nbsp;</a> </li>';
 			}else{
-				str+='<li style="display: none;background:'+data[i]['background']+' url('+__IMG(data[i]['adv_image'])+') 50% 50% ;"><a href="'+data[i]['adv_url']+'" target="_blank" title="">&nbsp;</a> </li>';
+				str+='<li style="display: none;background:'+data[i]['background']+' url('+__IMG(data[i]['adv_image'])+') no-repeat 50% 50% ;"><a href="'+data[i]['adv_url']+'" target="_blank" title="">&nbsp;</a> </li>';
 			}
 		}
 	for(var i=1;i<=data.length;i++){

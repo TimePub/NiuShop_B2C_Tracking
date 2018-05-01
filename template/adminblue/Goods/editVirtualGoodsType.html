@@ -55,7 +55,7 @@
 		</dd>
 	</dl> -->
 	<dl>
-		<dt>是否启用</dt>
+		<dt>是否启用：</dt>
 		<dd>
 			{if condition="$virtual_goods_type"}
 				{if condition="$virtual_goods_type.is_enabled == 1"}
@@ -71,7 +71,10 @@
 	</dl>
 	<dl>
 		<dt></dt>
-		<dd><button class="btn-common btn-big" onclick="save()">提交</button></dd>
+		<dd>
+			<button class="btn-common btn-big" onclick="save()">保存</button>
+			<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);">返回</button>
+		</dd>
 	</dl>
 </div>
 <input type="hidden" id="hidden_virtual_goods_type_id" value="{$virtual_goods_type_id}" />

@@ -197,11 +197,13 @@ class BaseController extends Controller
                 $second_menu_id = $root_array[1];
                 $root_module_info = $this->website->getSystemModuleInfo($this->rootid, 'module_name,url,module_picture');
                 $first_menu_list = $this->user->getchildModuleQuery(0);
+                
                 if ($this->rootid != 0) {
                     $second_menu_list = $this->user->getchildModuleQuery($this->rootid);
                 } else {
                     $second_menu_list = '';
                 }
+                
                 $this->user_name = $user_info['user_name'];
                 $this->user_headimg = $user_info['user_headimg'];
                 $this->assign("headid", $this->rootid);
@@ -214,6 +216,7 @@ class BaseController extends Controller
                 $this->assign("leftlist", $second_menu_list);
                 $this->assign("frist_menu", $root_module_info); // 当前选中的导航菜单
                 $this->assign("secend_menu", $this->module_info);
+                $this->assign('is_show_shortcut_menu',0);// 是否显示
                 $path_info_url = request()->url();
                 $replace_url = str_replace(request()->root() . '/admin/', '', $path_info_url);
                 $child_menu_list = array(
@@ -305,6 +308,10 @@ class BaseController extends Controller
         $system_config['dns'] = $_SERVER['HTTP_HOST']; // 服务器域名
         $system_config['php_version'] = PHP_VERSION; // php版本
         $system_config['ip'] = $_SERVER['SERVER_ADDR']; // 服务器ip
+        $system_config['sockets'] = extension_loaded('sockets'); //是否支付sockets
+        $system_config['openssl'] = extension_loaded('openssl'); //是否支付openssl
+        $system_config['curl'] = function_exists('curl_init'); // 是否支持curl功能
+        
         $this->assign("system_config", $system_config);
     }
 

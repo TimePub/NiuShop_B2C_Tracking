@@ -50,7 +50,7 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 			<div class="left">{$pro_prop.spec_name}：</div>
 			<div class="right" name="specvals">
 			{foreach name="pro_prop['value']" item="pro_propvalue" key="key"}
-				<button class="select" name="Span{$k}" id="{$pro_prop.spec_id}:{$pro_propvalue.spec_value_id}" onclick="change(this);"  data-picture-id="{$pro_propvalue.picture}">
+				<button class="select {if condition="$key==0"}current{/if}" name="Span{$k}" id="{$pro_prop.spec_id}:{$pro_propvalue.spec_value_id}" onclick="change(this);"  data-picture-id="{$pro_propvalue.picture}">
 				{$pro_propvalue.spec_value_name}
 				</button>
 			{/foreach}

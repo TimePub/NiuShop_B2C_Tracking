@@ -92,4 +92,66 @@ class OrderExpress extends BaseService
             return $e->getMessage();
         }
     }
+    
+
+    /**
+     * 通过订单id 修改物流单号
+     * @param unknown $order_id
+     * @param unknown $express_name
+     * @param unknown $shipping_type
+     * @param unknown $express_company_id
+     * @param unknown $express_no
+     * @return number
+     */
+    
+    public function update_delivey($order_goods_express_id, $express_name, $shipping_type, $express_company_id, $express_no)
+    {
+        $user = new UserModel();
+        $user_name = $user->getInfo([
+            'uid' => $this->uid
+        ], 'user_name');
+        $order_express = new NsOrderGoodsExpressModel();
+        $order_express->startTrans();
+        try {
+            $express_company = new NsOrderExpressCompanyModel();
+            $express_company_info = $express_company->getInfo([
+                'co_id' => $express_company_id
+            ], 'company_name');
+            $data_goods_delivery = array(
+                //'order_id' => $order_id,
+                //'order_goods_id_array' => $order_goods_id_array,
+                'express_name' => $express_name,
+                'shipping_type' => $shipping_type,
+                'express_company' => $express_company_info['company_name'],
+                'express_company_id' => $express_company_id,
+                'express_no' => $express_no,
+                //'shipping_time' => time(),
+                'uid' => $this->uid,
+                'user_name' => $user_name['user_name']
+            );
+            $order_express->save($data_goods_delivery, ['id' => $order_goods_express_id]);
+            $order_express->commit();
+            return 1;
+        } catch (\Exception $e) {
+            $order_express->rollback();
+            return $e->getMessage();
+        }
+    }
+    
+    /**
+     * 通过order_id删除快递信息
+     * @param unknown $order_id
+     */
+    
+    public function delete_delivey($order_goods_express_id)
+    {
+        $order_express = new NsOrderGoodsExpressModel();
+        $res = $order_express->destroy(['id' => $order_goods_express_id]);
+        return $res;
+    }    
+    
+    
+    
+    
+    
 }

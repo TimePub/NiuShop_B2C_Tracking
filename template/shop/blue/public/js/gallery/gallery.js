@@ -101,11 +101,18 @@
 
 		},
 		setEleFn : function() {
+			
+			var video_is_play = $("#video-is-play").val();
+			if(video_is_play == 1){
+
+				return false;
+			}
+			
 			var _is = this, _html1 = "", oFrag = document
 					.createDocumentFragment(), oFrag2 = document
 					.createDocumentFragment();
-			
 			_is.mImgSrc = $("#MagnifierWrap .spec-items li.on:visible img").attr("data_big_img");
+			
 			
 			if(count>0 && _is.mImgSrc == undefined){
 				
@@ -149,6 +156,13 @@
 
 		},
 		removeFn : function() {
+
+			var video_is_play = $("#video-is-play").val();
+			if(video_is_play == 1){
+
+				return false;
+			}
+			
 			var _is = this;
 			_is.magMain.removeChild(_is.oMD);
 			_is.magWrap.removeChild(_is.oMP);
@@ -236,6 +250,9 @@
 
 			//选择底部的缩略图
 			function TabFn(event) {
+				
+				goods_video_pause();
+				
 				var target = EventUtil.getTarget(event), i = 0;
 
 				if (target.nodeName != "UL") {

@@ -33,7 +33,7 @@ $(function(){
 		for(var i=0;i<province_id_array.length;i++){
 			
 			if(province_id_array[i]){
-				$("input[data-second-parent-index][value='"+province_id_array[i]+"']").attr("checked",true);
+				$("input[data-second-parent-index][value='"+province_id_array[i]+"']").attr("checked",true).parent().addClass("selected");
 			}
 			
 		}
@@ -45,7 +45,7 @@ $(function(){
 		var city_id_array = $("#hidden_city_id_array").val().split(",");
 		for(var i=0;i<city_id_array.length;i++){
 			if(city_id_array[i]){
-				$("input[data-third-parent-index][value='"+city_id_array[i]+"']").attr("checked",true);
+				$("input[data-third-parent-index][value='"+city_id_array[i]+"']").attr("checked",true).parent().addClass("selected");
 			}
 		}
 	}
@@ -54,10 +54,9 @@ $(function(){
 	 * 指定地区城市[打开城市弹出框，进行选中]
 	 * 2017年6月26日 15:59:32
 	 */
-	$(".js-select-city").click(function(){
+	$(".Js_select_city").click(function(){
 		if(!parseInt($(this).attr("data-flag"))){
-			$(".mask-layer").fadeIn(300);
-			$('#select-region').fadeIn(300);
+			$("#select-region").modal("show");
 		}
 	});
 	
@@ -67,7 +66,7 @@ $(function(){
 	 * 2017年6月26日 15:29:55 王永杰
 	 */
 	$("input[data-first-index]").change(function(){
-		
+
 		if(!$(this).is(":disabled") && !$(this).attr("data-is-disabled")){
 			
 			var curr = $(this);//当前对象
@@ -79,7 +78,8 @@ $(function(){
 				
 				$("input[data-second-parent-index='" + index + "']").each(function(){
 					if(!$(this).is(":disabled") && !$(this).attr("data-is-disabled")){
-						$(this).attr("checked",checked);
+						if(checked) $(this).attr("checked",checked).parent().addClass("selected");
+						else $(this).attr("checked",checked).parent().removeClass("selected");
 					}
 				});
 				
@@ -88,7 +88,8 @@ $(function(){
 					
 					$("input[data-third-parent-index='" + index + "']").each(function(){
 						if(!$(this).is(":disabled") && !$(this).attr("data-is-disabled")){
-							$(this).attr("checked",checked);
+							if(checked) $(this).attr("checked",checked).parent().addClass("selected");
+							else $(this).attr("checked",checked).parent().removeClass("selected");
 						}
 					});
 				}
@@ -106,11 +107,12 @@ $(function(){
 		var curr = $(this);//当前对象
 		var checked = curr.is(":checked");//选中状态
 		
-		if(curr.parent().find("div input[type='checkbox']").length){
+		if(curr.parents(".ecity").find("div i input[type='checkbox']").length){
 			
-			curr.parent().find("div input[type='checkbox']").each(function(){
+			curr.parents(".ecity").find("div i input[type='checkbox']").each(function(){
 				if(!$(this).is(":disabled") && !$(this).attr("data-is-disabled")){
-					$(this).attr("checked",checked);
+					if(checked) $(this).attr("checked",checked).parent().addClass("selected");
+					else $(this).attr("checked",checked).parent().removeClass("selected");
 				}
 			});
 			
@@ -131,18 +133,19 @@ $(function(){
 			
 			curr.parent().find("div input[type='checkbox']").each(function(){
 				if(!$(this).is(":disabled") && !$(this).attr("data-is-disabled")){
-					$(this).attr("checked",checked);
+					if(checked) $(this).attr("checked",checked).parent().addClass("selected");
+					else $(this).attr("checked",checked).parent().removeClass("selected");
 				}
 			});
 			
 		}
 
 		//一个没有选择，父级则不选中
-		if(curr.parent().parent().children("span").children("input[type='checkbox']:checked").length == 0){
-			curr.parent().parent().parent().children("input").attr("checked",false);
+		if(curr.parents(".citys").find("input[type='checkbox']:checked").length == 0){
+			curr.parents('.ecity').find("input[data-second-parent-index]").attr("checked",false).parent().removeClass('selected');
 		}
 		//选中一个，父类则选中
-		if(checked) curr.parent().parent().parent().children("input").attr("checked",true);
+		if(checked) curr.parents('.ecity').find("input[data-second-parent-index]").attr("checked",false).parent().addClass('selected');
 	});
 	
 	/**
@@ -153,8 +156,7 @@ $(function(){
 		setProvinceIdArray();
 		setCityIdArray();
 		$(".js-region-info").html(getRegions());
-		$(".mask-layer").fadeOut(300);
-		$('#select-region').fadeOut(300);
+		$("#select-region").modal("hide");
 	});
 	
 	/**
@@ -163,8 +165,7 @@ $(function(){
 	 * 2017年6月26日 17:09:50 王永杰
 	 */
 	$("#select-region .js-cancle").click(function(){
-		$(".mask-layer").fadeOut(300);
-		$('#select-region').fadeOut(300);
+		$("#select-region").modal("hide");
 	})
 	
 	

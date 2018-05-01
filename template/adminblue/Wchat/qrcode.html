@@ -15,6 +15,10 @@
 #name{position:absolute;left:128px;top:23px;font-size:14px;color:#000;cursor:move;}
 </style>
 {/block}
+{block name="alert_info"}
+<strong>提示：</strong>
+会员昵称、头像和二维码属于第三方提供的信息，您可以在这里调整字体和显示的位置，除此之外的信息您可以根据自己的需求放在背景图片中。
+{/block}
 {block name="main"}
 <div class="table">
 	<input type="hidden" id="id" value="{$id}">
@@ -30,35 +34,38 @@
 		<span id="name" style="left:{$info['name_left']};top:{$info['name_top']};color:{$info['nick_font_color']};font-size:{$info['nick_font_size']}px;" ondragstart="return false">昵称</span>
 	</div>
 	<div class="r form">
-		<div class="tip">
-			<strong>提示：</strong>
-			会员昵称、头像和二维码属于第三方提供的信息，您可以在这里调整字体和显示的位置，除此之外的信息您可以根据自己的需求放在背景图片中。
-		</div>
+		
 		<div class="set-style">
 			<dl>
 				<dt>背景图片:</dt>
+				
 				<dd>
-					<div class="upload-btn">
-						<span>
-							<input class="input-file" name="file_upload" id="uploadImg" type="file" onchange="imgUpload(this);">
-						<input type="hidden"id="Logo"value="{$info['background']}"/>
-						</span>
-						<p><i class="fa fa-upload"></i>上传图片</p>
+					<div class="upload-btn-common">
+						<div>
+							<input class="input-file" name="file_upload" id="uploadImg" type="file" onchange="imgUpload(this);" title="上传">
+							<input type="hidden" id="Logo" value="{$info['background']}" />
+						</div>
+						<input type="text" id="text_Logo" class="input-common" readonly="readonly" value="{if condition='$info.background'}{$info.background}{/if}" />
+						<em>上传</em>
+						
+						<img id="preview_Logo" src="__STATIC__/blue/img/upload-common-select.png" {if condition="$info.background"}data-src="{:__IMG($info.background)}"{/if} data-html="true" data-container="body" data-placement="top" data-trigger="manual"/>
+		
 					</div>
-					<p class="hint"><span style="color:orange;">背景图必须是640*1138的png图像；点击下方"提交"按钮后生效。</span></p>
+					<p class="hint">背景图必须是<i class="important-note">640*1138</i>的<i class="important-note">png</i>图像；点击下方"保存"按钮后生效。</p>
 				</dd>
 			</dl>
 			<dl>
 				<dt>昵称文本颜色:</dt>
 				<dd>
-					<p><input id="nick_font_color" type="color" value="{$info['nick_font_color']}" class="input-common"></p>
+					<p><input id="nick_font_color" type="color" value="{$info['nick_font_color']}" class="input-common-color"></p>
 					<p class="error">请输入昵称文本颜色</p>
 				</dd>
 			</dl>
 			<dl>
 				<dt>昵称字体大小:</dt>
 				<dd>
-					<p><input id="nick_font_size" type="number" min="10" max="36" step="1" size="4" value="{$info['nick_font_size']}" class="input-common">像素</p>
+					<p><input id="nick_font_size" type="number" min="10" max="36" step="1" size="4" value="{$info['nick_font_size']}" class="input-common harf"><em class="unit">PX</em></p>
+					<p class="hint">字体大小的单位为像素（px）</p>
 					<p class="error">请输入昵称字体大小</p>
 				</dd>
 			</dl>
@@ -70,7 +77,10 @@
 			</dl>
 			<dl>
 				<dt></dt>
-				<dd><button class="btn-common btn-big" onclick="save();">提交</button></dd>
+				<dd>
+					<button class="btn-common btn-big" onclick="save();">保存</button>
+					<button class="btn-common-cancle btn-big" onclick="window.location.href = window.history.go(-1);" >返回</button>
+				</dd>
 			</dl>
 		</div>
 	</div>
@@ -151,13 +161,16 @@ $("#divBlock").bind("mouseup mouseout", function () {
 
 //图片上传
 function imgUpload(event) {
+
 	var fileid = $(event).attr("id");
-	var str = $(event).next().attr("id");
 	var data = { 'file_path' : UPLOADCOMMON };
+	var id = $(event).next().attr("id");
 	uploadFile(fileid,data,function(res){
 		if(res.code){
-			$("#img"+str).attr("src",__IMG(res.data));
-			$("#"+str).val(res.data);
+			$("#img"+id).attr("src",__IMG(res.data));
+			$("#"+id).val(res.data);
+			$("#text_" + id).val(res.data);
+			$("#preview_" + id).attr("data-src",__IMG(res.data));
 			showTip(res.message,"success");
 		}else{
 			showTip(res.message,"error");
@@ -203,9 +216,10 @@ function save(){
 		},
 		success : function(data) {
 			if(data['code'] > 0){
-				showMessage('success', data['message'], "{:__URL('ADMIN_MAIN/wchat/weixinqrcodetemplate')}");
+				showTip(data['message'],"success");
+				location.href = "{:__URL('ADMIN_MAIN/wchat/weixinqrcodetemplate')}";
 			}else{
-				showMessage('error', data['message']);
+				showTip(data['message'],"error");
 			}
 		}
 	})

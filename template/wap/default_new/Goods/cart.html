@@ -59,7 +59,7 @@
 				<div class="product">
 					<div class="pic">
 						<a href="{:__URL('APP_MAIN/goods/goodsdetail?id='.$list['goods_id'])}">
-							<img src="{:__IMG($list['picture_info']['pic_cover_small'])}" alt="{:lang('goods_image')}">
+							<img src="{:__IMG($default_goods_img)}" class="lazy_load" data-original="{:__IMG($list['picture_info']['pic_cover_small'])}" alt="{:lang('goods_image')}">
 						</a>
 					</div>
 					<div class="info">
@@ -80,7 +80,7 @@
 							{/if}
 						</p> -->
 						<div class="number">
-							¥<span name="goods_price">{$list.price}</span>
+							¥<span name="goods_price" data-price="{$list.price}">{$list.price}</span>
 							{if condition="$list.point_exchange_type==1 "}
 							<span name="goods_integral" data-point="{$list.point_exchange}">
 								{if condition=" $list.point_exchange>0"}
@@ -106,6 +106,7 @@
 	</section>
 </div>
 <input type="hidden" id="countlist" value="{$countlist}">
+<input type="hidden" id="goods_ladder_preferential" value='{$goods_ladder_preferential}'>
 <section class="cart-none" id="cart-none" style="display: none">
 	<i class="cart-big"></i>
 	<p class="text">{:lang('your_shopping_cart_is_not_available_yet')}！</p>
@@ -142,6 +143,15 @@
 {/notempty}
 <div class="h60"></div>
 <script type="text/javascript">
+//解决 在IOS手机中，点击左上角返回按钮不会刷新当前页面的问题 2018年1月27日17:45:40
+var isPageHide = false;
+window.addEventListener('pageshow', function () {
+	if (isPageHide) location.href=__URL("APP_MAIN/goods/cart");
+});
+window.addEventListener('pagehide', function () {
+	isPageHide = true;
+});
+
 var cart1 = "__TEMP__/{$style}/public/images/cartp1.png";
 var cart2 = "__TEMP__/{$style}/public/images/cartp2.png";
 //页面加载触发事件
@@ -156,10 +166,8 @@ $(function () {
 </script>
 <script type="text/javascript">
 $("#head_back").click(function (){
-    var json ={
-            "center" : "2"
-        }
-    window.webkit.messageHandlers.center.postMessage(json);
-})
+	var json ={ "center" : "2" }
+	window.webkit.messageHandlers.center.postMessage(json);
+});
 </script>
 {/block}

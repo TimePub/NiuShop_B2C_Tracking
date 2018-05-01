@@ -59,7 +59,7 @@ class Cms extends BaseController
                     '%' . $search_text . '%'
                 )
             );
-            $result = $article->getArticleList($page_index, $page_size, $condition, 'nca.sort desc');
+            $result = $article->getArticleList($page_index, $page_size, $condition, 'nca.sort asc');
             return $result;
         } else {
             return view($this->style . 'Cms/articleList');
@@ -253,9 +253,9 @@ class Cms extends BaseController
         if (request()->isAjax()) {
             $article = new Article();
             $article_id = request()->post('article_id', '');
-            if (! is_numeric($article_id)) {
+            /* if (! is_numeric($article_id)) {
                 $this->error('未获取到信息');
-            }
+            } */
             $retval = $article->deleteArticle($article_id);
             return AjaxReturn($retval);
         }

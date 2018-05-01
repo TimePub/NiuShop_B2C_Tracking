@@ -2,12 +2,24 @@
 {block name="resources"}
 <link type="text/css" rel="stylesheet" href="__TEMP__/{$style}/public/css/ns_help.css">
 <script type="text/javascript" src="__TEMP__/{$style}/public/js/ns_article_help.js"></script>
+<style>
+.fr_main{
+	width: 78%;
+    background-color: #fff;
+    padding: 0px 20px;
+	float: right;
+    margin-right: 5px;
+}
+.fr{
+	width: 45%;
+}  
+</style>
 {/block}
 {block name="main"}
 <div class="content w990 clearfix">
 	{include file='shop/blue/Cms/controlLeftMenu'/}
 	<!-- 右半部分内容 -->
-	<div class="fr">
+	<div class="fr_main">
 		<div class="right-inner">
 <!-- 			<div class="title-bar"> -->
 <!-- 				<h3 class="help-tit" style="text-align: left;">{$name}</h3> -->
@@ -28,6 +40,7 @@
 				</div>
 			</div>
 			{/if}
+			{include file='shop/blue/controlCommonPage' /}
 		</div>
 	</div>
 	<!-- 右半部分内容 -->

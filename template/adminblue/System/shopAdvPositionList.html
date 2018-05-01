@@ -9,6 +9,7 @@
 	background: #FB9336;
 	opacity: 0.8;
 }
+.ns-main{margin-top:0px;}
 </style>
 <script type="text/javascript" src="__STATIC__/My97DatePicker/WdatePicker.js"></script>
 {/block}
@@ -24,9 +25,10 @@
 		<button style="margin:0 5px 0 0 !important;" class="btn-common btn-small" data-ad-type="2">手机端</button>
 		</td>
 		<td style="line-height:33px;">
-			广告位名称：<input id="ap_name" class="input-medium input-common" type="text" placeholder="请输入广告位名称" >
-			广告展示方式：
-			<select id="ap_display" class="select-common">
+			<span>广告位名称：</span>
+			<input id="ap_name" class="input-common middle" type="text" placeholder="请输入广告位名称" >
+			<span>广告展示方式：</span>
+			<select id="ap_display" class="select-common middle">
 				<option value="">全部</option>
 				<option value="0">幻灯片</option>
 				<option value="1">多广告展示</option>
@@ -51,7 +53,7 @@
 	</colgroup>
 	<thead>
 		<tr>
-			<th><input type="checkbox"  onclick="CheckAll(this)"></th>
+			<th><i class="checkbox-common"><input type="checkbox"  onclick="CheckAll(this)"></i></th>
 			<th align="left">名称</th>
 			<th>类别</th>
 			<th>展示方式</th>
@@ -63,18 +65,6 @@
 			<th>操作</th>
 		</tr>
 	</thead>
-	<colgroup>
-		<col style="width: 3%;">
-		<col style="width: 16%;">
-		<col style="width: 9%;">
-		<col style="width: 10%;">
-		<col style="width: 9%;">
-		<col style="width: 8%;">
-		<col style="width: 9%;">
-		<col style="width: 8%;">
-		<col style="width: 10%;">
-		<col style="width: 22%;">
-	</colgroup>
 	<tbody id="list"></tbody>
 </table>
 <input type="hidden" id="ad_type" value="1">
@@ -93,11 +83,10 @@ $("[data-ad-type]").click(function(){
 })
 
 function CheckAll(event){
-	if($(event).is(":checked")){
-		$("input[name='sub']").prop("checked",true);
-	}else{
-		$("input[name='sub']").prop("checked",false);
-	}
+	var checked = event.checked;
+	$(".table-class tbody input[type = 'checkbox']").prop("checked",checked);
+	if(checked) $(".table-class tbody input[type = 'checkbox']").parent().addClass("selected");
+	else $(".table-class tbody input[type = 'checkbox']").parent().removeClass("selected");
 }
 
 function LoadingInfo(page_index) {
@@ -115,12 +104,13 @@ function LoadingInfo(page_index) {
 			"ap_display" : ap_display
 		},
 		success : function(data) {
-			var html = '';
 			if (data['data'].length > 0) {
+				$("#list").empty();
 				for (var i = 0; i < data['data'].length; i++) {
+					var html = '';
 					var ap_id = data['data'][i]['ap_id'];
 					html += '<tr align="center">';
-					html += '<td><input type="checkbox" name="sub" value="'+ ap_id +'"></td>';
+					html += '<td><i class="checkbox-common"><input type="checkbox" name="sub" value="'+ ap_id +'"></i></td>';
 					html += '<td align="left">'+ data['data'][i]['ap_name']+'</td>';
 					html += '<td class="center">' + data['data'][i]["ap_class_name"] + '</td>';
 					html += '<td>' + data['data'][i]["ap_display_name"] + '</td>';
@@ -139,13 +129,14 @@ function LoadingInfo(page_index) {
 					if(data['data'][i]["is_del"] == 0){
 						html += '<a href="javascript:delShopAdvPosition(' + ap_id + ');"> 删除</a> &nbsp;';	
 					}
-					html += '</td> ';
+					html += '</td>';
 					html += '</tr>';
+					$("#list").append(html);
 				}
 			} else {
-				html += '<tr><td colspan="8">暂无符合条件的数据记录</td></tr>';
+				var html = '<tr><td colspan="8">暂无符合条件的数据记录</td></tr>';
+				$("#list").html(html);
 			}
-			$("#list").html(html);
 			initPageData(data["page_count"],data['data'].length,data['total_count']);
 			$("#pageNumber").html(pagenumShow(jumpNumber,$("#page_count").val(),{$pageshow}));
 			
@@ -171,14 +162,15 @@ function delShopAdvPosition(ap_id){
 					data : { "ap_id" : ap_id },
 					success : function(data) {
 						if(data["code"] > 0 ){
-							showMessage('success', data["message"],"{:__URL('ADMIN_MAIN/System/shopAdvPositionList')}");
+							showTip(data["message"],'success');
+							location.href = "{:__URL('ADMIN_MAIN/System/shopAdvPositionList')}";
 						}else{
-							showMessage('error', data["message"]);
+							showTip(data["message"],'error');
 						}
 					}
 				});
 			},
-			"取消,#e57373": function() {
+			"取消,#f5f5f5,#666": function() {
 				$(this).dialog('close');
 			}
 		},

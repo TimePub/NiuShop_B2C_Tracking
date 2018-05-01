@@ -97,7 +97,7 @@ function UploadImage(event) {
 			imgsLength(eve);
 			loadFunction();
 		}else{
-			showBox(res.message);
+			showBox(res.message,"error");
 		}
 	}, 1);
 }
@@ -153,7 +153,7 @@ function doSubmit(type){
 		goodsEvaluateArr.push(evaluateArr);
 	});
 	if(flag){
-		showBox("请输入要评价的内容");
+		showBox("请输入要评价的内容","warning");
 		return;
 	}
 	var order_id = $("#order_id").val();
@@ -169,10 +169,7 @@ function doSubmit(type){
 			dataType:'json',
 			success:function(data){
 				if(data == 1){
-					showBox('评价成功');
-					setTimeout(function(){
-						location.href = __URL(APPMAIN+"/order/myorderlist")
-					},1000);
+					showBox('评价成功',"success",__URL(APPMAIN+"/order/myorderlist"));
 				}
 			}
 		})

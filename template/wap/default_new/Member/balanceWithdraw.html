@@ -2,38 +2,12 @@
 {block name="resources"}
 <link rel="stylesheet" type="text/css" href="__TEMP__/{$style}/public/css/member_balance.css">
 <style type="text/css">
-.ns-table td {
-	width: 100%;
-}
-
-.ns-lf {
-	float: left;
-}
-
-.ns-rg {
-	color: red;
-	font-size: 14px;
-	float: right;
-}
-
-.ns-rg-time {
-	font-size: 14px;
-	float: right
-}
-.account-option{
-	 width:100%;
-	 height:40px;
-	 /* background: linear-gradient(#FE4445, #FF8458); */
-}
-.account-option ul li{
-	float:right;
-	text-align: center;
-	line-height: 40px;
-	font-size: 16px;
-	color: #fff;
-	width:50%;
-	background:#f86126;
-}
+.ns-table td {width: 100%;}
+.ns-lf {float: left;}
+.ns-rg {color: red;font-size: 14px;float: right;}
+.ns-rg-time {font-size: 14px;float: right;}
+.account-option{width:100%;height:40px;}
+.account-option ul li{float:right;text-align: center;line-height: 40px;font-size: 16px;color: #fff;width:50%;background:#f86126;}
 </style>
 <script type="text/javascript">
 window.onerror = function() {
@@ -49,9 +23,7 @@ window.onerror = function() {
 {/block}
 {block name="main"}
 <div id="main" class="detail-main">
-	<div class="my-account">
-		
-	</div>
+	<div class="my-account"></div>
 	{if condition="count($withdraws) neq 0 "}
 	<table class="ns-table">
 		{volist name="withdraws.data" id="vo"}
@@ -75,10 +47,8 @@ window.onerror = function() {
 </div>
 <script type="text/javascript">
 $("#head_back").click(function (){
-    var json ={
-            "center" : "2"
-        }
-    window.webkit.messageHandlers.center.postMessage(json);
+var json ={ "center" : "2" }
+	window.webkit.messageHandlers.center.postMessage(json);
 })
 </script>
 {/block}

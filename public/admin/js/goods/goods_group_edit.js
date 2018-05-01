@@ -14,7 +14,7 @@
  */
 
 //模块输入信息验证
-function verify(group_name){
+function verify(group_name,group_dec){
 	if(group_name == ''){
 		$("#group_name").parent().next().show();
 		$("#group_name").focus();
@@ -37,7 +37,9 @@ function addGoodsGroupAjax() {
 //	}
 	var is_visible = 1;
 	var group_pic = $("#group_pic").val();
-	if(verify(group_name)){
+	var group_dec = $("#group_dec").val();
+	
+	if(verify(group_name,group_dec)){
 		if(flag){
 			return false;
 		}
@@ -49,13 +51,15 @@ function addGoodsGroupAjax() {
 				'group_name' : group_name,
 				'sort' : sort,
 				'is_visible' : 1,
-				'group_pic' : group_pic
+				'group_pic' : group_pic,
+				'group_dec' : group_dec
 			},
 			success : function(data) {
 				if (data["code"] > 0) {
-					showMessage('success', "商品标签添加成功",__URL(ADMINMAIN+'/goods/goodsgrouplist'));
+					showTip("商品标签添加成功","success");
+					location.href = __URL(ADMINMAIN+'/goods/goodsgrouplist');
 				}else{
-					showMessage('error', "商品标签添加失败");
+					showTip("商品标签添加失败","error");
 					flag = false;
 				}
 			}
@@ -68,13 +72,15 @@ function updateGoodsCategoryAjax() {
 	var group_name = $("#group_name").val();
 	var sort = $("#sort").val();
 	var group_pic = $("#group_pic").val();
+	var group_dec = $("#group_dec").val();
+	
 //	if($("#is_visible").prop("checked")){
 //		var is_visible = 1;
 //	}else{
 //		var is_visible = 0;
 //	}
 	var is_visible = 1;
-	if(verify(group_name)){
+	if(verify(group_name,group_dec)){
 		if(flag){
 			return false;
 		}
@@ -87,13 +93,15 @@ function updateGoodsCategoryAjax() {
 				'group_name' : group_name,
 				'sort' : sort,
 				'is_visible' : 1,
-				'group_pic' : group_pic
+				'group_pic' : group_pic,
+				'group_dec' : group_dec
 			},
 			success : function(data) {
 				if (data["code"] > 0) {
-					showMessage('success', "商品标签修改成功",__URL(ADMINMAIN+'/goods/goodsgrouplist'));
+					showTip("商品标签修改成功","success");
+					location.href = __URL(ADMINMAIN+'/goods/goodsgrouplist');
 				}else{
-					showMessage('error', "商品标签修改失败");
+					showTip("商品标签修改失败","error");
 					flag = false;
 				}	
 			}
@@ -102,8 +110,20 @@ function updateGoodsCategoryAjax() {
 }
 
 //图片上传
-function imgUpload(){
-	OpenPricureDialog("PopPicure", ADMINMAIN,1);
+function imgUpload(event) {
+	var fileid = $(event).attr("id");
+	var id = $(event).next().attr("id");
+	var data = { 'file_path' : UPLOADGOODSGROUP };
+	uploadFile(fileid,data,function(res){
+		if(res.code){
+			$("#"+id).val(res.data);
+			$("#text_" + id).val(res.data);
+			$("#preview_" + id).attr("data-src",__IMG(res.data));
+			showTip(res.message,"success");
+		}else{
+			showTip(res.message,"error");
+		}
+	});
 }
 
 function PopUpCallBack(img_id,img_src){

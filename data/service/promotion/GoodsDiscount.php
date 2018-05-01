@@ -120,8 +120,17 @@ class GoodsDiscount extends BaseService
                     'shop_id' => $discount_info['shop_id']
                 ], 'shop_credit');
                 $goods_list['data'][$k]['shop_credit'] = $shop_info['shop_credit'];
-                $picture_info = $picture->get($v['goods_picture']);
+                $picture_info = $picture->get($v['picture']);
                 $goods_list['data'][$k]['picture'] = $picture_info;
+                if($v['point_exchange_type'] == 0 || $v['point_exchange_type'] == 2){
+                    $goods_list['data'][$k]['display_price'] = '￥'.$v["promotion_price"];
+                }else{
+                    if($v['point_exchange_type'] == 1 && $v["promotion_price"] > 0){
+                        $goods_list['data'][$k]['display_price'] = '￥'.$v["promotion_price"].'+'.$v["point_exchange"].'积分';
+                    }else{
+                        $goods_list['data'][$k]['display_price'] = $v["point_exchange"].'积分';
+                    }
+                }
             }
         }
         return $goods_list;

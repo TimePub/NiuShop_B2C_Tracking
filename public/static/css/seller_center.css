@@ -112,7 +112,7 @@ a:focus, a:active {
 }
 
 a {
-	color: #00C0FF;
+	color: #126AE4;
 	text-decoration: none;
 	-webkit-transition-property: color;
 	-webkit-transition-duration: 0.3s;
@@ -121,7 +121,7 @@ a {
 
 a:hover {
 	text-decoration: underline;
-	color: #00C0FF;
+	color: #0059d6;
 }
 
 .hidden {
@@ -2330,7 +2330,7 @@ label.error i {
 
 .tabmenu .tab {
 	/* height: 37px;
-	 border-bottom: 2px solid #00C0FF; */
+	 border-bottom: 2px solid #126AE4; */
 	margin: 0;
 }
 
@@ -2341,18 +2341,18 @@ label.error i {
 .tabmenu .tab li {
 	border-top: 1px solid #E3E3E3;
 	border-right: 1px solid #E3E3E3;
-	/* border-bottom:2px solid #00C0FF; */
+	/* border-bottom:2px solid #126AE4; */
 }
 
 .tabmenu .tab .active {
-	border-top: 1px solid #00C0FF !important;
-	border-right: 1px solid #00C0FF !important;
-	border-left: 1px solid #00C0FF !important;
+	border-top: 1px solid #126AE4 !important;
+	border-right: 1px solid #126AE4 !important;
+	border-left: 1px solid #126AE4 !important;
 }
 
 .tabmenu .tab .daohang_no:hover {
-	border-top: 1px solid #00C0FF !important;
-	border-right: 1px solid #00C0FF;
+	border-top: 1px solid #0059d6 !important;
+	border-right: 1px solid #0059d6;
 }
 
 .right_side_operation {
@@ -2407,18 +2407,18 @@ label.error i {
 
 .tabmenu .tab .active a {
 	color: #FFF;
-	background-color: #00C0FF;
+	background-color: #126AE4;
 }
 
 .tabmenu .tab a {
-	color: #00C0FF;
+	color: #126AE4;
 	background-color: #ffffff;
 }
 
 .tabmenu .tab .active a:hover, .tabmenu .tab a:hover {
 	text-decoration: none;
 	color: #ffffff;
-	background-color: #00C0FF;
+	background-color: #0059d6;
 }
 
 .tabmenu .tab .normal a {
@@ -3821,10 +3821,11 @@ td.trigger i:hover {
 .sort_title {
 	font-size: 12px;
 	line-height: 30px;
-	color: #777;
-	text-align: center;
+	//color: #777;
+	text-align: left;
 	height: 30px;
 	margin: 10px auto 0;
+	padding-left:10px;
 }
 
 .sort_title .text {
@@ -3834,8 +3835,8 @@ td.trigger i:hover {
 	vertical-align: top;
 	text-align: left;
 	display: inline-block;
-	width: 700px;
-	height: 20px;
+	width: 701px;
+	height: 18px;
 	padding: 4px;
 	border: solid 1px #CCC;
 	outline: 0 none;
@@ -3868,14 +3869,14 @@ td.trigger i:hover {
 .select_list {
 	background-color: #FFF;
 	display: none;
-	width: 708px;
+	width: 709px;
 	height: 200px;
 	border: solid 1px #75B9F0;
 	position: absolute;
 	z-index: 2;
-	top: 41px;
-	left: 188.5px;
-	overflow-y: scroll;
+	top: 28px;
+	left: 121.5px;
+	overflow-y: auto;
 	overflow-x: hidden;
 }
 
@@ -11171,7 +11172,7 @@ a:hover.ks-ext-close {
 }
 
 .user-operation a:hover {
-	background-color: #00c0FF;
+	background-color: #0059d6;
 	color: #fff;
 }
 
