@@ -33,7 +33,7 @@ interface IUpgrade
      * @param unknown $devolution_version
      * @param unknown $devolution_code
      */
-    function getVersionPatchList($user_name, $password);
+    function getVersionPatchList($user_name, $password, $devolution_code);
     
     /**
      * 版本补丁列表
@@ -63,7 +63,7 @@ interface IUpgrade
     /**
      * 给授权账户表添加一条数据
      */
-    public function addVersionDevolution($user_name, $password);
+    public function addVersionDevolution($user_name, $password, $devolution_code);
 
     /**
     *  判断当前用户是否需要升级

@@ -40,23 +40,25 @@ class Upgrade extends BaseController
     {
         $upgrade = new UpgradeService();
         $back = request()->get('back', '');
-        $user_name = "";
-        $password = "";
+        //查询授权信息
+        $product_info = $upgrade -> getVersionDevolution();
+        $user_name = !empty($product_info[0]["devolution_username"]) ? $product_info[0]["devolution_username"] : "";
+        $password = !empty($product_info[0]["devolution_password"]) ? $product_info[0]["devolution_password"] : "";
+        $devolution_code = !empty($product_info[0]["devolution_code"]) ? $product_info[0]["devolution_code"] : "";
         // 绑定账号
         if (request()->isAjax()) {
-            $user_name = request()->post('user_name', '');
-            $password = request()->post('password', '');
-            $result = $upgrade->getUserDevolution($user_name, $password);
-            $res = json_decode($result);
+            $authorization_code = request()->post("authorization_code", "");
+            $result = $upgrade->getUserDevolutionByAuthorizationCode($authorization_code);
+            $res = json_decode($result, true);
             if (! empty($res)) {
                 $revel = json_decode(json_encode($res), true);
                 if ($revel['code'] == 0) {
-                    $upgrade->addVersionDevolution($user_name, $password);
+                    $upgrade->addVersionDevolution($res["data"]["devolution_user_name"], $res["data"]["devolution_password"], $res["data"]["devolution_code"]);
                 }
             } else {
                 $revel = array(
                     "code" => - 1,
-                    "message" => "用户未授权!"
+                    "message" => "该授权码无效!"
                 );
             }
             return $revel;
@@ -67,6 +69,7 @@ class Upgrade extends BaseController
         $this->assign("latestVersion",$latestVersion);
         $this->assign('devolution_user_name', $user_name);
         $this->assign('devolution_password', $password);
+        $this->assign('devolution_code', $devolution_code);
         return view($this->style . "Upgrade/onlineUpdateList");
     }
     
@@ -111,7 +114,8 @@ class Upgrade extends BaseController
         if (request()->isAjax()) {
             $user_name = request()->post('user_name', '');
             $password = request()->post('password', '');
-            $path_list=$upgrade->getVersionPatchList($user_name, $password);
+            $devolution_code = request()->post('devolution_code', '');
+            $path_list=$upgrade->getVersionPatchList($user_name, $password, $devolution_code);
             $path_list=json_decode($path_list, true);
             return $path_list;
         }

@@ -1,18 +1,13 @@
 {extend name="adminblue/base" /}
 {block name="resources"/}
 <style>
-.prompt_information{
-    color: orange;
-	padding-left: 10px;
-	margin:20px;
-	border-left:3px solid orange;
-}
+.prompt_information{color: orange;padding-left: 10px;margin:20px;border-left:3px solid orange;}
 </style>
 {/block}
 {block name="main"}
 <input type="hidden" id="upgrade_typeid" />
-<div class="prompt_information" id="warning_info" > 
-<strong>建议您在更新前，备份相关的程序及数据信息，以免更新失败给您造成不必要的损失。</strong> 
+<div class="prompt_information" id="warning_info" >
+<strong>建议您在更新前，备份相关的程序及数据信息，以免更新失败给您造成不必要的损失。</strong>
 </div>
 <table class="table-class">
 	<colgroup>
@@ -85,37 +80,41 @@ LoadingPages();
 function LoadingPages() {
 	var user_name = '{$devolution_user_name}';
 	var password = '{$devolution_password}';
+	var devolution_code = '{$devolution_code}';
 	$.ajax({
 		type : "post",
 		url : "{:__URL('ADMIN_MAIN/upgrade/onlineupdatelist')}",
 		data : {
-			"user_name" : user_name, 
-			"password" : password
+			"user_name" : user_name,
+			"password" : password,
+			"devolution_code" : devolution_code
 		},
 		success : function(data) {
 			$json_data=JSON.stringify(data["data"]);
 			$("#patch_list").val($json_data);
 			var html = '';
-			if (data["data"].length > 0) {
-				for (var i = 0; i < data["data"].length; i++) {
-					html += '<tr align="center">';
-					html += '<td class="cell_total">' + data["data"][i]["patch_name"]+ '</td>';
-					html += '<td><span class="patch_release">'+ data["data"][i]["patch_release"]+'</span></td>';
-					html += '<td >' + data["data"][i]["patch_no"]+ '</td>';
-					html += '<td ><a href="'+data["data"][i]["patch_download_url"]+'" target="view_frame">' + data["data"][i]["patch_file_name"]+ '</a></td>';
-					html += '<td >' + data["data"][i]["patch_file_size"]+ '</td>';
-					html += '<td style="color:red;">未升级</td> ';
-					if(i!=data["data"].length-1){
-						html += '<td style="color:#999999;">请自下而上依次更新</td> ';
-					}else{
-						html += '<td><a href="javascript:;" onclick="update('+data["data"][i]["patch_id"]+')">在线升级</a><a href="'+data["data"][i]["patch_download_url"]+'" target="view_frame">手动下载更新</a></td> ';
+			if(undefined != data && "" != data){
+				if (data["data"].length > 0) {
+					for (var i = 0; i < data["data"].length; i++) {
+						html += '<tr align="center">';
+						html += '<td class="cell_total">' + data["data"][i]["patch_name"]+ '</td>';
+						html += '<td><span class="patch_release">'+ data["data"][i]["patch_release"]+'</span></td>';
+						html += '<td >' + data["data"][i]["patch_no"]+ '</td>';
+						html += '<td ><a href="'+data["data"][i]["patch_download_url"]+'" target="view_frame">' + data["data"][i]["patch_file_name"]+ '</a></td>';
+						html += '<td >' + data["data"][i]["patch_file_size"]+ '</td>';
+						html += '<td style="color:red;">未升级</td> ';
+						if(i!=data["data"].length-1){
+							html += '<td style="color:#999999;">请自下而上依次更新</td> ';
+						}else{
+							html += '<td><a href="javascript:;" onclick="update('+data["data"][i]["patch_id"]+')">在线升级</a><a href="'+data["data"][i]["patch_download_url"]+'" target="view_frame">手动下载更新</a></td> ';
+						}
+						html += '</tr>';
 					}
-					html += '</tr>';
+				} else {
+					html += '<tr align="center"><td colspan="7">暂无更新</td></tr>';
 				}
-			} else {
-				html += '<tr align="center"><td colspan="7">暂无更新</td></tr>';
+				$(".table-class tbody").html(html);
 			}
-			$(".table-class tbody").html(html);
 		}
 	});
 }
@@ -129,7 +128,6 @@ function update($patch_id){
 			$upgrade_info=JSON.stringify($patch_list[i]);
 			$("#patch_obj").val($upgrade_info);
 		}
-		
 	}
 	$("#fpForm").submit();
 }

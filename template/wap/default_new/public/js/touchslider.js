@@ -207,7 +207,7 @@
 		},
 		resize:function(){
 			var css;
-			this.css(this.container,{'overflow':'hidden','visibility':'hidden','listStyle':'none','position':'fixed',"z-index":1001,"background" : "#000", "display" : "block","width" : "100%", "height" : "100%", "top" : "0", "left" : "0"});
+			this.css(this.container,{'overflow':'hidden','visibility':'hidden','listStyle':'none','position':'fixed',"z-index":1100,"background" : "#000", "display" : "block","width" : "100%", "height" : "100%", "top" : "0", "left" : "0"});
 			this.width=this.container.clientWidth-parseInt(this.css(this.container,'padding-left'))-parseInt(this.css(this.container,'padding-right'));
 			this.height=this.container.clientHeight-parseInt(this.css(this.container,'padding-top'))-parseInt(this.css(this.container,'padding-bottom'));
 			css={'position':'relative','webkitTransitionDuration':'0ms','MozTransitionDuration':'0ms','msTransitionDuration':'0ms','OTransitionDuration':'0ms','transitionDuration':'0ms'}

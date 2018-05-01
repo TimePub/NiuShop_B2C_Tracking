@@ -1414,6 +1414,7 @@ class Order extends BaseService
             
             if ($v_status['status_id'] == $order_detail['order_status']) {
                 $order_detail['operation'] = $v_status['operation'];
+                $order_detail['member_operation'] = $v_status['member_operation'];
                 $order_detail['status_name'] = $v_status['status_name'];
             }
         }

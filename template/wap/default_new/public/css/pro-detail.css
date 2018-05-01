@@ -445,7 +445,7 @@ body, .detail_info_wrap .detail_item, .sku_wrap, .layer_detail_full .layer_detai
 	background: #fff;
 }
 
-.s-buy .btn.disabled {
+.s-buy .btn.disableds {
 	background: #969292;
 }
 
@@ -705,7 +705,7 @@ body, .detail_info_wrap .detail_item, .sku_wrap, .layer_detail_full .layer_detai
 .detail_info_wrap {
 	position: relative;
 	overflow: hidden;
-	margin-bottom: 56px;
+	/*margin-bottom: 56px;*/
 	padding: 10px;
 	background: #fff
 }
@@ -922,10 +922,10 @@ body, .detail_info_wrap .detail_item, .sku_wrap, .layer_detail_full .layer_detai
 	color: #333;
 	font-size: 12px;
 	text-align: center;
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	-o-border-radius: 3px;
-	border-radius: 5px;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	-o-border-radius: 2px;
+	border-radius: 2px;
 }
 
 .s-buy-li .right .select img {
@@ -1129,18 +1129,26 @@ body, .detail_info_wrap .detail_item, .sku_wrap, .layer_detail_full .layer_detai
 }
 
 .head-pay {
-	color: #222;
+	color: #646464;
 	margin-top: 12px;
 	font-size: 15px;
 }
 
 .head-pay-value {
 	font-size: 24px;
-	color: #222;
+	color: #646464;
+}
+
+.head-goods-name{
+	font-size: 14px;
+	color: #646464;
+	overflow:hidden;
+	white-space: nowrap;
+    padding: 0 15px;
 }
 
 .pay-type-item {
-	padding: 8px 15px;
+	padding: 8px;
 	margin-top: 10px;
 	background: #FFF;
 }
@@ -1166,18 +1174,27 @@ body, .detail_info_wrap .detail_item, .sku_wrap, .layer_detail_full .layer_detai
 
 .codes .wchat-weixin {
 	background: #fff;
-	border-bottom: 1px solid #e5e5e5;
+	/*border-bottom: 1px solid #e5e5e5;*/
 	padding-bottom: 10px;
 }
 
 .wchat-photo {
-	margin: 0 15px;
+	margin: 0 10px 0 5px;
+	width: 32px;
+	height: 32px;
 }
 
 .wchat-title {
 	font-size: 14px;
-	line-height: 28px;
+	/*line-height: 28px;*/
 	color: #222;
+}
+.wchat-desc{
+	font-size: 12px;
+	color: #999;
+	position: absolute;
+	left: 50px;
+	bottom: 4px;
 }
 
 #wchatpay {
@@ -1191,13 +1208,21 @@ body, .detail_info_wrap .detail_item, .sku_wrap, .layer_detail_full .layer_detai
 }
 
 .ali-photo {
-	margin: 0 15px;
+	margin:  0 10px 0 5px;
 }
 
 .ali-item {
 	font-size: 14px;
-	line-height: 31px;
+	/*line-height: 31px;*/
 	color: #222;
+}
+
+.ali-desc{
+	font-size: 12px;
+	color: #999;
+	position: absolute;
+	left: 50px;
+	bottom: 4px;
 }
 
 #alipay {
@@ -1309,10 +1334,10 @@ body, .detail_info_wrap .detail_item, .sku_wrap, .layer_detail_full .layer_detai
 }
 
 .attribute-ul {
-	border-top: 1px solid #e5e5e5;
-	border-bottom: 1px solid #e5e5e5;
-	padding-top: 15px;
-	padding-bottom: 15px;
+	/* border-top: 1px solid #e5e5e5; */
+	/* border-bottom: 1px solid #e5e5e5; */
+	/* padding-top: 15px; */
+	/* padding-bottom: 15px; */
 }
 
 .attribute-ul li {
@@ -1448,20 +1473,71 @@ body, .detail_info_wrap .detail_item, .sku_wrap, .layer_detail_full .layer_detai
 }
 .bottom_popup .coupon_list li .js-coupon{
     width: 100%;
-    height: 90px;
-    background: #ff9402;
+    height: 80px;
+    background: #fff;
     position: relative;
+    border:1px solid #fe746a;
+    border-left: 0;
 }
 .bottom_popup .coupon_list li .js-coupon .coupon-price{
-	position: absolute;
-    top: 15px;
-    left: 15px;
-    color: #fff;
-    font-size: 25px;
+	float: left;
+	width: 90px;
+	height: 80px;
+	background: url("../images/goods_coupon_recive.png") no-repeat;
+	background-size: 90px 80px;
+}
+.bottom_popup .coupon_list li .received{
+	border:1px solid #d5d5d5;
+	border-left: 0;
+}
+.bottom_popup .coupon_list li .received .coupon-price{
+	float: left;
+	width: 90px;
+	height: 80px;
+	background: url("../images/goods_coupon_recived.png") no-repeat;
+	background-size: 90px 80px;
+}
+.bottom_popup .coupon_list li .js-coupon .coupon-price .price{
+	color: #fff;
+	font-weight: bold;
+	font-size: 16px;
+	margin-top: 20px;
+	text-align: center;
+}
+.bottom_popup .coupon_list li .js-coupon .coupon-price .desc{
+	color: #fff;
+	font-size: 12px;
+	text-align: center;
 }
 .bottom_popup .coupon_list li .js-coupon .coupon-lose{
-	position: absolute;
-    top: 50px;
-    left: 20px;
-    color: #fff;
+	float: left;
+	height: 80px;
+    width: 100%;
+    margin-left: -90px;
+}
+
+.bottom_popup .coupon_list li .js-coupon .coupon-lose .time,
+.bottom_popup .coupon_list li .js-coupon .coupon-lose .condition{
+    margin-left: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.bottom_popup .coupon_list li .js-coupon .coupon-lose .condition{
+	margin-top: 20px;
+	color: #000;
+}
+#alipay img,#wchatpay img{
+	width: 25px;
+    height: 25px;
+    margin-top: 5px;
+}
+.s-btn{
+	margin-top: 20px;
+}
+#theSelected{
+	text-align: right;
+}
+#theSelected,#theSelected + .with-margin-l{
+	display: none;
 }

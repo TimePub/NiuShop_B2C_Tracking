@@ -31,6 +31,7 @@ use data\service\promotion\GoodsMansong;
 use data\service\Promotion;
 use data\service\promotion\GoodsPreference;
 use data\service\Shop;
+use data\service\WebSite;
 
 /**
  * 订单控制器
@@ -815,6 +816,24 @@ class Order extends BaseController
         $this->assign('is_show_express_code', $count); // 是否显示运单号（无需物流不显示）
         
         $this->assign("order", $detail);
+
+        // 美洽客服
+        $config_service = new Config();
+        $list = $config_service->getcustomserviceConfig($this->instance_id);
+        $web_config = new WebSite();
+        $web_info = $web_config->getWebSiteInfo();
+        
+        $list['value']['web_phone'] = '';
+        if (empty($list)) {
+            $list['id'] = '';
+            $list['value']['service_addr'] = '';
+        }
+        
+        if (! empty($web_info['web_phone'])) {
+            $list['value']['web_phone'] = $web_info['web_phone'];
+        }
+        $this->assign("list", $list);
+
         return view($this->style . 'Order/orderDetail');
     }
 

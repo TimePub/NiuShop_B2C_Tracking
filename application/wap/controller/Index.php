@@ -105,12 +105,10 @@ class Index extends BaseController
         $goods = new Goods();
         $condition['status'] = 1;
         $condition['ng.state'] = 1;
-        $discount_list = $goods->getDiscountGoodsList(1, 0, $condition, 'end_time');
+        $discount_list = $goods->getDiscountGoodsList(1, 2, $condition, 'end_time');
         
         foreach ($discount_list['data'] as $k => $v) {
             $v['discount'] = str_replace('.00', '', $v['discount']);
-            // $v['promotion_price'] = str_replace('.00', '', $v['promotion_price']);
-            // $v['price'] = str_replace('.00', '', $v['price']);
         }
         
         $this->assign('discount_list', $discount_list['data']);
@@ -138,16 +136,18 @@ class Index extends BaseController
         
         $is_subscribe = 0; // 标识：是否显示顶部关注 0：[隐藏]，1：[显示]
                            // 检查是否配置过微信公众号
-        if (! empty($wchat_config['value'])) {
-            if (! empty($wchat_config['value']['appid']) && ! empty($wchat_config['value']['appsecret'])) {
-                // 如何判断是否关注
-                if (isWeixin()) {
-                    if (! empty($this->uid)) {
-                        // 检查当前用户是否关注
-                        $user_sub = $this->user->checkUserIsSubscribeInstance($this->uid, $this->instance_id);
-                        if ($user_sub == 0) {
-                            // 未关注
-                            $is_subscribe = 1;
+        if ($web_info["is_show_follow"] == 1) {
+            if (! empty($wchat_config['value'])) {
+                if (! empty($wchat_config['value']['appid']) && ! empty($wchat_config['value']['appsecret'])) {
+                    // 如何判断是否关注
+                    if (isWeixin()) {
+                        if (! empty($this->uid)) {
+                            // 检查当前用户是否关注
+                            $user_sub = $this->user->checkUserIsSubscribeInstance($this->uid, $this->instance_id);
+                            if ($user_sub == 0) {
+                                // 未关注
+                                $is_subscribe = 1;
+                            }
                         }
                     }
                 }

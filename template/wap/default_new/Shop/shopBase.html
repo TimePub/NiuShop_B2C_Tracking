@@ -38,24 +38,10 @@
 		$("#bottom_member").find("img").attr("src","__TEMP__/{$style}/public/images/user_uncheck.png");
 	}
 
-	//显示加载遮罩层
-	function showLoadMaskLayer(){
-		$(".mask-layer-loading").fadeIn(300);
-	}
-	
-	//隐藏加载遮罩层
-	function hiddenLoadMaskLayer(){
-		$(".mask-layer-loading").fadeOut(300);
-	}
-
 	$(function(){
 		$("#buttom_home").find("img").attr("src","__TEMP__/{$style}/public/images/home_check.png");
-		showLoadMaskLayer();
 	})
-	$(document).ready(function(){
-		hiddenLoadMaskLayer();
-		//编写代码
-	})
+	
 </script>
 <style>
 body .sub-nav.nav-b5 dd i {

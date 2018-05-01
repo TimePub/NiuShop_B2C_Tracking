@@ -15,8 +15,8 @@
 .at_img{width:97%;height:135px;}
 .at_btn{color: #FFF;background-color: #01B044;border-color: #01B044;font: normal 12px/20px "microsoft yahei";text-decoration: NONE; height: 35px; padding: 8px 10px;border: solid 1px;cursor: pointer;}
 .class-logo{background-color: #F8F8F8;}
-dd{margin-left: 0px;}
-dl{margin:0px;}
+dd{margin-left: 0;}
+dl{margin:0;}
 input[type="radio"], input[type="checkbox"] { margin: 0 0 0;}
 .required{color:red;margin-right:10px;}
 .ar_top{background:#F8F8F8; margin-top: 10px;padding: 10px;border: 1px solid #e9e9e9;}
@@ -199,6 +199,7 @@ $("#file_upload_input").live("change",function(){
 		}
 	});
 });
+
 var ue = UE.getEditor('editor',{
 	toolbars : [
 		[ 'source', // 源代码
@@ -253,6 +254,7 @@ var ue = UE.getEditor('editor',{
 		'customstyle', // 自定义标题
 		]]
 });
+
 $(function(){
 	UE.getEditor('editor').addListener( 'ready', function() {
 		if($("#content").val()){
@@ -260,6 +262,7 @@ $(function(){
 		}
 	} );
 })
+
 function validation(){
 	var title=$("#title");//文章标题
 	var class_id=$("#class_id");//所属分类
@@ -281,7 +284,6 @@ function validation(){
 	return true;
 }
 
-
 var flag = false;//防止重复提交
 function save(type){
 	if(!validation()){
@@ -297,6 +299,10 @@ function save(type){
 	var author=$("#author").val();
 	var summary=$("#summary").val();
 	var content = UE.getEditor('editor').getContent();
+	if(content.length>30000){
+		showTip("文章内容太长","warning");
+		return;
+	}
 	var image=$("#Logo").val();
 	var keyword=$("#keyword").val();
 	var article_id_array=$("#article_id_array").val();
@@ -332,7 +338,7 @@ function save(type){
 			'attachment_path':attachment_path,
 			'tag':tag,
 			'comment_count':comment_count,
-			'share_count':share_count,
+			'share_count':share_count
 		},
 		success:function(data){
 			if (data["code"] > 0) {
@@ -375,7 +381,6 @@ function delete_file(file_url,even){
 		type:"post",
 		url:"{:__URL('ADMIN_MAIN/system/delete_file')}",
 		data:{'file_url':file_url},
-		async : true,
 		dataType:'json',
 		success:function(data){
 			if (data['code']>0) {
@@ -401,6 +406,6 @@ function delete_file(file_url,even){
 			}
 		}
 	});
-} 
+}
 </script>
 {/block}

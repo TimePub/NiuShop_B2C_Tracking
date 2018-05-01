@@ -22,6 +22,15 @@ class WxPayDataBase{
         $this->values['sign'] = $sign;
         return $sign;
     }
+    /**
+     * 小程序签名
+     * @return \data\extend\weixin\WxPayData\签名，本函数不覆盖sign成员变量，如要设置签名需要调用SetSign方法赋值
+     */
+    public function SetAppletSign(){
+        $sign = $this->MakeAppletSign();
+        $this->values['sign'] = $sign;
+        return $sign;
+    }
     
     /**
      * 获取签名，详见签名生成算法的值
@@ -112,6 +121,24 @@ class WxPayDataBase{
         //签名步骤二：在string后加入KEY
         $WxPayConfig = new WxPayConfig();
         $string = $string . "&key=".$WxPayConfig->key;
+        //签名步骤三：MD5加密
+        $string = md5($string);
+        //签名步骤四：所有字符转为大写
+        $result = strtoupper($string);
+        return $result;
+    }
+    /**
+     * 小程序签名
+     * @return string
+     */
+    public function MakeAppletSign()
+    {
+        //签名步骤一：按字典序排序参数
+        ksort($this->values);
+        $string = $this->ToUrlParams();
+        //签名步骤二：在string后加入KEY
+        $WxPayConfig = new WxPayConfig();
+        $string = $string . "&key=".$WxPayConfig->applet_key;
         //签名步骤三：MD5加密
         $string = md5($string);
         //签名步骤四：所有字符转为大写

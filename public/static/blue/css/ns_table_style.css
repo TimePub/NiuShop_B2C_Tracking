@@ -13,10 +13,10 @@
 	
 }
 
-.table-class tr th, .table-class tr td {
+.table-class tr th,.table-class tr td {
 	/* 	height: 19px; */
 	/* 	line-height: 28px; */
-	padding: 7px;
+	padding: 6px;
 	font-weight: normal;
 }
 
@@ -26,11 +26,17 @@
 
 .table-class tr th {
 	background-color: #fafafa;
-	padding: 10px;
+	padding: 10px 6px;
 	border-top: 1px solid #F7F1F1;
 	border-bottom: 1px solid #F7F1F1;
 }
 
 .table-class tbody td a {
 	margin-left: 8px;
+}
+
+/*公共排序样式*/
+.input-common-sort {
+	padding: 0 !important;
+	text-align: center !important;
 }

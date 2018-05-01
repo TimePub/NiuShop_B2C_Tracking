@@ -31,9 +31,9 @@
 	<thead>
 		<tr>
 			<th><input type="checkbox" onclick="CheckAll(this)" /></th>
-			<th>虚拟商品类型名称</th>
+			<th align="left">虚拟商品类型名称</th>
 			<th>有效期/天</th>
-			<th>金额</th>
+			<th align="right">金额</th>
 			<th>限制使用次数</th>
 <!-- 			<th>配置信息</th> -->
 			<th>是否启用</th>
@@ -97,11 +97,17 @@ function LoadingInfo(page_index) {
 			var html = '';
 			if (data["data"].length > 0) {
 				for (var i = 0; i < data["data"].length; i++) {
+					var validity_period = "";
+					if(data["data"][i]["validity_period"] == 0){
+						validity_period = "不限制";
+					}else{
+						validity_period = data["data"][i]["validity_period"];
+					}
 					html += '<tr align="center">';
 						html += '<td><input name="sub" type="checkbox" value="'+ data["data"][i]["virtual_goods_type_id"] +'" ></td>';
-						html += '<td>' + data["data"][i]["virtual_goods_type_name"] + '</td>';
-						html += '<td>' + data["data"][i]["validity_period"] + '天</td>';
-						html += '<td>' + data['data'][i]['money'] + "</td>";
+						html += '<td align="left">' + data["data"][i]["virtual_goods_type_name"] + '</td>';
+						html += '<td>' + validity_period + '</td>';
+						html += '<td align="right">' + data['data'][i]['money'] + "</td>";
 						html += '<td>' + data['data'][i]['confine_use_number'] + '</td>';
 	// 					html += '<td>' + data['data'][i]['config_info'] + '</td>';
 						html += '<td data-virtual-goods-type-id="' + data["data"][i]["virtual_goods_type_id"] + '" data-is-enabled="' + data['data'][i]['is_enabled'] + '">';

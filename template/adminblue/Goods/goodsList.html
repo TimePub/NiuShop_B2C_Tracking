@@ -3,7 +3,7 @@
 <link rel="stylesheet" type="text/css" href="ADMIN_CSS/product.css">
 <script type="text/javascript" src="__STATIC__/My97DatePicker/WdatePicker.js"></script>
 <style type="text/css">
-#productTbody td{border: 0;padding:8px 5px;}
+#productTbody td{border: 0;padding:5px;}
 .tr-title td{background: #e4f2ff !important;}
 .table-title th{padding: 10px;border-bottom: 1px solid #e5e5e5;font-weight: normal;background: #F3F1F1 !important;}
 .a-pro-view-img {float: left;}
@@ -12,7 +12,7 @@
 .remodal-bg.with-red-theme.remodal-is-opening,.remodal-bg.with-red-theme.remodal-is-opened {filter: none;}
 .remodal-overlay.with-red-theme {background-color: #f44336;}
 .remodal.with-red-theme {background: #fff;}
-input[type="radio"], input[type="checkbox"] {margin: -1px 5px 0;margin-left:0px;}
+input[type="radio"], input[type="checkbox"] {margin: -1px 5px 0 0;}
 .edit-group{border-bottom: 1px solid #ebebeb;margin-bottom:10px;}
 .edit-group label{font-weight:normal;}
 .edit-group-title{height:15px;line-height:15px;width:140px;margin-top:3px;margin-bottom:3px;color:#0072D2;}
@@ -24,7 +24,7 @@ i.hot,i.recommend,i.new{font-size:12px;margin-right:5px;font-style:normal;color:
 [class^="icon-"]:before, [class*=" icon-"]:before {text-decoration: inherit;display: inline-block;speak: none;}
 [class^="icon-"], [class*=" icon-"] {font-family: FontAwesome;font-weight: normal;font-style: normal;text-decoration: inherit;-webkit-font-smoothing: antialiased;}
 .goodsCategory{width: 159px;height: 300px;border: 1px solid #CCCCCC;position: absolute;z-index: 100;background: #fff;right: 0;display: none;overflow-y: auto;top: 31px;}
-.goodsCategory::-webkit-scrollbar{width: 3px;} 
+.goodsCategory::-webkit-scrollbar{width: 3px;}
 .goodsCategory::-webkit-scrollbar-track{-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);border-radius: 10px;background-color: #fff;}
 .goodsCategory::-webkit-scrollbar-thumb{height: 20px;border-radius: 10px;-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);background-color: #ccc;}
 .goodsCategory ul{height: 280px;margin-top: -2px;margin-left: 0;}
@@ -50,6 +50,12 @@ input, textarea, .uneditable-input {width: 147px;}
 .editGoodsIntroduction:hover{border-color: #ddd;cursor: pointer;}
 .editGoodsIntroduction + input{display: inline-block;border:1px solid #00C0FF;padding: 0 5px;width: 350px;line-height: 25px;height: 25px;background: #EEF7FF;display: none;border-radius: 0;}
 .padding_none{height: auto;}
+.goods-fields-sort{cursor:pointer;}
+.goods-fields-sort span{background: url('ADMIN_IMG/goods_sort.png') no-repeat;width:20px;height:20px;display: inline-block;margin-left:5px;vertical-align: middle;position: absolute;}
+.goods-fields-sort span.asc{background-position: 0 5px;}
+.goods-fields-sort span.selected.asc{background-position: -30px 5px;}
+.goods-fields-sort span.desc{background-position: 0 -24px;}
+.goods-fields-sort span.selected.desc{background-position: -30px -24px;}
 </style>
 {/block}
 {block name="main"}
@@ -129,13 +135,11 @@ input, textarea, .uneditable-input {width: 147px;}
 		<table class="table table-striped table-main" border="0">
 			<colgroup>
 				<col width="3%">
-				<col width="35%">
-<!-- 				<col width="10%"> -->
-<!-- 				<col width="10%"> -->
-				<col width="12%">
-				<col width="8%">
-				<col width="6%">
-				<col width="7%">
+				<col width="25%">
+				<col width="14%">
+				<col width="9%">
+				<col width="9%">
+				<col width="9%">
 				<col width="9%">
 				<col width="7%">
 				<col width="15%">
@@ -146,12 +150,12 @@ input, textarea, .uneditable-input {width: 147px;}
 					<th>商品名称</th>
 <!-- 					<th>商品标签</th> -->
 <!-- 					<th>促销语</th> -->
-					<th>价格（元）</th>
-					<th>总库存</th>
-					<th>销量</th>
-					<th>上下架</th>
-					<th>实物类型</th>
-					<th>排序</th>
+					<th class="goods-fields-sort" data-field="price" style="text-align: right;">价格(元)<span class="desc"></span></th>
+					<th class="goods-fields-sort" data-field="stock" style="text-align: right;">总库存<span class="desc"></span></th>
+					<th class="goods-fields-sort" data-field="sales" style="text-align: right;">销量<span class="desc"></span></th>
+					<th style="text-align: center;">上下架</th>
+					<th style="text-align: center;">实物类型</th>
+					<th class="goods-fields-sort" data-field="sort" style="text-align: center;">排序<span class="desc"></span></th>
 					<th style="text-align:center;">操作</th>
 				</tr>
 				<tr class="trcss">
@@ -164,7 +168,7 @@ input, textarea, .uneditable-input {width: 147px;}
 						<a class="btn btn-small recommend" href="javascript:void(0)" onclick="ShowRecommend()" data-html="true" id="setRecommend" title="推荐"
 						data-container="body" data-placement="bottom"  data-trigger="manual"
 						data-content="<div class='edit-group' id='recommendType'>
- 							<label class='checkbox-inline'><input type='checkbox' value='1'>热卖 </label>
+							<label class='checkbox-inline'><input type='checkbox' value='1'>热卖 </label>
 							<label class='checkbox-inline'><input type='checkbox' value='2'>精品 </label>
 							<label class='checkbox-inline'><input type='checkbox' value='3'>新品 </label>
 							</div>
@@ -202,6 +206,7 @@ input, textarea, .uneditable-input {width: 147px;}
 	<input type="hidden" id="selectGoodsLabelId">
 	<input type="hidden" id="stock_warning" value="{$stock_warning}">
 </div>
+<input type="hidden" id="hidden_sort_rule" />
 {/block}
 {block name="script"}
 <script type="text/javascript">
@@ -222,8 +227,8 @@ $(function(){
 			type : "post",
 			url : "{:__URL('ADMIN_MAIN/goods/ajaxEditGoodsNameOrIntroduction')}",
 			data : {
-				"goods_id" : goods_id, 
-				"up_type" : up_type, 
+				"goods_id" : goods_id,
+				"up_type" : up_type,
 				"up_content" : editContent
 			},
 			success : function(data){
@@ -237,6 +242,25 @@ $(function(){
 	}).live("keyup",function(event){
 		if(event.keyCode == 13) $(this).blur();
 	});
+	
+	//排序规则
+	$(".goods-fields-sort").click(function(){
+		
+		var field = $(this).attr("data-field");
+		var sort_rule = $(this).attr("data-field");
+		$(this).siblings().css("color","#333333").find("span").removeClass("desc selected").addClass("desc");
+		$(this).css("color","#0072D2");
+		if($(this).find("span").hasClass("desc") && $(this).find("span").hasClass("selected")){
+			$(this).find("span").removeClass("desc").addClass("selected asc");
+			sort_rule += ",a";
+		}else if(($(this).find("span").hasClass("asc") && $(this).find("span").hasClass("selected")) || $(this).find("span").hasClass("desc")){
+			$(this).find("span").removeClass("asc").addClass("selected desc");
+			sort_rule += ",d";
+		}
+		$("#hidden_sort_rule").val(sort_rule);
+		LoadingInfo(1);
+	});
+
 });
 
 function searchData(){
@@ -281,7 +305,8 @@ function LoadingInfo(page_index) {
 			"category_id_3" : category_id_3,
 			"selectGoodsLabelId" : selectGoodsLabelId,
 			"supplier_id" : supplier_id,
-			"stock_warning" : stock_warning
+			"stock_warning" : stock_warning,
+			'sort_rule' : $("#hidden_sort_rule").val()
 		},
 		success : function(data) {
 
@@ -352,45 +377,47 @@ function LoadingInfo(page_index) {
 							html += '</div>';
 						html += '</td>';
 
-						html += '<td>';
-							html += '<div class="priceaddactive">';
-								html += '<span class="price-lable">原&nbsp;&nbsp;&nbsp;价：</span>';
-								html += '<span class="price-numble" style="color: #666;"id="moreChangePrice'+ data["data"][i]["goods_id"]+'">' + data["data"][i]["price"] + '</span>';
-							html += '</div>';
+						html += '<td style="text-align: right;">';
+							if(data["data"][i]["price"] != data["data"][i]["promotion_price"]){
+								html += '<div class="priceaddactive">';
+									html += '<span class="price-lable">原&nbsp;&nbsp;&nbsp;价：</span>';
+									html += '<span class="price-numble" style="color: #666;"id="moreChangePrice'+ data["data"][i]["goods_id"]+'">' + data["data"][i]["price"] + '</span>';
+								html += '</div>';
+							}
 							html += '<div>';
 								html += '<span class="price-lable" >销售价：</span><span class="price-numble"id="moreChangePrice'+ data["data"][i]["goods_id"]+'" style="color:red;">' + data["data"][i]["promotion_price"] + '</span>';
 							html += '</div>';
 						html += '</td>';
 
-						html += '<td>';
+						html += '<td style="text-align: right;">';
 							html += '<div class="cell">';
 								html += '<span class="pro-stock" style="color: #666;" id="moreChangeStock'+ data["data"][i]["goods_id"] + '">' + data["data"][i]["stock"] + '</span>';
 							html += '</div>';
 						html += '</td>';
 
-						html += '<td>';
+						html += '<td style="text-align: right;">';
 							html += '<div class="cell">';
 								html += '<span class="pro-stock" style="color: #666;" id="moreChangeStock'+ data["data"][i]["goods_id"]+'">' + data["data"][i]["real_sales"] + '</span>';
 							html += '</div>';
 						html += '</td>';
 
 						if(data["data"][i]["state"] == 1){
-							html += '<td><a href="javascript:modifyGoodsOnline('+data["data"][i]["goods_id"]+',\'offline\')">已上架</a></td>';
+							html += '<td style="text-align: center;"><a href="javascript:modifyGoodsOnline('+data["data"][i]["goods_id"]+',\'offline\')">已上架</a></td>';
 						}else{
-							html += '<td><a href="javascript:modifyGoodsOnline('+data["data"][i]["goods_id"]+',\'online\')" style="color:#999;">已下架</a></td>';
+							html += '<td style="text-align: center;"><a href="javascript:modifyGoodsOnline('+data["data"][i]["goods_id"]+',\'online\')" style="color:#999;">已下架</a></td>';
 						}
 						
-						html += '<td>';
+						html += '<td style="text-align: center;">';
 						if(data['data'][i]['goods_type'] == 1){
-							html += '<span>实物商品</span>';
+							html += '<span>实物类</span>';
 						}else{
-							html += '<span>虚拟商品</span>';
+							html += '<span>虚拟类</span>';
 						}
 						html += '</td>';
 
-						html += '<td>';
+						html += '<td style="text-align: center;">';
 							html += '<div class="cell">';
-								html += '<input class="input-mini" goods_id="' + data["data"][i]["goods_id"] + '" style="width:38px;text-align:center;" value="' + data["data"][i]["sort"] + '" onchange="changeSort(this)"' + 'type="number" title="排序号数值越大，商城商品列表显示越靠前">';
+								html += '<input class="input-common input-common-sort" goods_id="' + data["data"][i]["goods_id"] + '" style="width:38px;text-align:center;margin:0;" value="' + data["data"][i]["sort"] + '" onchange="changeSort(this)"' + 'type="number" title="排序号数值越大，商城商品列表显示越靠前">';
 							html += '</div>';
 						html += '</td>';
 
@@ -672,7 +699,7 @@ function ShowRecommend(){
 	$("#setRecommend").popover("show");
 }
 
-$("#recommendType label").live("click",function(){
+$("#recommendType label,#recommendType label input").live("click",function(){
 	if($(this).children("input").is(":checked")){
 		$(this).children("input").prop("checked",false);
 	}else{

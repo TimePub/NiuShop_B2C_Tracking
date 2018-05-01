@@ -29,14 +29,15 @@
 <input type="hidden" id="discount_id" value="{$info['discount_id']}">
 <script>
 $(function(){
+	$("[name='range_type']").parents("dl").hide();
 	$('.type_dl dd').hide();
-	$("#some_pro").show();
 	$(".js-tab").eq(1).addClass("active");
 	selected_goods($("ul.ui-nav-tab li.js-tab").eq(1));
 	$(".select-two thead th").eq(1).after("<th></th>");
 	$goods_selected_array = {$info}.goods_list;
 	$goods_id_selected_array = {$info}.goods_id_array;
 	LoadingInfo(1);
+	$("#some_pro").show();
 	$(".kucun").after('<th class="text-center cell-10">折扣</th>');
 	refresh_data();
 });
@@ -79,7 +80,7 @@ function LoadingInfo(page_index) {
 					html += '<td class="discount_'+curr["goods_id"]+'" style="width:100px;"><input type="number" style="width:40px;text-align:center;margin-bottom:0;" name="discount" onchange="discount(this);" goodsid="'+curr["goods_id"]+'" value="9.99"/><span style="margin-left:3px;margin-top-3px;">折</span></td>';
 					if($goods_id_selected_array.length > 0){
 						if(jQuery.inArray(curr["goods_id"], $goods_id_selected_array) == "-1"){
-							html +='<td class="text-center goods-opt"><a href="javascript:;" class="btn ui-btn-primary js-add-reward" onclick="join('+curr["goods_id"]+',this)" >参加活动</a></td></tr>';	
+							html +='<td class="text-center goods-opt"><a href="javascript:;" class="btn btn-primary js-add-reward" onclick="join('+curr["goods_id"]+',this)" >参加活动</a></td></tr>';	
 						}else{
 							html +='<td class="text-center goods-opt"><a href="javascript:;" class="btn btn-dange js-remove-reward" onclick="cancel_join('+curr["goods_id"]+',this)">取消参加</a></td></tr>';
 						}
@@ -278,10 +279,8 @@ function verify(discount_name, start_time, end_time, goods_id_array){
 		$(".error").hide();
 	}
 	if(goods_id_array == ''){
-		$("#notSelect").show();
+		showTip("请至少选择一件商品","warning");
 		return false;
-	}else{
-		$("#notSelect").hide();
 	}
 	return true;
 }

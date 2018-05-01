@@ -256,6 +256,7 @@ return [
     'goods_by_collection'             => '按收藏量',
     'goods_evaluation_quantity'       => '按评价量',
     'goods_by_sharing'                => '按分享量',
+    'existing_integral'               => '现有积分',
   //  会员相关 member_
     
     'member_new_delivery_address'    => '新增收货地址',
@@ -305,6 +306,7 @@ return [
     'member_amount_money'            => '金额',
     'member_describe'                => '描述',
     'member_time'                    => '时间',
+    
     'member_no_balance_yet'          => '您暂时还没有余额哦',
     'member_input_balance'           => '请输入充值金额',
     'member_submit'                  => '提交',
@@ -355,6 +357,7 @@ return [
     'member_cash_withdrawal_time'    => '提现时间',
     'member_cash_withdrawal_status'  => '提现状态',
     'member_no_record_yet'           => '您暂时还没有提现记录哦',
+    'member_no_virtual_code'         => '你还没有任何虚拟码哦',
     'member_user_center'             => '用户中心',
     'member_view_shopping_cart'      => '查看购物车',
     'member_take_the_goods'          => '拍下商品',
@@ -369,6 +372,7 @@ return [
     'member_account_security'        => '账户安全',
     'member_my_coupon'               => '我的优惠券',
     'member_my_points'               => '我的积分',
+    'member_my_virtual_code'         => '我的虚拟码',
     'member_trading_center'          => '交易中心',
     'member_my_order'                => '我的订单',
     'member_return_and_maintenance'  => '退货及维修',
@@ -666,6 +670,7 @@ return [
     'member_effective_time'          => '有效时间',
     'member_by'                      => '截至',
     'member_no_coupon_yet'           => '您暂时还没有优惠券哦',
+    'member_taocan_discount'         => '套餐优惠',
     
 //login
     'mailbox_has_been_registered'    => '该邮箱已被注册',
@@ -1392,8 +1397,34 @@ return [
     'regular_orders'                                                      => '普通订单',
     'order_user_phone_instruction'                                        => '您本次购买的虚拟商品不需要收货地址，请填写手机号码，方便卖家与您联系',
     'virtual_goods_orders_are_consumed_by_virtual_code'                   => '虚拟商品订单凭虚拟码消费',
-    'contact_information'                                                 => '联系方式'
-    
+    'contact_information'                                                 => '联系方式',
+    'combo_package'                                                       => '组合套餐',
+    'package_price'                                                       => '套餐价',
+    'please_select_goods_sku'                                             => '请选择商品规格',
+    'original_price'                                                      => '原价',
+    'save_the_price'                                                      => '已节省',
+    'goods_total_money'                                                   => '商品总计',
+    'ladder_preferential'                                                 => '阶梯优惠',  
+    'new_my_path'                                                         => '我的足迹',
+    'delivery_time'                                                       => '配送时间',
+    'specify_delivery_time'                                               => '指定配送时间',
+    'days_and_holidays_can_be_delivered'                                  => '工作日、双休日与节假日均可送货',
+    'modify'                                                              => '修改',
+    'delete'                                                              => '删除',
+    'cancel_after_verification_platform'                                  => '核销台',
+    'cash_account'                                                        => '提现账号',
+    'please_enter_your_cash_account'                                      => '请输入提现账号',
+    'get_coupons'                                                         => '领优惠券',
+    'no_coupons'                                                          => '暂时没有优惠券',
+    'you_do_not_have_any_virtual_code_yet'                                => '暂时没有虚拟码',
+    'merchant_service'                                                    => '商家服务',
+    'share'                                                               => '分享',
+    'member_gift'                                                         => '赠品',
+    'my_winning_record'                                                   => '中奖记录',
+    'my_winning_records'                                                  => '我的中奖记录',
+    'to_receive_the_prize'                                                => '奖品领取',
+    'immediately_receive'                                                 => '立即领取',
+    'member_bank_max_length'                                              => '提现账号长度超出限制'
      ];
 
 

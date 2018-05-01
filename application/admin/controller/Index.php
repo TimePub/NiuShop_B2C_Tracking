@@ -45,6 +45,7 @@ class Index extends BaseController
         // 销售排行
         $goods_rank = $this->getGoodsRealSalesRank();
         $this->assign("goods_list", $goods_rank);
+        $this->assign("is_index", true);
         return view($this->style . 'Index/index');
     }
 

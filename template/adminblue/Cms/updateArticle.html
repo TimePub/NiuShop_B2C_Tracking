@@ -15,8 +15,8 @@
 .at_img{width:97%;height:135px;}
 .at_btn{color: #FFF;background-color: #01B044;border-color: #01B044;font: normal 12px/20px "microsoft yahei";text-decoration: NONE; height: 35px; padding: 8px 10px;border: solid 1px;cursor: pointer;}
 .class-logo{background-color: #F8F8F8;}
-dd{margin-left: 0px;}
-dl{margin:0px;}
+dd{margin-left: 0;}
+dl{margin:0;}
 input[type="radio"], input[type="checkbox"] { margin: 0 0 0;}
 .required{color:red;margin-right:10px;}
 .ar_top{background:#F8F8F8; margin-top: 10px;padding: 10px;border: 1px solid #e9e9e9;}
@@ -177,7 +177,7 @@ input[type="file"]{border: none;}
 		</div>
 		
 		<div>
-			<label>允许评论</label> 
+			<label>允许评论</label>
 			<div style="margin-top:5px;float:left;">
 				{if condition='$ArticleDetail.comment_flag eq 1'}
 				<input type="checkbox" class="input-common" id="comment_flag" checked="checked"/>
@@ -331,6 +331,10 @@ function save(type){
 	var author=$("#author").val();
 	var summary=$("#summary").val();
 	var content = UE.getEditor('editor').getContent();
+	if(content.length>30000){
+		showTip("文章内容太长","warning");
+		return;
+	}
 	//var image=$("#imgLogo").attr("data-id");
 	var image=$("#Logo").val();
 	var keyword=$("#keyword").val();

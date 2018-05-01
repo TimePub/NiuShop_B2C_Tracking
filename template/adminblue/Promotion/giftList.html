@@ -1,4 +1,4 @@
-{extend name="adminblue/base" /} 
+{extend name="adminblue/base" /}
 {block name="resources"/}
 <style>
 .modal-infp-style{width:100%;margin:10px auto;}
@@ -19,7 +19,8 @@
 <table class="table-class">
 	<thead>
 		<tr align="center">
-			<th>活动名称</th>
+			<th width="3%"></th>
+			<th align="left">活动名称</th>
 			<th>有效时间</th>
 			<th>活动状态</th>
 			<th>已赠送</th>
@@ -91,13 +92,18 @@ function LoadingInfo(page_index) {
 			if (data["data"].length > 0) {
 				for (var i = 0; i < data["data"].length; i++) {
 					html += '<tr align="center">';
-					html += '<td>' + data["data"][i]["gift_name"] + '</td>';;
+					html += '<td></td>';
+					html += '<td align="left">' + data["data"][i]["gift_name"] + '</td>';;
 					html += '<td>' + timeStampTurnTime(data["data"][i]["start_time"]) + ' 至 ' + timeStampTurnTime(data["data"][i]["end_time"]) + '</td>';
 					html += '<td>'+ data['data'][i]['type_name'] +'</td>';
 					html += '<td> - </td>';
 					html += '<td> - </td>';
 					html += '<td><a href="'+__URL('ADMIN_MAIN/promotion/updategift?gift_id=' + data["data"][i]["gift_id"])+'">编辑</a>&nbsp;';
-					html += '<a href="javascript:void(0);"onclick="giftInfo('+data["data"][i]["gift_id"]+')">详情</a></td> '; 
+					html += '<a href="javascript:void(0);"onclick="giftInfo('+data["data"][i]["gift_id"]+')">详情</a> ';
+					if(data['data'][i]['type'] != 1){
+						html += '<a href="javascript:void(0);"onclick="deleteGift('+data["data"][i]["gift_id"]+')">删除</a>';
+					}
+					html += '</td>';
 					html += '</tr>';
 				}
 			} else {
@@ -127,13 +133,40 @@ function giftInfo(gift_id){
 			$("#max_num").text(data["max_num"]+"次/人");
 			var goods_list = '';
 			goods_list += '<tr>';
-			goods_list += '<td><img src="'+__IMG(data['gift_goods']['picture']['pic_cover_micro'])+'" /></td>';
+			goods_list += '<td><img src="'+__IMG(data['gift_goods']['picture_info']['pic_cover_micro'])+'" /></td>';
 			goods_list += '<td>'+data['gift_goods']['goods_name']+'</td>';
 			goods_list += '</tr>';
 			$("#giftInfo table tr:gt(5)").remove();
 			$("#goods_list").after(goods_list);
 		}
 	})
+}
+
+function deleteGift(gift_id){
+	$( "#dialog" ).dialog({
+		buttons: {
+			"确定": function() {
+			$.ajax({
+				type : "post",
+				url : "{:__URL('ADMIN_MAIN/promotion/deleteGift')}",
+				data : {"gift_id" : gift_id},
+				success : function(data) {
+					if(data["code"] > 0 ){
+						LoadingInfo(1);
+						showMessage('success', data["message"]);
+					}else{
+						showMessage('error', data["message"],window.location.reload());
+					}
+				}
+			})
+			$(this).dialog('close');
+			},
+			"取消,#e57373": function() {
+				$(this).dialog('close');
+			},
+		},
+		contentText:"确定要删除该赠品吗？",
+	});
 }
 </script>
 {/block}

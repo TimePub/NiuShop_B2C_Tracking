@@ -337,6 +337,7 @@ class Goods extends BaseService implements IGoods
                 'production_date' => strtotime($production_date),
                 'shelf_life' => $shelf_life
             );
+            $_SESSION['goods_spec_format'] = $goods_spec_format;
             // 商品保存之前钩子
             hook("goodsSaveBefore", $data_goods);
             if ($goods_id == 0) {
@@ -480,6 +481,7 @@ class Goods extends BaseService implements IGoods
                     }
                 }
             }
+            unset($_SESSION['goods_spec_format']);
             if ($error == 0) {
                 $this->goods->commit();
                 return $goods_id;
@@ -1268,12 +1270,30 @@ class Goods extends BaseService implements IGoods
             $prop_id = $value[0];
             $prop_value = $value[1];
             $goods_spec_value_model = new NsGoodsSpecValueModel();
-            $value_name = $goods_spec_value_model->getInfo([
-                'spec_value_id' => $prop_value
-            ], 'spec_value_name');
-            $name = $name . $value_name['spec_value_name'] . ' ';
+            $value_name = $this->getUserSkuName($prop_value);
+            $name = $name . $value_name . ' ';
         }
         return $name;
+    }
+
+     /**
+     * 获取用户自定义的规格值名称
+     * @param unknown $spec_id
+     */
+    private function getUserSkuName($spec_id){
+        $sku_name = "";
+        $goods_spec_format = $_SESSION['goods_spec_format'];
+        if(!empty($goods_spec_format)){
+            $goods_spec_format = json_decode($goods_spec_format, true);
+            foreach($goods_spec_format as $spec_value){
+                foreach($spec_value["value"] as $spec){
+                    if($spec_id == $spec['spec_value_id']){
+                        $sku_name = $spec['spec_value_name'];
+                    }
+                }
+            }
+        }
+        return $sku_name;
     }
 
     /**
@@ -3542,6 +3562,35 @@ class Goods extends BaseService implements IGoods
             }
         }
         
+        return $res;
+    }
+
+    /**
+     * 修改商品点击量
+     * 创建时间：2018年1月23日10:00:21 全栈小学生
+     * (non-PHPdoc)
+     *
+     * @see \data\api\IGoods::updateGoodsClicks()
+     */
+    public function updateGoodsClicks($goods_id)
+    {
+        $res = 0;
+        $model = new NsGoodsModel();
+        $info = $model->getInfo([
+            'goods_id' => $goods_id
+        ], "clicks");
+        if (! empty($info)) {
+            $clicks = 0;
+            if (! empty($info['clicks'])) {
+                $clicks = $info['clicks'];
+            }
+            $clicks ++;
+            $res = $model->save([
+                'clicks' => $clicks
+            ], [
+                'goods_id' => $goods_id
+            ]);
+        }
         return $res;
     }
 }

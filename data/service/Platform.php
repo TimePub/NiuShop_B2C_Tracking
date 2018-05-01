@@ -781,7 +781,7 @@ class Platform extends BaseService implements IPlatform
 	/* (non-PHPdoc)
      * @see \data\api\IPlatform::updatePlatformDocument()
      */
-    public function updatePlatformDocument($id, $uid, $class_id, $title, $link_url, $sort, $content, $image)
+    public function updatePlatformDocument($id, $uid, $class_id, $title, $link_url, $is_visibility, $sort, $content, $image)
     {
         $data = array(
             'uid'           => $uid,
@@ -789,6 +789,7 @@ class Platform extends BaseService implements IPlatform
             'title'         => $title,
             'link_url'      => $link_url,
             'sort'          => $sort,
+            'is_visibility' => $is_visibility,
             'content'       => $content,
             'image'         => $image,
             'modufy_time'   => time()

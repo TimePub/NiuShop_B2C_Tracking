@@ -170,9 +170,6 @@
 		 	 			type : 'post',
 		 				url : "{:__URL('APP_MAIN/order/getordergoodsexpressmessage')}",
 		 				data : {"express_id":express_id},
-		 				beforesend : function(){
-		 					showLoadMaskLayer();
-		 				},
 		 				success : function(data){
 		 					var html = '';
 		 					if (data["Success"]) {
@@ -188,7 +185,6 @@
 		 						$(".express_title").text(data['Reason']);	 						
 		 					}
 		 					$('#js-express-info').html(html);
-		 					hiddenLoadMaskLayer();
 		 				}
 		 	 		});
 	 			}

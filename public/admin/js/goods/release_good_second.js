@@ -1236,7 +1236,7 @@ function ValidateUserInput() {
 	}
 	
 	// 副标题
-	if($("#txtIntroduction").val().length>60){
+	if($("#txtIntroduction").val().length>100){
 		$("#txtIntroduction").focus();
 		$("#txtIntroduction").next("span").show();
 		return false;
@@ -1459,6 +1459,18 @@ function ValidateUserInput() {
 	} else {
 		$("#txtMinStockLaram").nextAll("span:last").hide();
 	}
+	
+	if($("#shelf_life").val().length>0){
+		if(!IsPositiveNum("#shelf_life")){
+			$("#shelf_life").nextAll("span:last").show();
+			$("#shelf_life").focus();
+			return false;
+		}else{
+	
+			$("#shelf_life").nextAll("span:last").hide();
+		}
+	}
+	
 	//最少购买数
 	if ($("#minBuy").val() < 0) {
 		$("#minBuy").nextAll("span:last").show();
@@ -1614,6 +1626,56 @@ function ValidateUserInput() {
 	} else {
 		$("#productcategory-selected").nextAll("span:last").hide();
 	}*/
+
+	//阶梯优惠
+	var is_error = false;
+	var ladder_arr = new Array();
+	var min_price = $("#txtProductSalePrice").val() * 100; //最低价格
+	$(".ladder_preference").each(function(){
+		var ladder = $(this).find(".ladder").val();
+		var preference = parseFloat($(this).find(".preference").val()).toFixed(2) * 100;
+		var $this = $(this);
+		if(ladder > 1){
+			if($.inArray(ladder, ladder_arr) > -1){
+				showTip("该优惠等级已存在","error");
+				$this.find(".ladder").addClass("input-error");
+				is_error = true;
+				return false;
+			}else{
+				is_error = false;
+				$(".ladder").removeClass("input-error");
+			}
+			ladder_arr.push(ladder);
+		}else{
+			showTip("阶梯优惠商品件数不能为少于两件","error");
+			$this.find(".ladder").addClass("input-error");
+			is_error = true;
+			return false;
+		}
+
+		if(preference >= min_price){
+			showTip("优惠价格不能大于或等于商品最小价格","error");
+			$this.find(".preference").addClass("input-error");
+			is_error = true;
+			return false;
+		}else if(preference < 0){
+			showTip("优惠价格不可为负数","error");
+			$this.find(".preference").addClass("input-error");
+			is_error = true;
+			return false;
+		}else if(preference == 0){
+			showTip("优惠价格不可为0","error");
+			$this.find(".preference").addClass("input-error");
+			is_error = true;
+			return false;
+		}else{
+			is_error = false;
+			$(".preference").removeClass("input-error");
+		}
+	})
+	if(is_error){
+		return false;
+	}
 	return true;
 }
 
@@ -1846,6 +1908,13 @@ function PackageProductInfo() {
 	productViewObj.virtual_goods_type_id = $("#virtual_goods_type_id").val();//虚拟商品类型id
 	productViewObj.production_date = $("#production_date").val(); //生产日期
 	productViewObj.shelf_life = $("#shelf_life").val(); // 保质期
+	productViewObj.goods_video_address = $("#video_url").val();
+	var ladder_preference_arr = new Array();
+	$(".ladder_preference").each(function(){
+		var ladder_preference = $(this).find(".ladder").val() + ':' + $(this).find(".preference").val();
+		ladder_preference_arr.push(ladder_preference);
+	})
+	productViewObj.ladder_preference = ladder_preference_arr.toString();
 	return productViewObj;
 }
 
@@ -2128,6 +2197,42 @@ function getGoodsAttributeListByAttrId(attr_id, callBack){
 					$(".js-goods-attribute-block").show();
 
 				}
+			}
+		});
+	}
+}
+
+
+/**
+ * 文件上传（视频、音频）
+ */
+function fileUpload_video(event) {
+	var fileid = $(event).attr("id");
+	var data = { 'file_path' : UPLOADGOODSVIDEO };
+	var dom = document.getElementById(fileid);
+	var file =  dom.files[0];//File对象;
+	var fileTypeArr = ['video/mp4','video/3gp','video/avi','video/rmvb','video/rm',];
+	var flag = false;
+	if(file != null){
+		for(var i=0;i<fileTypeArr.length;i++){
+			if(file.type == fileTypeArr[i]){
+				flag = true;
+				break;
+			}
+		}
+	}
+	if(!flag){
+		showTip("文件类型不合法","warning");
+	}else{
+		uploadFile(fileid,data,function(res){
+			if(res.code){
+				$("#video_url").val(res['data']);
+				$("#my-video").attr('poster','');
+				$("#my-video").attr('src',__IMG(res['data']));
+				$(".del-video").show();
+				showTip(res.message,"success");
+			}else{
+				showTip(res.message,"error");
 			}
 		});
 	}

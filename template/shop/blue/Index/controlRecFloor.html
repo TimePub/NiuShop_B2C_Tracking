@@ -111,7 +111,7 @@ function levelGoodsList(obj){
 									<div class="goods-list-padding-block">
 										<div><img src="{:__IMG($v['pic_cover_mid'])}" /></div>
 										<div>{$v['goods_name']}</div>
-										<div>¥{$v['price']}</div>
+										<div>¥{$v['promotion_price']}</div>
 										{if condition="$v['is_hot'] eq 1"}
 											<img src="__TEMP__/{$style}/public/images/hot.png" alt="" class="recommend">
 										{/if}
@@ -144,7 +144,7 @@ function levelGoodsList(obj){
 													<div class="goods-list-padding-block">
 														<div><img src="{:__IMG($list['pic_cover_mid'])}" /></div>
 														<div>{$list['goods_name']}</div>
-														<div>¥{$list['price']}</div>
+														<div>¥{$list['promotion_price']}</div>
 														{if condition="$list['is_hot'] eq 1"}
 														<img src="__TEMP__/{$style}/public/images/hot.png" alt="" class="recommend">
 														{/if}

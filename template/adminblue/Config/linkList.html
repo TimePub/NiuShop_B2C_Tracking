@@ -20,14 +20,14 @@
 		<col style="width: 12%;">
 		<col style="width: 10%;">
 		<col style="width: 20%;">
-		<col style="width:auto">
+		<col style="width:auto;">
 	</colgroup>
 	<thead>
 		<tr align="center">
 			<th><input type="checkbox" onClick="CheckAll()"></th>
 			<th>排序</th>
-			<th>链接名称</th>
-			<th>链接地址</th>
+			<th align="left">链接名称</th>
+			<th align="left">链接地址</th>
 			<th>是否打开新窗口</th>
 			<th>是否显示</th>
 			<th>图片</th>
@@ -65,8 +65,8 @@ function LoadingInfo(page_index) {
 					html += '<td><input name="sub" type="checkbox" value="'+ data['data'][i]['link_id']+'" ></td>';
 					//html += '<td><input type="text" min="0" value="'+ data["data"][i]["link_sort"]+'"  nav_id="'+ data['data'][i]['link_id']+'" class="num" ></td>';
 					html += '<td><span>'+ data["data"][i]["link_sort"]+'</span></td>';
-					html += '<td title="'+data["data"][i]["link_title"]+'">' + data["data"][i]["link_title"]+ '</td>';
-					html += '<td>' + data["data"][i]["link_url"]+ '</td>';
+					html += '<td align="left" title="'+data["data"][i]["link_title"]+'">' + data["data"][i]["link_title"]+ '</td>';
+					html += '<td align="left">' + data["data"][i]["link_url"]+ '</td>';
 					if(data["data"][i]["is_blank"] == 1){
 						html += '<td class="center"><a href="javascript:;" class="active" data-toggle="class"><i class="fa fa-check text-success text-active"></i></a></td>';
 					}else{

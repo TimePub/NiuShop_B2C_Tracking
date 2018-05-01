@@ -24,8 +24,8 @@
 	<thead>
 		<tr align="center">
 			<th><input type="checkbox"  onclick="CheckAll(this)"></th>
-			<th>用户头像</th>
-			<th>登录账号</th>
+			<th align="left">用户头像</th>
+			<th align="left">登录账号</th>
 			<th>手机号</th>
 			<th>邮箱</th>
 			<th>所属用户组</th>
@@ -60,14 +60,14 @@ function LoadingInfo(page_index) {
 				for (var i = 0; i < data["data"].length; i++) {
 					html += '<tr align="center">';
 					html += '<td><input name="sub" type="checkbox" value="'+ data['data'][i]['uid']+'" ></td>';
-					html += '<td>';
+					html += '<td align="left">';
 					if(data["data"][i]["user_headimg"] == ""){
 						html += '<img src="__STATIC__/images/default_user_portrait.gif" class="head-portrait" />';
 					}else{
 						html += '<img src="'+__IMG(data["data"][i]["user_headimg"])+'" class="head-portrait" />';
 					}
 					html += '</td>';
-					html += '<td>' + data["data"][i]["admin_name"] + '</td>';
+					html += '<td align="left">' + data["data"][i]["admin_name"] + '</td>';
 					html += '<td>' + data["data"][i]["user_tel"] + '</td>';
 					html += '<td>' + data["data"][i]["user_email"] + '</td>';
 					if(data["data"][i]["group_name"] == null){

@@ -33,8 +33,8 @@
 		<tr align="center">
 			<th><input id="ckall" type="checkbox" onClick="CheckAll(this)"></th>
 			<th><div class="iconbg-arrow up">排序</div></th>
-			<th><div class="iconbg-arrow up">标题</div></th>
-			<th><div class="iconbg-arrow up">分类</div></th>
+			<th align="left"><div class="iconbg-arrow up">标题</div></th>
+			<th align="left"><div class="iconbg-arrow up">分类</div></th>
 			<th><div class="iconbg-arrow up">点击量 / 评论量</div></th>
 			<th><div class="iconbg-arrow up">发布时间</div></th>
 			<th><div class="iconbg-arrow up">状态</div></th>
@@ -76,12 +76,12 @@ function LoadingInfo(page_index) {
 				for (var i = 0; i < data["data"].length; i++) {
 					html += '<tr align="center">';
 					html += '<td><input name="sub" type="checkbox" value="'+ data['data'][i]['article_id']+'" ></td>';
-					html += '<td><input type="number" min="0" value="'+ data["data"][i]["sort"]+'" fieldid="'+ data['data'][i]['article_id']+'" class="num input-common" ></td>';
-					html += '<td title="'+data["data"][i]["title"]+'" style="text-align:left;">' + data["data"][i]["title"]+ '</td>';
+					html += '<td><input type="number" min="0" value="'+ data["data"][i]["sort"]+'" fieldid="'+ data['data'][i]['article_id']+'" class="num input-common input-common-sort" ></td>';
+					html += '<td align="left" title="'+data["data"][i]["title"]+'">' + data["data"][i]["title"]+ '</td>';
 					if(data["data"][i]["name"]==null){
-						html += '<td>--</td>';
+						html += '<td align="left">--</td>';
 					}else{
-						html += '<td>' + data["data"][i]["name"]+ '</td>';
+						html += '<td align="left">' + data["data"][i]["name"]+ '</td>';
 					}
 					html += '<td>' + data["data"][i]["click"]+ ' / ' + data["data"][i]["comment_count"]+ '</td>';
 					html += '<td>' + timeStampTurnTime(data["data"][i]["create_time"])+ '</td>';

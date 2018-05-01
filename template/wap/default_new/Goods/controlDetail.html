@@ -10,8 +10,9 @@
 .give-the-thumbs-up i{font-size: 21px;}
 input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none;-moz-outline: none;-webkit-outline: none;}
 .number{border-radius: 0;-webkit-border-radius: 0;}
-.favorites{width: 35px;height: 35px;text-align: center;line-height: 35px;background: rgba(0,0,0,0.6);border-radius: 50%;position: absolute;z-index: 20;right: 10px;top: 10px;}
-.favorites i{color: #ccc;font-size: 16px;margin-top: 10px;opacity: 0.6;}
+.favorites,.share{width: 30px;height: 30px;text-align: center;line-height: 30px;background: rgba(0,0,0,0.6);border-radius: 50%;position: absolute;z-index: 1005;right: 8px;top: 10px;}
+.share{right: 45px}
+.favorites i,.share i{color: #eee;margin-top: 9px;}
 .shop_slider .bar{background: none;}
 .comment_img{width: 80px;height: 80px;margin:0 5px 5px 0;display: inline-block;float: left;line-height: 80px;text-align: center;}
 .comment_img img{max-width: 100%;max-height: 100%;vertical-align: middle;height: auto;}
@@ -23,16 +24,28 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 #img-slider .img-count{position: fixed;top:5%;left:0;right:0;width:100%;text-align:center;color:#9E9E9E;}
 .jiantou{float: right;width: 15px;height: 15px;background:url("__TEMP__/{$style}/public/images/assistant_right.png") no-repeat center;background-size: auto 15px;margin-top: 3px;}
 .user_info .name-box{width: 100%;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;}
+.mark_title{background: rgba(0,0,0,0);border: 1px solid #ff0000; color: #ff0000;padding: 1px 5px;border-radius: 3px;font-size: 12px;}
+.share_img{position:fixed;top:0;right:0;z-index:99999;display:none;background:#000;opacity:0.8;filter:alpha(opacity=80);width:100%;height:100%;text-align:right;}
+.share_img p{color:#fff;line-height:30px;font-size:16px;}
+#banner{position:relative;}
+.goods-video-box{width:100%;top:0px;display:none;height:320px;line-height:320px;background-color:#000;}
+.goods-video-box video{width:100%;height:auto;max-height:100%;vertical-align:middle;}
+.goods-alter{padding:4px 0px;position:absolute;left:0px;right:0px;top:13px;text-align:center;z-index:12;font-size:12px;z-index:1005;margin: 0 20%}
+.goods-alter span{background-color:rgba(255,255,255,1);padding:2px 10px;border-radius:10px;}
+.goods-alter span.on{background:orange;color:#fff;}
+.goods-alter-video{margin-right:6px;} 
+video::-webkit-media-controls-enclosure {overflow:hidden;}
+video::-webkit-media-controls-panel {width: calc(100% + 50px);}
 </style>
-<div class="h50" style="height:45px;"></div>
+<div data-exp="goods"></div>
 <section id="banner">
-	<div class="shop_slider shop_slider_auto" data-tag="module-slider" data-height="320px">
+	<div class="shop_slider shop_slider_auto" data-tag="module-slider" data-height="320px" id="goods-image-box">
 		<div class="inner" data-tag="slider-warp" >
 			<ul class="pic_list" data-tag="slider-list">
 			{foreach name = "goods_detail['img_list']" item = 'img_list' key='key' }
 				<li style="width: 320px;">
 					<div>
-						<img alt="{:lang('goods_picture')}" class="pp_init_img" src="{:__IMG($img_list['pic_cover_big'])}" />
+						<img alt="{:lang('goods_picture')}" class="pp_init_img" src="{:__IMG($img_list['pic_cover_big'])}"  data-index="{$key}"/>
 					</div>
 				</li>
 			{/foreach}
@@ -47,6 +60,11 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 				<i class="fa fa-heart" aria-hidden="true"></i>
 			</div>
 			{/if}
+			{if condition="$isWeixin eq 1"}
+			<div class="share" onclick="document.getElementById('share_img').style.display='block';">
+				<i class="fa fa-share" aria-hidden="true"></i>
+			</div>
+			{/if}
 			
 		</div>
 		<div class="bar_wrap">
@@ -56,7 +74,8 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 				<li></li>
 			</ul>
 		</div>
-	</div>
+	</div>	
+	
 </section>
 {if condition = "$goods_detail['promotion_info'] neq ''"}
 <div class="goods-header js-goods-header goods-activity clearfix">
@@ -82,18 +101,18 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 {/if}
 <div class="buy_area">
 	<div class="fn_wrap" style="position: relative;">
-		<h1 class="title" id="itemName" style="width: 80%;">{$goods_detail.goods_name}</h1>
+		<h1 class="title" id="itemName" style="width: 85%;">
+			{notempty name="goods_group_list"}
+				{volist name="goods_group_list" id="vo"} 
+					<i class="goods_tab">{$vo.group_name}</i>
+				{/volist}
+			{/notempty}
+		{$goods_detail.goods_name}</h1>
 		<p class="goods-introduction">{$goods_detail.introduction}</p>
-		<span style="position: absolute;display: block;height: 39px;background: #d5d5d5;width: 1px;top: 14px;right: 47px;"></span>
-		{if condition="$click_detail['status'] eq 1"}
-		<span class="give-the-thumbs-up">
-			<i class="fa fa-thumbs-up" style="color: #FF8855;"></i><br/>{:lang('give_thumbs_up')}
+		<span class="give-the-thumbs-up" onclick="document.getElementById('share_img').style.display='block';">
+			<i class="data-icon-share"></i><br/>{:lang('share')}
 		</span>
-		{else/}
-		<span onclick="clickPoint()" class="give-the-thumbs-up">
-			<i class="fa fa-thumbs-up"></i><br/>{:lang('give_thumbs_up')}
-		</span>
-		{/if}
+		
 	</div>
 	
 	<div class="price_wrap">
@@ -118,10 +137,9 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 	{/if}
 	<hr class="with-margin-l" />
 	<div class="stock-detail" >
-		<span style="display:inline-block;width:50%;">销量:{$goods_detail['sales']}笔</span>
-		{if condition="$goods_info.goods_type == 1"}
-		<span class="js-shipping-fee-name"></span><!-- 运费 -->
-		{/if}
+		<span>销量：{$goods_detail['sales']}笔</span>
+		<span class="js-shipping-fee-name">运费：0.00</span><!-- 运费 -->
+		<span>点击：{$goods_detail.clicks}</span>
 	</div>
 </div>
 <hr class="with-margin-l" />
@@ -133,7 +151,7 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 <hr class="with-margin-l" />
 {/if}
 
-{if condition="$goods_info.goods_type == 1"}
+{if condition="$goods_detail.goods_type == 1"}
 	<!-- 实物商品参加包邮活动 -->
 	{if condition = "$goods_detail['baoyou_name'] neq ''"}
 	<div class="price_postage">
@@ -148,11 +166,21 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 <div class="price_postage" id="receive_coupons">
 	<span class="price_postage_tit single"><img src="__TEMP__/{$style}/public/images/receive-coupon.png" style="width: 80px;height: 15px;margin-right: 8px;margin-top: -2px;">领取优惠劵<i class="jiantou"></i></span>
 </div>
+<hr class="with-margin-l" />
 {/notempty}
 
-{if condition = "$goods_detail['baoyou_name'] neq '' || $goods_detail['mansong_name'] neq ''"}
-<hr class="divider-line" />
-{/if}
+<div class="price_postage" id="theSelected">
+	<span style="float: left;">已选择</span>
+	<span class="selected"></span>
+	<i class="jiantou"></i>
+</div>
+<hr class="with-margin-l">
+
+<div class="price_postage">
+	<span>服务</span>
+	<span style="padding-left: 5px;">由<a href="javascript:;" style="color:#333;">{$title}</a>发货并提供售后服务</span>
+</div>
+<hr class="with-margin-l">
 
 {if condition = "$goods_detail['give_point'] neq 0"}
 <div class="price_postage">
@@ -160,48 +188,42 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 </div>
 <hr class="with-margin-l" />
 {/if}
-<div class="mod_tab_wrap">
-	<div class="mod_tab" id="detailTab">
-		<span onclick="showProperty(this,1)" class="cur">{:lang('goods_commodity_details')}</span>
-		<span onclick="showProperty(this,2)" >{:lang('goods_commodity_attribute')}</span>
-		<span onclick="showProperty(this,3)">{:lang('goods_commodity_evaluation')}({$evaluates_count['evaluate_count']})</span>
-	</div>
-</div>
+
+<!-- 商品评价 -->
+{if $evaluates_count['evaluate_count'] > 0}
+	<hr class="divider-line" />
+	<div data-exp="comment"></div>
+	{include file="wap/default_new/Goods/controlGoodEvaluate" /}
+{/if}
 	
+<!-- 商品属性 -->
+{if condition = "count($goods_detail['goods_attribute_list']) > 0"}
+<hr class="divider-line">
+<div class="tab-module-title">{:lang('goods_commodity_attribute')}</div>
+<hr class="with-margin-l">
+<div class="detail_info_wrap p-attribute" id="p-attribute">
+	<ul class="attribute-ul">
+		{foreach $goods_detail["goods_attribute_list"] as $vo}
+			{notempty name="$vo['attr_value_name']"}
+			<li>
+				<em>{$vo.attr_value}：</em>
+				<span id="goods_attr_" title="{$vo.attr_value_name}" class="goods-attr-value">{$vo.attr_value_name}</span>
+			</li>
+			{/notempty}
+		{/foreach}
+	</ul>
+</div>
+{/if}
+
+<hr class="divider-line">
+<div data-exp="goodsdetail"></div>
 <!-- 商品详情 -->
+<div class="tab-module-title">{:lang('goods_commodity_details')}</div>
+<hr class="with-margin-l">
 <div class="detail_info_wrap" id="p-detail">
 	<div class="detail_list" id="content">{$goods_detail.description}</div>
 </div>
-<!-- 商品属性 -->
-<div class="detail_info_wrap p-attribute" id="p-attribute" style="display:none;" >
-	{if condition = "count($goods_detail['goods_attribute_list']) gt 0"}
-		<ul class="attribute-ul">
-			{foreach $goods_detail["goods_attribute_list"] as $vo}
-				{notempty name="$vo['attr_value_name']"}
-				<li>
-					<em>{$vo.attr_value}：</em>
-					<span id="goods_attr_" title="{$vo.attr_value_name}" class="goods-attr-value">{$vo.attr_value_name}</span>
-				</li>
-				{/notempty}
-			{/foreach}
-		</ul>
-	{/if}
-</div>
 
-<!-- 商品评论 -->
-<div class="comment-type" id="productproperty" style="display:none;">
-	<ul class="tab-nav">
-		<li class="productproperty-list current" data-type="0" >{:lang('whole')}<em>({$evaluates_count['evaluate_count']})</em></li>
-		<li class="productproperty-list" data-type="4"  >{:lang('goods_picture')} <em>({$evaluates_count['imgs_count']})</em></li>
-		<li class="productproperty-list" data-type="1" >{:lang('goods_praise')} <em>({$evaluates_count['praise_count']})</em></li>
-		<li class="productproperty-list" data-type="2" >{:lang('goods_comments')} <em>({$evaluates_count['center_count']})</em></li>
-		<li class="productproperty-list" data-type="3" > {:lang('goods_bad')} <em>({$evaluates_count['bad_count']})</em></li>
-	</ul>
-	<!-- 评论展示 -->
-	<div id="comment_content">
-		<div class="comment-con"></div>
-	</div>
-</div>
 	
 {include file="wap/default_new/controlCopyRight"}
 <!-- 弹出框 -->
@@ -249,11 +271,9 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 		<li class="s-buy-li" >
 			<div class="left">{$spec.spec_name}：</div>
 			<div class="right" name="specvals" >
-			{foreach name="spec['value']" item="spec_value"}
+			{foreach name="spec['value']" item="spec_value" key="child_k"}
 				{if condition="$spec_value['spec_id'] eq $spec['spec_id']"}
-					<button class="select" name="Span{$k}" id="{$spec_value.spec_id}:{$spec_value.spec_value_id}" onclick="change(this);" data-picture-id="{$spec_value.picture}">
-					{$spec_value.spec_value_name}
-					</button>
+					<button class="select {if condition="$child_k==0"}current{/if}" name="Span{$k}" id="{$spec_value.spec_id}:{$spec_value.spec_value_id}" onclick="change(this);" data-picture-id="{$spec_value.picture}">{$spec_value.spec_value_name}</button>
 				{/if}
 			{/foreach}
 			</div>
@@ -287,7 +307,7 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 			<input id="hiddSkuName" type="hidden" />
 			<input id="hiddSkuprice" type="hidden" />
 			<input id="hiddStock" type="hidden" value="{$goods_detail.stock}"/>
-			<input type="hidden" id="hidden_shop_name" value="{$goods_detail.shop_name}"/>
+			<input type="hidden" id="hidden_shop_name" value="{$shopname}"/>
 			<input type="hidden" id="hidden_shop_id" value="{$goods_detail.shop_id}"/>
 			<input type="hidden" id="is_sale" value="{$goods_detail.state}" />
 			<input type="hidden" id="goods_id" value="{$goods_detail.goods_id}" />
@@ -308,7 +328,7 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 </div>
 
 <!-- 领取优惠劵弹出框 -->
-<div class="bottom_popup">
+<div class="bottom_popup"  data-popup-type="receive_coupons">
 	<div class="bottom_popup_title">
 		领取优惠劵
 	</div>
@@ -317,10 +337,15 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 			{volist name="goods_coupon_list" id="vo"}
 			<li>
 				<div class="js-coupon" data-max-fetch="{$vo.max_fetch}" data-receive-quantity="{$vo.receive_quantity}" data-coupon-id="{$vo.coupon_type_id}">
-					<img src="__TEMP__/{$style}/public/images/coupon_member.png" style="width:97%;height: 90px;"/>
-					<div class="coupon-price" style="">￥{$vo.money}</div>
+					<div class="coupon-price">
+						<p class="price">￥{$vo.money}</p>
+						<p class="desc">立即领取</p>
+					</div>
 					<div class="coupon-lose">
-						<span>{$vo.start_time|date="Y-m-d",###}</span>至<span>{$vo.end_time|date="Y-m-d",###}</span>
+						<p class="condition">{$vo.money}元优惠券，满{$vo.at_least}可用</p>
+						<p class="time">
+							<span>{$vo.start_time|date="Y-m-d",###}</span>至<span>{$vo.end_time|date="Y-m-d",###}</span>
+						</p>
 					</div>
 				</div>
 			</li>
@@ -332,9 +357,82 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 	</div>
 </div>
 
+<!-- 阶梯优惠信息弹出框 -->
+<div class="bottom_popup"  data-popup-type="ladder_preferential">
+	<div class="bottom_popup_title">
+		{:lang("ladder_preferential")}
+	</div>
+	<ul class="coupon_list">
+		<mark class="mark_title">{:lang("ladder_preferential")}</mark>
+		{foreach name="goodsLadderPreferentialList" item="vo"}
+			满<b style="color: red;">{$vo.quantity}</b>件,每件降<b style="color: red;">{$vo.price}</b>元&nbsp;&nbsp;
+		{/foreach}
+	</ul>
+	<div class="bottom_popup_button" id="complete"> 
+		<span>完成</span>
+	</div>
+</div>
+
+<!-- 分享弹框 -->
+<div id="share_img" class="share_img" onclick="document.getElementById('share_img').style.display='none';">
+    <p><img class="arrow" src="__TEMP__/{$style}/public/images/goods_share.png"></p>
+    <p style="margin-top:30px; margin-right:50px;">点击右上角</p>
+    <p style="margin-right:50px;">将此商品分享给好友</p>
+</div>
+
+<!-- 商家服务 -->
+<div class="bottom_popup"  data-popup-type="store_service">
+	<div class="bottom_popup_title">
+		{:lang('merchant_service')}
+	</div>
+	<ul class="coupon_list">
+		{notempty name="$existingMerchant"}
+			{foreach name="$existingMerchant" item="vo"}
+			<li>
+				<p class="service_title">{$vo.title}</p>
+				<p class="service_desc">{$vo.describe}</p>
+			</li>
+			{/foreach}
+		{/notempty}
+	</ul>
+	<div class="bottom_popup_button" id="complete"> 
+		<span>完成</span>
+	</div>
+</div>
+<!-- 图片放大 -->
+{include file="wap/default_new/Goods/controlPhotoSwipe" /}
+
 <script type="text/javascript">
 $(function () {
-	
+	var openPhotoSwipe = function(index) {
+	    var pswpElement = document.querySelectorAll('.pswp')[0];
+
+	    var items = new Array();
+		$("ul.pic_list li div img.pp_init_img").each(function(i,e){
+			var theImage = new Image();
+			theImage.src = $(e).attr("src");
+			var info = {"src" : $(e).attr("src"), "w" : theImage.width, "h" : theImage.height};
+			items.push(info);
+		})
+
+
+	    var options = {     
+	        history: false,
+	        focus: false,
+	        showAnimationDuration: 0,
+	        hideAnimationDuration: 0,
+	        index : index
+	    };
+
+	    var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, options);
+	    gallery.init();
+	};	
+
+	$("ul.pic_list li div img.pp_init_img").bind("click", function(){
+		var index = $(this).data("index");
+		openPhotoSwipe(index);
+	})
+
 	countDown();//计时器
 	
 	//分享
@@ -347,7 +445,7 @@ $(function () {
 		}
 	});
 	
-	{if condition="$goods_info.goods_type == 1"}
+	{if condition="$goods_detail.goods_type == 1"}
 	
 	//定位查询运费
 	$.ajax({
@@ -365,18 +463,30 @@ $(function () {
 		}
 	});
 	{/if}
+
+	$(window).scroll(function(){
+		var scroll_top = $(window).scrollTop();
+		if(scroll_top > 50){
+			$("#DataHeadNav").css("opacity",1);
+		}else{
+			$("#DataHeadNav").css("opacity",0);
+		}
+		$("[data-exp]").each(function(i,e){
+			var _postTop = $(this).offset().top;
+			if(scroll_top > _postTop - 55){
+				$("#DataHeadNav .heav-nav li").removeClass("current");
+				$("#DataHeadNav .heav-nav li").eq(i).addClass("current");
+			}
+		})
+	})
+
+	$("#DataHeadNav .heav-nav li").click(function(){
+		var _index = $(this).index();
+		var _scroll = $("[data-exp]").eq(_index).offset().top - 50;
+		$("body").animate({ scrollTop: _scroll }, 100);
+	})
 });
 
-//商品评价
-$(".comment-type li").click(function() {
-	var type = $(this).data("type");
-	var target = $(this);
-	$(".comment-type").find("li").removeClass("current");
-	$(".comment-type").find("i").removeClass("cur");
-	$(target).addClass("current");
-	$(target).children().addClass("cur");
-	GetDataList();
-})
 
 //点赞
 var flag = false;
@@ -418,83 +528,9 @@ function showProperty(sobj,type){
 		$("#productproperty").show();
 		$("#p-detail").hide(); 
 		$("#p-attribute").hide();
-		GetDataList();
 	}
 }
 
-/**
-* 分页显示
-* @param {Object} pageindex
-*/
-function GetDataList(){
-	var commentsType=$(".comment-type li.current").attr('data-type');
-	$.ajax({
-		type:"post",
-		url:"{:__URL('APP_MAIN/Goods/getGoodsComments')}",
-		data:{'comments_type' : commentsType, "goods_id" : $("#goods_id").val() },
-		dataType:'json',
-		success:function(data){
-			var listhtml='';
-			if(data['data'].length==0){
-				$('.comment-con').html('<div class="tip-box"><i class="tip-icon"></i><div class="tip-text">{:lang("no_comment_yet")}</div></div>');
-				$('#pagination').hide();
-				return false;
-			}
-			for(var i=0;i<data['data'].length;i++){
-				var dataitem=data['data'][i];
-				var member_name=dataitem['member_name'];
-				member_name=dataitem['is_anonymous']==1?member_name.replace(member_name.substring(1,member_name.length),'***')+'({:lang("anonymous")})':member_name;
-				listhtml+=' <div class="tablelist" style="border-bottom: 1px solid #e5e5e5;margin-bottom: 10px;">'
-					+'<div class="user_info" style="margin-right:10px;">'
-					+'<div class="face">';
-					if(dataitem["user_img"] != "" && dataitem['user_img'] != undefined && dataitem['user_img'] != 0){
-						listhtml+='<img src="'+__IMG(dataitem['user_img'])+'" style="width:35px;border-radius: 50%;">';
-					}else{
-						listhtml+='<img src="__TEMP__/{$style}/public/images/default_user_portrait_0.png" style="width:35px;border-radius: 50%;"/>';
-					}
-					listhtml+='</div>'
-					+'<div class="name-box">'+member_name+'</div>'
-					+'</div>'
-					+'<dl>'
-					+'<dd style="word-wrap:break-word;">'+dataitem['content']+'</dd>'
-				if(dataitem['image']!=''){
-					var imgs_arr=dataitem['image'].split(',');
-					listhtml+='<dd style="margin:5px 0;overflow:hidden;">'
-					for(var key in imgs_arr){
-						listhtml += '<div class="comment_img">';
-						listhtml+='<img src="'+__IMG(imgs_arr[key])+'" data-index="' + key + '" style="max-width:100%" onclick="showImgSlider(this);"/>';
-						listhtml+='</div>';
-					}
-					listhtml+='</dd>';
-					listhtml+='<dd class="photo-viewer"></dd>'
-				}	
-				listhtml+='<div class="date"><span>'+timeStampTurnTime(dataitem['addtime'])+'</span> <span></span></div>';
-				listhtml+='</dl>';
-				if(dataitem['again_content']!=''){
-					
-					listhtml+='<div style="margin-left:-1px;float:right;margin-top: 9px;width:75%;">{:lang("goods_additional_evaluation")}：</div>'
-					+'<dl>'
-					+'<div style="width: 26%;margin-right: 10px;height:auto;float: left;"></div>'
-					+'<dd style="word-wrap:break-word;">'+dataitem['again_content']+'</dd>'
-					if(dataitem['again_image']!=''){
-						var imgs_arr=dataitem['again_image'].split(',');
-						listhtml+='<dd>'
-						for(var key in imgs_arr){
-							listhtml += '<div class="comment_img">';
-								listhtml+='<img src="'+__IMG(imgs_arr[key])+'" data-index="' + key + '" style="max-width:100%" onclick="showImgSlider(this);" />';
-							listhtml+='</div>';
-						}
-						listhtml+='</dd>';
-					}
-					listhtml+='<div class="date" style="clear:both;"><span>'+timeStampTurnTime(dataitem['again_addtime'])+'</span> <span></span></div>';
-					listhtml+='</dl>';
-				}
-				listhtml+='</div>';
-			}
-			$(".comment-con").html(listhtml);
-		}
-	});
-}
 
 var img_slider = null;
 //点击显示评论大图
@@ -502,7 +538,7 @@ function showImgSlider(event){
 	var parent = $(event).parent().parent();
 	var html = '';
 	var curr = parseInt($(event).attr("data-index"));
-	parent.children(".comment_img").each(function(i){
+	parent.children("li").each(function(i){
 		html += '<li style="width: ' + $(window).outerWidth() + 'px; height: ' + $(window).outerHeight() + 'px; display: table-cell; padding: 0; margin: 0; float: left;">';
 			html += '<a href="javascript:;" style="display: -webkit-box;-webkit-box-align: center;-webkit-box-pack: center;">';
 				html += '<img src="' + $(this).children("img").attr("src") + '">';
@@ -510,7 +546,7 @@ function showImgSlider(event){
 		html += '</li>';
 	});
 	$("#img-slider ul").html(html);
-	var num = parent.children(".comment_img").size();
+	var num = parent.children("li").size();
 	$('#img-slider .img-count .sum').text(num);
 	$('#img-slider .img-count .curr').text(curr+1);
 	if(img_slider == null){
@@ -586,4 +622,5 @@ function collectionGoods(fav_id, fav_type, log_msg,obj) {
 		location.href = "{:__URL('APP_MAIN/Login')}";
 	}
 }
+
 </script>

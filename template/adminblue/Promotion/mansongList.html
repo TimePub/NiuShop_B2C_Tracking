@@ -23,7 +23,7 @@
 	<thead>
 		<tr align="center">
 			<th><input type="checkbox" onclick="CheckAll(this)"></th>
-			<th>活动名称</th>
+			<th align="left">活动名称</th>
 			<th>有效时间</th>
 			<th>活动状态</th>
 			<th>操作</th>
@@ -112,12 +112,12 @@ function LoadingInfo(page_index) {
 					html += '<tr align="center">';
 					html += '<td><div class="cell">';
 					if(data['data'][i]['status'] == 1){
-						html += '<label ><input name="sub_use" type="checkbox" value="'+data["data"][i]["mansong_id"]+'" disabled>';
+						html += '<input name="sub_use" type="checkbox" value="'+data["data"][i]["mansong_id"]+'" disabled="disabled">';
 					}else{
-						html += '<label ><input name="sub_no_use" type="checkbox"  value="'+data["data"][i]["mansong_id"]+'">';
+						html += '<input name="sub_no_use" type="checkbox"  value="'+data["data"][i]["mansong_id"]+'">';
 					}
-					html += '</label></div></td>';
-					html += '<td>' + data["data"][i]["mansong_name"] + '</td>';;
+					html += '</div></td>';
+					html += '<td align="left">' + data["data"][i]["mansong_name"] + '</td>';;
 					html += '<td>' + timeStampTurnTime(data["data"][i]["start_time"]) + ' 至 ' + timeStampTurnTime(data["data"][i]["end_time"]) + '</td>';
 					html += '<td>'+ status_name +'</td>';
 					html += '<td>';

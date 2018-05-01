@@ -31,12 +31,12 @@ function LoadingInfo(page_index) {
 						html += '<td><div class="cell"><label><input name="sub" type="checkbox" value="'+ data['data'][i]['co_id']+'" ></label></div></td>';
 						
 					if(data["data"][i]["express_logo"] != null &&data["data"][i]["express_logo"] !=''){
-						html += '<td class="tal"><img src="'+__IMG(data["data"][i]["express_logo"]) +'" style="margin-right:10px;max-width:60px;max-height:60px;"/>' + data["data"][i]["company_name"] + '</td>';
+						html += '<td align="left" class="tal"><img src="'+__IMG(data["data"][i]["express_logo"]) +'" style="margin-right:10px;max-width:60px;max-height:60px;"/>' + data["data"][i]["company_name"] + '</td>';
 					}else{
-						html += '<td class="tal">' + data["data"][i]["company_name"] + '</td>';
+						html += '<td align="left" class="tal">' + data["data"][i]["company_name"] + '</td>';
 					}
 					
-						html += '<td class="tal">' + data["data"][i]["express_no"] + '</td>';
+						html += '<td align="left" class="tal">' + data["data"][i]["express_no"] + '</td>';
 						html += '<td class="tal">' + data["data"][i]["phone"] + '</td>';
 						if(data["data"][i]["is_default"]==1){
 							html += '<td class="tal">是</td>';

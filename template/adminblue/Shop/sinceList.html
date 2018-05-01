@@ -26,8 +26,8 @@
 	<thead>
 		<tr align="center">
 			<th><input id="ckall" type="checkbox" onClick="CheckAll(this)"></th>
-			<th>自提名称</th>
-			<th>地址</th>
+			<th align="left">自提名称</th>
+			<th align="left">地址</th>
 			<th>联系人</th>
 			<th>联系电话</th>
 			<th>发布时间</th>
@@ -54,8 +54,8 @@ function LoadingInfo(page_index) {
 				for (var i = 0; i < data["data"].length; i++) {
 					html += '<tr align="center">';
 					html += '<td><input name="sub" type="checkbox" value="'+ data['data'][i]['id']+'"></td>';
-					html += '<td>' + data["data"][i]["name"]+ '</td>';
-					html += '<td>'+ data["data"][i]["province_name"]+ '/'+ data["data"][i]["city_name"]+ '/' + data["data"][i]["dictrict_name"]+ '/'+ data["data"][i]["address"]+'</td>';
+					html += '<td align="left">' + data["data"][i]["name"]+ '</td>';
+					html += '<td align="left">'+ data["data"][i]["province_name"]+ '/'+ data["data"][i]["city_name"]+ '/' + data["data"][i]["dictrict_name"]+ '/'+ data["data"][i]["address"]+'</td>';
 					
 					html += '<td>' + data["data"][i]["contact"]+ '</td>';
 					html += '<td>'+data["data"][i]["phone"]+'</td>'

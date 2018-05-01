@@ -50,7 +50,7 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 			<div class="left">{$pro_prop.spec_name}：</div>
 			<div class="right" name="specvals">
 			{foreach name="pro_prop['value']" item="pro_propvalue" key="key"}
-				<button class="select" name="Span{$k}" id="{$pro_prop.spec_id}:{$pro_propvalue.spec_value_id}" onclick="change(this);">
+				<button class="select" name="Span{$k}" id="{$pro_prop.spec_id}:{$pro_propvalue.spec_value_id}" onclick="change(this);"  data-picture-id="{$pro_propvalue.picture}">
 				{$pro_propvalue.spec_value_name}
 				</button>
 			{/foreach}
@@ -82,7 +82,7 @@ input{appearance:none;-moz-appearance:none;-webkit-appearance:none;outline: none
 	<ul class="s-buy-ul">
 		<li class="s-buy-btn">
 			<a class="btn" id="submit_ok" tag="addCart">{:lang('goods_determine')}</a>
-			<input type="hidden" id="hidden_shop_name" value="{$goods_detail.shop_name}"/>
+			<input type="hidden" id="hidden_shop_name" value="{$shopname}"/>
 			<input type="hidden" id="hidden_shop_id" value="{$goods_detail.shop_id}"/>
 			<input type="hidden" id="hidden_goods_type" value="{$goods_detail.goods_type}" />
 		</li>

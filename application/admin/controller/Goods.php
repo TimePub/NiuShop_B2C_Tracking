@@ -72,6 +72,7 @@ class Goods extends BaseController
             $selectGoodsLabelId = request()->post('selectGoodsLabelId', '');
             $supplier_id = request()->post('supplier_id', '');
             $stock_warning = request()->post("stock_warning", 0); // 库存预警
+            $sort_rule = request()->post("sort_rule", ""); // 字段排序规则
             
             if (! empty($selectGoodsLabelId)) {
                 $selectGoodsLabelIdArray = explode(',', $selectGoodsLabelId);
@@ -155,11 +156,42 @@ class Goods extends BaseController
                     "<= ng.min_stock_alarm"
                 );
             }
+
+            $order = array();
+            if (! empty($sort_rule)) {
+                $sort_rule_arr = explode(",", $sort_rule);
+                $sort_field = $sort_rule_arr[0];
+                $sort_value = $sort_rule_arr[1];
+                if ($sort_value == "a") {
+                    $sort_value = "ASC";
+                } elseif ($sort_value == "d") {
+                    $sort_value = "DESC";
+                } else {
+                    $sort_value = "";
+                }
+                
+                if (! empty($sort_value)) {
+                    switch ($sort_field) {
+                        case "price":
+                            $order['ng.price'] = $sort_value;
+                            break;
+                        case "stock":
+                            $order['ng.stock'] = $sort_value;
+                            break;
+                        case "sales":
+                            $order['ng.sales'] = $sort_value;
+                            break;
+                        case "sort":
+                            $order['ng.sort'] = $sort_value;
+                            break;
+                    }
+                }
+            } else {
+                // 默认时间排序
+                $order['ng.create_time'] = 'desc';
+            }
             
-            $result = $goodservice->getGoodsList($page_index, $page_size, $condition, [
-                'ng.create_time' => 'desc'
-            ]);
-            // 'ng.sort' => 'desc',
+            $result = $goodservice->getGoodsList($page_index, $page_size, $condition, $order);
             
             // 根据商品分组id，查询标签名称
             foreach ($result['data'] as $k => $v) {
@@ -206,6 +238,21 @@ class Goods extends BaseController
             // 库存预警
             $stock_warning = request()->get("stock_warning", 0);
             $this->assign("stock_warning", $stock_warning);
+
+            $child_menu_list = array(
+                array(
+                    'url' => "goods/goodslist",
+                    'menu_name' => "商品列表",
+                    "active" => 1
+                ),
+                array(
+                    'url' => "goods/recyclelist",
+                    'menu_name' => "商品回收站",
+                    "active" => 0
+                )
+            );
+            $this->assign('child_menu_list', $child_menu_list);
+
             return view($this->style . "Goods/goodsList");
         }
     }
@@ -284,7 +331,9 @@ class Goods extends BaseController
             $this->assign("goods_category_name", "");
         }
         $this->assign("goods_attr_id", $goods_attr_id);
-        $goods_attribute_list = $goods->getAttributeServiceList(1, 0);
+        $goods_attribute_list = $goods->getAttributeServiceList(1, 0, [
+            'is_use' => 1
+        ], "", "attr_id,attr_name");
         $this->assign("goods_attribute_list", $goods_attribute_list['data']); // 商品类型
         $this->assign("shipping_list", $express->shippingFeeQuery("")); // 物流
         $this->assign("group_list", $groupList['data']); // 分组
@@ -527,22 +576,7 @@ class Goods extends BaseController
         } else {
             $goodscategory = new GoodsCategory();
             $list = $goodscategory->getGoodsCategoryListByParentId(0);
-            $this->assign('goods_category_list', $list);
-            
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "goods/goodsbrandlist",
-                        'menu_name' => "商品品牌",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
-            
+            $this->assign('goods_category_list', $list);            
             return view($this->style . "Goods/addGoodsBrand");
         }
     }
@@ -598,20 +632,6 @@ class Goods extends BaseController
             $list = $goodscategory->getGoodsCategoryListByParentId(0);
             $this->assign('goods_category_list', $list);
             
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "goods/goodsbrandlist",
-                        'menu_name' => "商品品牌",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
-            
             return view($this->style . "Goods/editGoodsBrand");
         }
     }
@@ -663,20 +683,6 @@ class Goods extends BaseController
             $goods = new GoodsService();
             $goodsAttributeList = $goods->getAttributeServiceList(1, 0);
             $this->assign("goodsAttributeList", $goodsAttributeList['data']);
-            
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "goods/goodscategorylist",
-                        'menu_name' => "商品分类",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
             
             return view($this->style . "Goods/addGoodsCategory");
         }
@@ -761,20 +767,6 @@ class Goods extends BaseController
             $goods = new GoodsService();
             $goodsAttributeList = $goods->getAttributeServiceList(1, 0);
             $this->assign("goodsAttributeList", $goodsAttributeList['data']);
-            
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "goods/goodscategorylist",
-                        'menu_name' => "商品分类",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
             
             return view($this->style . "Goods/updateGoodsCategory");
         }
@@ -999,20 +991,7 @@ class Goods extends BaseController
             $result = $goodsgroup->addOrEditGoodsGroup(0, $shop_id, $group_name, $pid, $is_visible, $sort, $group_pic);
             return AjaxReturn($result);
         } else {
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "goods/goodsgrouplist",
-                        'menu_name' => "商品标签",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
-            
+
             return view($this->style . "Goods/addGoodsGroup");
         }
     }
@@ -1037,21 +1016,7 @@ class Goods extends BaseController
             $group_id = request()->get('group_id', '');
             $result = $goodsgroup->getGoodsGroupDetail($group_id);
             $this->assign("data", $result);
-            
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "goods/goodsgrouplist",
-                        'menu_name' => "商品标签",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
-            
+           
             return view($this->style . "Goods/updateGoodsGroup");
         }
     }
@@ -1129,7 +1094,14 @@ class Goods extends BaseController
         $page_size = request()->post("page_size", PAGESIZE);
         $search_text = request()->post("search_text","");
         $condition = array(
-            "goods_name" => ["like", "%$search_text%"]
+            "goods_name" => [
+                "like",
+                "%$search_text%"
+            ],
+            "stock" => [
+                "GT",
+                0
+            ]
         );
         $goods_detail = new GoodsService();
         $result = $goods_detail->getSearchGoodsList($page_index, $page_size, $condition);
@@ -1217,19 +1189,7 @@ class Goods extends BaseController
             $res = $goods->addGoodsSpecService($this->instance_id, $spec_name, $show_type, $is_visible, $sort, $spec_value_str, $attr_id, $is_screen);
             return AjaxReturn($res);
         }
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "goods/goodsspeclist",
-                    'menu_name' => "商品规格",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
+    
         return view($this->style . 'Goods/addGoodsSpec');
     }
 
@@ -1255,19 +1215,7 @@ class Goods extends BaseController
         }
         $detail = $goods->getGoodsSpecDetail($spec_id);
         $this->assign('info', $detail);
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "goods/goodsspeclist",
-                    'menu_name' => "商品规格",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
+       
         return view($this->style . 'Goods/updateGoodsSpec');
     }
 
@@ -1353,19 +1301,7 @@ class Goods extends BaseController
             $goodsAttribute = $goods->addAttributeService($attr_name, $is_use, $spec_id_array, $sort, $value_string);
             return AjaxReturn($goodsAttribute);
         }
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "goods/attributelist",
-                    'menu_name' => "商品类型",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
+    
         return view($this->style . 'Goods/addGoodsAttribute');
     }
 
@@ -1403,19 +1339,7 @@ class Goods extends BaseController
         $goodsguige = $goods->getGoodsSpecList(1, 0, '', 'sort desc');
         $this->assign('goodsguige', $goodsguige);
         $this->assign('attr_id', $attr_id);
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "goods/attributelist",
-                    'menu_name' => "商品类型",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
+        
         return view($this->style . 'Goods/updateGoodsAttribute');
     }
 
@@ -1659,6 +1583,21 @@ class Goods extends BaseController
             $goodsCategory = new GoodsCategory();
             $oneGoodsCategory = $goodsCategory->getGoodsCategoryListByParentId(0);
             $this->assign("oneGoodsCategory", $oneGoodsCategory);
+
+            $child_menu_list = array(
+                array(
+                    'url' => "goods/goodslist",
+                    'menu_name' => "商品列表",
+                    "active" => 0
+                ),
+                array(
+                    'url' => "goods/recyclelist",
+                    'menu_name' => "商品回收站",
+                    "active" => 1
+                )
+            );
+            $this->assign('child_menu_list', $child_menu_list);
+
             return view($this->style . 'Goods/recycleList');
         }
     }
@@ -1856,20 +1795,6 @@ class Goods extends BaseController
         }
         $this->assign("virtual_goods_type", $virtual_goods_type);
         $this->assign("virtual_goods_type_id", $virtual_goods_type_id);
-        
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "goods/virtualgoodstypelist",
-                    'menu_name' => "虚拟商品类型",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         
         return view($this->style . "Goods/editVirtualGoodsType");
     }

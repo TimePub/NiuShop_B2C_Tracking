@@ -139,17 +139,29 @@ class Wchat extends BaseController
             if (! empty($res)) {
                 $res = json_decode($res, true);
                 if ($res['errcode'] == 0) {
-                    $retval = 1;
+                    $retval = [
+                        "code" => 1,
+                        "message" => "保存成功"
+                    ];
                 } else {
-                    $retval = $res['errmsg'];
+                    $retval = [
+                        "code" => 1,
+                        "message" => $res['errmsg']
+                    ];
                 }
             } else {
-                $retval = 0;
+                $retval = [
+                    "code" => 0,
+                    "message" => "操作失败"
+                ];
             }
         } else {
-            $retval = "当前未配置微信授权";
+            $retval = [
+                "code" => 0,
+                "message" => "当前未配置微信授权"
+            ];
         }
-        return AjaxReturn($retval);
+        return $retval;
     }
 
     /**
@@ -821,5 +833,19 @@ class Wchat extends BaseController
         $weixin->addUserMessageReplay(1, 1, 'text', 'this is kefu replay message!');
         $res = $weixin_message->sendMessageToUser('oXTarwCCbPb9eouZmwCr6CHtNI0I', 'text', 'this is kefu replay message!');
         var_dump($res);
+    }
+
+    public function keyConcernConfig()
+    {
+        if (request()->isPost()) {
+            $is_show_follow = request()->post("is_show_follow", 1);
+            $retval = $this->website->updateKeyConcernConfig($is_show_follow);
+            return AjaxReturn($retval);
+        } else {
+            
+            $website_info = $this->website->getWebSiteInfo();
+            $this->assign("website_info", $website_info);
+            return view($this->style . 'Wchat/keyConcernConfig');
+        }
     }
 }   

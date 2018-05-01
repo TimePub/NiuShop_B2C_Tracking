@@ -250,3 +250,74 @@ a.already-use>.uneless-img {
 	display: inline-block;
 	width: 100%;
 }
+
+/*优惠券*/
+.coupon-contianer{
+	padding:10px;
+	background: #fff;
+}
+.coupon-contianer .coupon-item{
+	background: #fe746a url("../images/coupon_item.png") no-repeat 0;
+    padding-left: 95px;
+    height: 80px;
+    position: relative;
+    color: #fff;
+    text-align: left;
+    background-size: 100% 80px;
+}
+.coupon-contianer .coupon-item.used{
+	color: #3c3c3c;
+	background: #d8d8d8 url("../images/coupon_item_used.png") no-repeat 0;
+	background-size: 90px 90px;
+}
+.coupon-contianer .coupon-item .coupon-type{
+	width: 95px;
+    height: 80px;
+    line-height: 80px;
+    position: absolute;
+    top: 0%;
+    left: 0;
+    text-align: left;
+    background: url(../images/coupon_type_item.png) no-repeat 0;
+    background-size: 95px 80px;
+    padding-left: 10px;
+}
+
+.coupon-contianer .coupon-item section .coupon-title{
+    padding: 20px 0 0 10px;
+    font-size: 14px;
+}
+
+.coupon-contianer .coupon-item section .coupon-title i{
+	font-weight: normal;
+    vertical-align: super;
+    font-size: 12px;
+}
+.coupon-contianer .coupon-item section .coupon-title em{
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.coupon-contianer .coupon-item section .coupon-time{
+	padding: 0 0 0 10px;
+    font-size: 12px;
+    opacity: .6;
+}
+.coupon-contianer .coupon-desc{
+    padding: 5px 10px;
+    background: #fff;
+    border: 1px solid #dfdfdf;
+    font-size: 12px;
+    border-top: none;
+    margin-bottom: 10px;
+	color: #bbb;
+}
+.coupon-contianer .coupon-empty{
+    text-align: center;
+    color: #999;
+    margin: 20px auto;
+    padding-top: 90px;
+    background: url(../images/distribution2.png) no-repeat 50% 0;
+    background-size: 80px 80px; 
+    font-size: 12px;
+}

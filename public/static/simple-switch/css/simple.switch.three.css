@@ -231,7 +231,7 @@ Default
 .Switch_FlatRadius span.switch-open{
 	content: "是";
 	border-width:1px 0 1px 1px;
-	border-radius:4px 0 0 4px;
+	border-radius:0;
 	background-color:#ECF0F1;
 	color:#777;
     border-color: #BEC3C7;
@@ -239,14 +239,14 @@ Default
 .Switch_FlatRadius span.switch-close{
 	content: "否";
 	border-width:1px 1px 1px 0;
-	border-radius:0 4px 4px 0;
+	border-radius:0;
 	color: #FFF;
     background-color: #96A6A6;
     border-color: #808B8D;
 }
 .Switch_FlatRadius.On span.switch-open{
 	border-width:1px 0 1px 1px;
-	border-radius:4px 0 0 4px;
+	border-radius:0;
 	color: #FFF;
     background-color: #00C0FF;
     border-color: #00abe3;
@@ -254,7 +254,7 @@ Default
 .Switch_FlatRadius.On span.switch-close{
 	content: "否";
 	border-width:1px 1px 1px 0;
-	border-radius:0 4px 4px 0;
+	border-radius:0;
 	background-color:#ECF0F1;
 	color:#777;
     border-color: #BEC3C7;

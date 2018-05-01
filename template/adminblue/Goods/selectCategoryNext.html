@@ -55,8 +55,8 @@
 	<dl>
 		<dt>商品促销语：</dt>
 		<dd>
-			<input class="productname" type="text" id="txtIntroduction" placeholder="请输入促销语，不能超过60个字符" oninput='if(value.length>60){value=value.slice(0,60);$(this).next().text("促销语不能超过60个字符").show();}else{$(this).next().hide();}'/>
-			<span class="help-inline">商品促销语输入不正确</span>
+			<input class="productname" type="text" id="txtIntroduction" placeholder="请输入促销语，不能超过100个字符" oninput='if(value.length>100){value=value.slice(0,100);$(this).next().text("促销语不能超过100个字符").show();}else{$(this).next().hide();}'/>
+			<span class="help-inline">请输入商品促销语，不能超过100个字符</span>
 		</dd>
 	</dl>
 	<dl>
@@ -144,9 +144,10 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>保质期：</dt>
+		<dt>保质期天数：</dt>
 		<dd>
-			<input type="text" id="shelf_life" maxlength="45">
+			<input type="number" class="goods-stock" id="shelf_life" value="0">&nbsp;天
+			<span class="help-inline">请输入保质期天数，必须是整数</span>
 		</dd>
 	</dl>
 	<dl>
@@ -162,6 +163,19 @@
 			<input type="number" class="goods-stock" id="txtMinStockLaram" min="0" value="0" />
 			<span class="help-inline">请输入库存预警数，必须是大于0的整数</span>
 			<p class="hint">设置最低库存预警值。当库存低于预警值时商家中心商品列表页库存列红字提醒。<br>0为不预警。</p>
+		</dd>
+	</dl>
+	<dl style="display: none;">
+		<dt>阶梯优惠：</dt>
+		<dd>
+			<p class="hint" style="color: #FF8400;">设置商品阶梯优惠，当购买数量达到所设数量时，商品单价 = 商品销售价 - 优惠价格</p>
+			<div class="ladder_preference_content">
+				<div>
+					<span class="label-title">数量</span><span class="label-title" style="margin-left: 30px;">优惠价格</span>
+				</div>
+				<div id="ladder_preference"></div>
+			</div>
+			<div class="add_ladder_preference"><i class="fa fa-plus" aria-hidden="true"></i></div>
 		</dd>
 	</dl>
 
@@ -243,6 +257,43 @@
 			<span class="help-inline">最少需要一张图片作为商品主图</span>
 		</dd>
 	</dl>
+	
+<!-- 	<h3 class="js-goods-img">展示视频</h3> -->
+	<dl style="display: none;">
+		<dt><i class="required">*</i>展示视频：</dt>
+		<dd>
+			<div class="controls" style="background-color:#FFF;border: 1px solid #E9E9E9;">
+				<div class="ncsc-goods-default-pic">
+					<div class="goodspic-uplaod" style="padding: 15px;">
+						<div style="min-height:120px;">
+							<div class="video-thumb" >
+								<video id="my-video" controls poster="__STATIC__/blue/img/vs.png" preload="auto"  style="max-width:100%;max-height:100%;width:auto;height:auto;">
+			  						<source src="" type="video/mp4" id="video-source">
+								</video>
+								<span class="del-video hide"></span>
+							</div>
+						</div>
+						<div class="clear"></div>
+						
+						<div class="handle">
+							<div class="ncsc-upload-btn">
+								<a href="javascript:void(0);">
+									<span>
+										<input class="input-file" name="file_upload" id="videoupload" type="file" value="">
+									</span>
+									<p>视频上传</p>
+									<input type="hidden" id="video_url" value="">
+								</a>
+							</div>
+							
+						</div>
+					</div>
+				</div>
+			</div>
+			
+		</dd>
+	</dl>
+	
 	<dl>
 		<dt><i class="required"></i>规格图片：</dt>
 		<dd>

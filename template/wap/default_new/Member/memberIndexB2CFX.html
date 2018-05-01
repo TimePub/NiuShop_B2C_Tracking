@@ -12,8 +12,9 @@
 .member-info{background: rgba(255,79,79, 0.8);float:left;width:33%;color: #fff;text-align: center;line-height:41px;}
 .vertical-bar{border-left: 1px solid rgba(250,250,250,0.6);height: 32px;vertical-align: middle;display: inline-block;margin-top:5px;}
 .namer{position: absolute;left: 103px;top: 30px;}
+.signin{border-radius: 3px;font-size: 10px;line-height: 14px;padding: 2px 9px;float: left;position: absolute;left: 20px;top: 5px;}
 .no{color: #FF4E00!important;background: yellow!important;}
-.yes{color: #fff;border: 1px solid #fff;}
+.yes{color: yellow;border: 1px solid yellow;}
 .last a{position: relative;}
 .tips{width: 16px;height: 16px;background: #F93F40;border:1px solid #F93F40;border-radius: 50%;font-size: 6px;line-height: 16px;text-align: center;color: #fff;position: absolute;z-index: 10;right: -10px;top: -6px;}
 .member_foot{width: 100%;height: 20px;background: url("__TEMP__/{$style}/public/images/member_foot.png") center no-repeat;background-size: 100% 20px;}
@@ -22,16 +23,24 @@
 {block name="main"}
 <div class="panel memberhead">
 	<div class="member_head">
-		<a href="{:__URL('APP_MAIN/member/personaldata?shop_id='.$shop_id)}">
+		<a href="javascript:;">
 			<p style="margin: 20px 0 10px 0;position:relative;">
-				<i class="face_img">
+				{if condition="$integralconfig['sign_integral'] eq 1"}
+					{if condition="$isSign eq 0"}
+					<span class="signin no" onclick="signIn();">{:lang('sign_in')}</span>
+					{else /}
+					<span class="signin yes">{:lang('signed_in')}</span>
+					{/if}
+				{/if}
+
+				<i class="face_img" onclick="location.href='{:__URL('APP_MAIN/member/personaldata?shop_id='.$shop_id)}'">
 				{eq name="member_img" value="0"}
 					<img src="__TEMP__/{$style}/public/images/member_default.png" />
 				{else/}
 					<img src="__UPLOAD__/{$member_img}"  onerror="this.src='__TEMP__/{$style}/public/images/member_default.png'"/>
 				{/eq}
 				</i>
-				<span class="account_management">账户管理<i class="data-go"></i></span>
+				<span class="account_management"  onclick="location.href='{:__URL('APP_MAIN/member/personaldata?shop_id='.$shop_id)}'">账户管理<i class="data-go"></i></span>
 			</p>
 		</a>
 		<p class="info-content-top">
@@ -41,15 +50,7 @@
 		</p>
 		<p class="info-content-bottom">
 			<a href="{:__URL('APP_MAIN/member/balancewater?shop_id='.$shop_id)}"><span>{$member_info['balance']}</span></a>
-			{if condition="$integralconfig['sign_integral'] eq 1"}
-				{if condition="$isSign eq 0"}
-					<span onclick="signIn();"><mark class="level no">{:lang('sign_in')}</mark></span>
-				{else /}
-					<span ><mark class="level">{:lang('signed_in')}</mark></span>
-				{/if}
-			{else/}
-				<span></span>
-			{/if}
+			<span>{notempty name="$member_info['level_name']"}<mark class="level">{$member_info['level_name']}</mark>{/notempty}</span>
 			<a href="{:__URL('APP_MAIN/member/integralwater?shop_id='.$shop_id)}"><span>{$member_info['point']}</span></a>
 		</p>
 	</div>
@@ -103,12 +104,7 @@
 
 <div class="control">
 	<div class="control_l">
-		{if condition="$is_open_virtual_goods"}
 		<span class="control_l_content selected" data-flag="regular-orders">{:lang('regular_orders')}</span>
-		<span class="control_l_content" data-flag="virtual-orders">{:lang('virtual_orders')}</span>
-		{else/}
-		<span class="control_l_content selected" data-flag="regular-orders">{:lang('all_orders')}</span>
-		{/if}
 	</div>
 	<div class="control_r"><a href="{:__URL('APP_MAIN/order/myorderlist?shop_id='.$shop_id)}" class="right_href">{:lang('member_view_all_orders')}</a></div>
 </div>
@@ -189,13 +185,15 @@
 {volist name="menu_arr" id="arr_item" }
 	<ul>
 		{volist name="arr_item" id="vo"}
-		<li>
-			<a href="{:__URL('APP_MAIN/'.$vo['url'])}">
-				<i class=" module-icon {$vo.class}" ></i>
-				<span >{$vo.title}</span>
-				<span class='jiantou'></span>
-			</a>
-		</li>
+			{notempty name="$vo['url']"}
+			<li>
+				<a href="{:__URL('APP_MAIN/'.$vo['url'])}">
+					<i class=" module-icon {$vo.class}" ></i>
+					<span >{$vo.title}</span>
+					<span class='jiantou'></span>
+				</a>
+			</li>
+			{/notempty}
 		{/volist}
 	</ul>
 {/volist}
@@ -203,6 +201,19 @@
 <script type="text/javascript">
 $(function(){
 	bottomActive('#bottom_member');
+	$(".control_l_content").click(function(){
+		var flag = $(this).attr("data-flag");
+		$(".js-regular-orders").hide();
+		$(".js-virtual-orders").hide();
+		$(".js-" + flag).show();
+		$(".control_l_content").removeClass("selected");
+		$(this).addClass("selected");
+		if(flag == "regular-orders"){
+			$(".right_href").attr("href","{:__URL('APP_MAIN/order/myorderlist?shop_id='.$shop_id)}");
+		}else{
+			$(".right_href").attr("href","{:__URL('APP_MAIN/order/myvirtualorderlist?shop_id='.$shop_id)}");
+		}
+	});
 })	
 function signIn(){
 	$.ajax({
@@ -211,7 +222,7 @@ function signIn(){
 		data : { "sign" : true },
 		success : function(data){
 			if(data['code']>0){
-				location.reload();
+				$(".signin").not(":hidden").removeClass("no").addClass("yes").text("已签到");
 			}
 		}
 	})

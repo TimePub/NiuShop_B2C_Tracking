@@ -4,10 +4,7 @@
 	<button class="btn-common btn-small" onclick="addModule()">添加模块</button>
 </div>
 <style>
-.table-class input.sort {
-	width: auto;
-	text-align: center;
-}
+.table-class input.sort {width: auto;text-align: center;}
 </style>
 <input type="hidden" id="pid" value="0" />
 <table class="table-class">
@@ -22,7 +19,7 @@
 		<tr class="row-selected">
 			<th></th>
 			<th>排序</th>
-			<th style="text-align: left;">模块名</th>
+			<th align="left">模块名</th>
 			<th>是否是菜单</th>
 			<th>操作</th>
 		</tr>
@@ -37,7 +34,7 @@
 			{/if}
 		</td>
 		<td style="text-align: center;">
-			<input onkeyup="value=value.replace(/[^\d+(\.\d+)?]/g,'')" type="text" class="sort input-common" fieldid="{$v1['module_id']}" fieldname="sort" value="{$v1['sort']}" size="1">
+			<input onkeyup="value=value.replace(/[^\d+(\.\d+)?]/g,'')" type="text" class="sort input-common input-common-sort" fieldid="{$v1['module_id']}" fieldname="sort" value="{$v1['sort']}" size="1">
 		</td>
 		<td>
 			<input type="text" fieldid="{$v1['module_id']}" class="input-common" fieldname="module_name" value="{$v1['module_name']}">
@@ -57,7 +54,7 @@
 				{/if}
 			</td>
 			<td style="text-align: center;">
-				<input onkeyup="value=value.replace(/[^\d+(\.\d+)?]/g,'')" type="text" class="sort input-common" fieldid="{$v2['module_id']}" fieldname="sort" value="{$v2['sort']}" size="1">
+				<input onkeyup="value=value.replace(/[^\d+(\.\d+)?]/g,'')" type="text" class="sort input-common input-common-sort" fieldid="{$v2['module_id']}" fieldname="sort" value="{$v2['sort']}" size="1">
 			</td>
 			<td>
 				<span style="color: #ccc;">|——</span>
@@ -73,7 +70,7 @@
 			<tr class="pid_{$v2['module_id']} pid_{$v1['module_id']}" style="height: 30px; display: none;">
 				<td></td>
 				<td style="text-align: center;">
-					<input type="text" class="sort input-common" fieldid="{$v3['module_id']}" fieldname="sort" value="{$v3['sort']}" size="1">
+					<input type="text" class="sort input-common input-common-sort" fieldid="{$v3['module_id']}" fieldname="sort" value="{$v3['sort']}" size="1">
 				</td>
 				<td>
 					<span style="color: #ccc;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|——</span>
@@ -89,7 +86,7 @@
 				<tr class="pid_{$v3['module_id']} pid_{$v2['module_id']} pid_{$v1['module_id']}" style="height: 30px; display: none;">
 					<td></td>
 					<td style="text-align: center;">
-						<input type="text" class="sort input-common" fieldid="{$v4['module_id']}" fieldname="sort" value="{$v4['sort']}" size="1">
+						<input type="text" class="sort input-common input-common-sort" fieldid="{$v4['module_id']}" fieldname="sort" value="{$v4['sort']}" size="1">
 					</td>
 					<td>
 						<span style="color: #ccc;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|——</span>
@@ -105,7 +102,7 @@
 					<tr class="pid_{$v4['module_id']} pid_{$v3['module_id']} pid_{$v2['module_id']} pid_{$v1['module_id']}" style="height: 30px; display: none;">
 						<td></td>
 						<td style="text-align: center;">
-							<input type="text" class="sort input-common" fieldid="{$v5['module_id']}" fieldname="sort" value="{$v5['sort']}" size="1">
+							<input type="text" class="sort input-common input-common-sort" fieldid="{$v5['module_id']}" fieldname="sort" value="{$v5['sort']}" size="1">
 						</td>
 						<td>
 							<span style="color: #ccc;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|——</span>

@@ -412,12 +412,19 @@ class Upgrade
      * @param unknown $version_no
      */
     public function execute_upgrade_sql($download_update_file, $version_no){
-        $sqlfile = $download_update_file."/niushop_".$version_no."_patch.sql";
-        $result=$this->sql_execute($sqlfile, true);
-        if($result["upgrade_code"]==0){
+        $is_lock=$download_update_file."/niushop_".$version_no."_patch.lock";
+        if(!file_exists($is_lock)){
+            fopen($is_lock, "w");
+            $sqlfile = $download_update_file."/niushop_".$version_no."_patch.sql";
             $result=$this->sql_execute($sqlfile, false);
+            return $result;
+        }else{
+            return array(
+                "upgrade_code"=>-1,
+                "upgrade_message"=>"数据库文件已执行，不可重复执行"
+            );
         }
-        return $result;
+        
     }
     /**
      *  执行sql 语句
@@ -442,7 +449,7 @@ class Upgrade
                         }
                         $querySql = trim($v);
                         if(!empty($querySql)){
-                            if($is_debug){
+                            if(!$is_debug){
                                 Db::execute($querySql);
                             }else{
                                 if(stripos($querySql,"alter table")=== false && stripos($querySql,"create table")=== false){

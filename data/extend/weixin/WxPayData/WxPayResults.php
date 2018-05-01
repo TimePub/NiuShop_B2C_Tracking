@@ -80,4 +80,13 @@ class WxPayResults extends WxPayDataBase
         $obj->CheckSign();
         return $obj->GetValues();
     }
+    /**
+     * xml 转array
+     * @param unknown $xml
+     */
+    public static function TurnXml($xml){
+        $obj = new self();
+        $obj->FromXml($xml);
+        return $obj->GetValues();
+    }
 }

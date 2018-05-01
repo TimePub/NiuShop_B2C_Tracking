@@ -51,7 +51,7 @@ class Pay extends Controller
         // 使用那个手机模板
         $use_wap_template = $config->getUseWapTemplate(0);
         if (empty($use_wap_template)) {
-            $use_wap_template['value'] = 'default';
+            $use_wap_template['value'] = 'default_new';
         }
         // 检查模版是否存在
         if (! checkTemplateIsExists("wap", $use_wap_template['value'])) {

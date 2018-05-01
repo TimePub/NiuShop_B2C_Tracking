@@ -70,7 +70,7 @@
 				<!-- 商品团购倒计时 -->
 				<div class="goods-price">
 					<!-- 商品不同的价格 -->
-					<div class="show-price" {if condition="$goods_info.market_price==0"}style="display:none;"{/if}>
+					<div class="show-price" {if condition="$goods_info['market_price'] == 0 || $goods_info['market_price'] eq $goods_info['promotion_price']"}style="display:none;"{/if}>
 							<span class="price" style="display:block;">{:lang('original_cost')}</span>
 							<font class="market-price">￥{$goods_info.market_price}</font>
 					</div>

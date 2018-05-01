@@ -82,8 +82,8 @@
 		<dt>商品促销语：</dt>
 		<dd>
 			<div class="controls">
-				<input class="productname" type="text" id="txtIntroduction" placeholder="请输入商品名称，不能超过60个字符" value="{$goods_info.introduction}" oninput='if(value.length>60){value=value.slice(0,60);$(this).next().text("促销语不能超过60个字符").show();}else{$(this).next().hide();}'/>
-				<span class="help-inline">请输入商品促销语，不能超过60个字符</span>
+				<input class="productname" type="text" id="txtIntroduction" placeholder="请输入商品名称，不能超过100个字符" value="{$goods_info.introduction}" oninput='if(value.length>100){value=value.slice(0,100);$(this).next().text("促销语不能超过100个字符").show();}else{$(this).next().hide();}'/>
+				<span class="help-inline">请输入商品促销语，不能超过100个字符</span>
 			</div>
 		</dd>
 	</dl>
@@ -200,9 +200,10 @@
 		</dd>
 	</dl>
 	<dl>
-		<dt>保质期：</dt>
+		<dt>保质期天数：</dt>
 		<dd>
-			<input type="text" id="shelf_life" maxlength="45" value="{$goods_info.shelf_life}">
+			<input type="number" class="goods-stock" id="shelf_life" value="{$goods_info.shelf_life}">&nbsp;天
+			<span class="help-inline">请输入保质期天数，必须是整数</span>
 		</dd>
 	</dl>
 	<dl>
@@ -222,6 +223,28 @@
 				<span class="help-inline">请输入库存预警数，必须是大于0的整数</span>
 				<p class="hint">设置最低库存预警值。当库存低于预警值时商家中心商品列表页库存列红字提醒。<br>0为不预警。</p>
 			</div>
+		</dd>
+	</dl>
+
+	<dl style="display: none;">
+		<dt>阶梯优惠：</dt>
+		<dd>
+			<p class="hint" style="color: #FF8400;">设置商品阶梯优惠，当购买数量达到所设数量时，商品单价 = 商品销售价 - 优惠价格</p>
+			<div class="ladder_preference_content">
+				<div>
+					<span class="label-title">数量</span><span class="label-title" style="margin-left: 30px;">优惠价格</span>
+				</div>
+				{notempty name="ladder_preferential"}
+					{foreach name="$ladder_preferential" item="vo"}
+					<div class="ladder_preference">
+						<input type="number" class="input-common ladder" value="{$vo.quantity}">
+						<input type="number" class="input-common preference" value="{$vo.price}">
+						<a href="javascript:;" class="delete_preference">删除</a></div>
+					{/foreach}
+				{/notempty}
+				<div id="ladder_preference"></div>
+			</div>
+			<div class="add_ladder_preference"><i class="fa fa-plus" aria-hidden="true"></i></div>
 		</dd>
 	</dl>
 	
@@ -316,6 +339,36 @@
 			</div>
 		</dd>
 	</dl>
+	
+	<!-- <h3 class="js-goods-img">展示视频</h3> -->
+	<dl style="display: none;">
+		<dt><i class="required">*</i>展示视频：</dt>
+		<dd>
+			<div class="controls" style="background-color:#FFF;border: 1px solid #E9E9E9;">
+				<div class="ncsc-goods-default-pic">
+					<div class="goodspic-uplaod" style="padding: 15px;">
+						<div class="clear"></div>
+							<div class="handle">
+							<div class="ncsc-upload-btn" id="video-file-box">
+								<a href="javascript:void(0);">
+									<span>
+										<input class="input-file" name="file_upload" id="videoupload" type="file" onchange="" >
+									</span>
+									<p>上传视频</p>
+									<input type="hidden" id="video_url" value="">
+								</a>
+							</div>
+							
+						</div>
+					</div>
+				</div>
+			</div>
+			
+		</dd>
+	</dl>
+	
+	
+	
 	<dl>
 		<dt><i class="required"></i>规格图片：</dt>
 		<dd>
@@ -613,6 +666,8 @@ $(function(){
 		ue.setContent('{$goods_info.description}', false);
 	});
 })
+
+
 </script>
 {include file="adminblue/Goods/controlEditGoodsCommonScript"}
 {/block}

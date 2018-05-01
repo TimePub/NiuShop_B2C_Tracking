@@ -91,6 +91,8 @@ a.shop-name i{ display:inline-block; vertical-align:middle; margin-right:3px; fo
 .openList li dl{ width:96%; margin:auto; margin-top:8px; overflow:hidden; padding-left:2%; padding-right:2%;}
 .openList li dl dt{font-size:14px; width:100%; height:40px; overflow:hidden; }
 .openList li dl dt a{font-size:14px; line-height:20px; color:#222;}
+i.goods_tab{font-style: normal;font-size: 12px!important;;background: #f44;color: #fff;padding: 1px 3px;margin-right: 2px;border-radius: 2px;font-weight: normal!important;}
+i.shipping_fee{font-style: normal;font-size: 12px!important;;background: #fff;color: #f44;padding: 1px 3px;margin-left: 5px;border-radius: 2px;border:1px solid #f44;display: inline-block;line-height: 1!important;font-weight: normal!important;}
 .openList li dd{width:100%;margin:auto; overflow:hidden}
 .openList li dd i{ display:block; float:left; font-size:16px; line-height:30px; color:#f23030; font-weight:bold;}
 .openList li dd span{ display:block; float:left; font-size:10px; line-height:15px; color:#fff; padding-left:8px; padding-right:8px; background:#F00; margin-left:10px; margin-top:8px;border-radius:3px;}

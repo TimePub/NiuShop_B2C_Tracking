@@ -55,6 +55,7 @@
 	padding: 8px 0 8px 1%;
 	border-left: solid 1px #e5e5e5;
 	*display: inline /*IE6,7*/;
+	min-height: 30px;
 }
 
 .category-text {
@@ -92,16 +93,16 @@ label.error {
 	margin-bottom: 0;
 }
 
-.alert-info {
-	color: #3a87ad;
-	background-color: #d9edf7;
-	border-color: #bce8f1;
-}
+/* .alert-info { */
+/* 	color: #3a87ad; */
+/* 	background-color: #d9edf7; */
+/* 	border-color: #bce8f1; */
+/* } */
 
-.alert-info h4 {
-	color: #3a87ad;
-	font-size: 17.5px;
-}
+/* .alert-info h4 { */
+/* 	color: #3a87ad; */
+/* 	font-size: 17.5px; */
+/* } */
 
 .alert-info p {
 	margin: 0 0 10px;

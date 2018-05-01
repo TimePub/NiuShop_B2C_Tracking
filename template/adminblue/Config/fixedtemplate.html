@@ -31,6 +31,7 @@
 .app-template li{width:220px;}
 .edit_button{margin: 12px auto;padding: 3px 10px;border: 0;background: #0072D2;color: #fff;width:100px;height:35px;}
 .btn-submit{text-align:center;}
+.classified-display-mode label{display: inline-block;margin:0 10px;}
 </style>
 {/block}
 {block name="main"}
@@ -38,7 +39,7 @@
 	<dl>
 		<dt><span style="color:red;margin-right:10px;"></span>用户通知:</dt>
 		<dd class="borderclass">
-			<textarea rows="2" id="notice_message" class="textarea w400" maxlength="50">{$info.notice_message}</textarea>
+			<textarea rows="2" id="notice_message" class="textarea w400 input-common" maxlength="50">{$info.notice_message}</textarea>
 		</dd>
 	</dl>
 	<dl>
@@ -46,6 +47,15 @@
 		<dd class="borderclass">
 			<p>
 				<input id="is_enable" type="checkbox" class="checkbox" {if condition="$info.is_enable==1"} checked="checked"{/if}/>
+			</p>
+		</dd>
+	</dl>
+	<dl>
+		<dt>分类显示方式:</dt>
+		<dd class="borderclass classified-display-mode">
+			<p>
+				<label><input type="radio" name="input-classified-display-mode" value="1"{if condition="$classified_display_mode==1"} checked="checked"{/if}/>&nbsp;缩略图模式</label>
+				<label><input type="radio" name="input-classified-display-mode" value="2"{if condition="$classified_display_mode==2"} checked="checked"{/if}/>&nbsp;列表模式</label>
 			</p>
 		</dd>
 	</dl>
@@ -105,33 +115,6 @@ $(function() {
 	});
 });
 
-function chageshowblock(){
-	if($("#is_recommend").prop("checked")){
-		$(".addblockbutton").show();
-		$("#hideborder").show();
-		$("#showblock").show();
-	}else{
-		$(".addblockbutton").hide();
-		$("#hideborder").hide();
-		$("#showblock").hide();
-	}
-	var is_recommend = 0;
-	if($("#is_recommend").prop("checked")){
-		is_recommend = 1;
-	}
-	 $.ajax({
-		type : "post",
-		url : "{:__URL('ADMIN_MAIN/config/isrecommend')}",
-		data : { 'is_recommend' : is_recommend },
-		success : function(data) {
-			if (data['code'] > 0) {
-			} else {
-				showMessage('error',"提交失败");
-			}
-		}
-	});
-}
-
 function chagecategoryblock(){
 	var is_category = 0;
 	if($("#is_category").prop("checked")){
@@ -146,43 +129,6 @@ function chagecategoryblock(){
 			} else {
 				showMessage('error',"提交失败");
 			}
-		}
-	});
-}
-
-//改变商品分类触发事件
-function changeCategory(event, level){
-	var category_id = $(event).val();
-	if(category_id == 0){
-		$(event).parent().find(".category_second option:gt(0)").remove();
-		$(event).parent().find(".category_three option:gt(0)").remove();
-		return false;
-	}
-	if(level == 1){
-		$(event).parent().find(".category_second").show(300);
-		$(event).parent().find(".category_second option:gt(0)").remove();
-		$(event).parent().find(".category_three option:gt(0)").remove();
-		loadCategoryData(category_id, $(event).parent().find(".category_second"));
-	}else if(level == 2){
-		$(event).parent().find(".category_three").show(300);
-		$(event).parent().find(".category_three option:gt(0)").remove();
-		loadCategoryData(category_id, $(event).parent().find(".category_three"));
-	}
-}
-// 加载数据
-function loadCategoryData(category_id, obj){
-	$.ajax({
-		type : "post",
-		url : "{:__URL('ADMIN_MAIN/system/getgoodscategorylistajax')}",
-		data : { 'category_id' : category_id },
-		success : function(data) {
-			var html = '';
-			if(data.length > 0){
-				for(var i = 0; i < data.length; i++){
-					html += '<option value="'+data[i]['category_id']+'">'+data[i]['category_name']+'</option>';
-				}
-			}
-			$(obj).append(html);
 		}
 	});
 }
@@ -206,168 +152,7 @@ $(".app-template li").click(function(){
 			}
 		}
 	});
-})
-
-//添加促销版块
-function addBlock(){
-	$("#class_id").val(null);
-	var num = $("#add-goodsRecommend").prev().find(".panel-heading").length;
-	var show_type = "{$show_type}";
-	if(show_type == 0){
-		if(num >4){
-			showMessage('error','模块最多只能添加5个！');
-		}else{
-			var html = '';
-			html += '<div class="goodsRecommend" id="recommendAdd">';
-			html += '<header class="panel-heading">促销商品推荐 <a href="javascript:void(0);" onclick="delGoodsRecommendClass(0,this)" class="handle"><i class="fa fa-trash-o"></i>&nbsp; 删除 </a>';
-			html += '<a href="javascript:void(0);" data-toggle="data" onclick="updateGoodsRecommendClass(0)" class="handle" style="background:#01B044;"><i class="fa fa-cog"></i>&nbsp; 编辑 </a></header>';
-			html += '<table class="table table-striped m-b-none text-sm"><tbody align="center">';
-			html += '<tr>';
-			html += '</tr></table></div>';
-			$("#add-goodsRecommend").html(html);
-		}
-	}else{
-		var html = '';
-		html += '<div class="goodsRecommend" id="recommendAdd">';
-		html += '<header class="panel-heading">促销商品推荐 <a href="javascript:void(0);" onclick="delGoodsRecommendClass(0,this)" class="handle"><i class="fa fa-trash-o"></i>&nbsp; 删除 </a>';
-		html += '<a href="javascript:void(0);" data-toggle="data" onclick="updateGoodsRecommendClass(0)" class="handle" style="background:#01B044;"><i class="fa fa-cog"></i>&nbsp; 编辑 </a></header>';
-		html += '<table class="table table-striped m-b-none text-sm"><tbody align="center">';
-		html += '<tr>';
-		html += '</tr></table></div>';
-		$("#add-goodsRecommend").html(html);
-	}
-
-}
-
-//编辑促销版块
-function updateGoodsRecommendClass(class_id){
-	$("#data").modal("show");
-	if(class_id > 0){
-		$.ajax({
-			type : 'post',
-			url : "{:__URL('ADMIN_MAIN/system/getgoodsrecommendclass')}",
-			data : {'class_id' : class_id},
-			success : function(data){
-				$("#class_name").val(data['class_name']);
-				$("#sort").val(data['sort']);
-				$("#class_id").val(class_id);
-				goods_list_html = "";
-				for(var i=0;i<data['goods_list'].length;i++){
-					goods_list_html += '<div class="alert-goods-info" onDblClick="remove_selected_goods(this)">';
-					goods_list_html += '<button type="button" class="close" data-dismiss="alert" style="color:#555;">×</button>';
-					goods_list_html += '<input type="checkbox" name="selected_goods" value="'+data['goods_list'][i]['goods_id']+'" style="display:none;">';
-					goods_list_html += '<img class="imglogo" src="'+__IMG(data['goods_list'][i]['picture_info']['pic_cover_small'])+'" width="60" height="60">';
-					goods_list_html += '<label  class="goods-name" title="'+data['goods_list'][i]['goods_info']['goods_name']+'">'+data['goods_list'][i]['goods_info']['goods_name']+'</label>';
-					goods_list_html += '</div>';
-					$('#goods_list').html(goods_list_html);
-				}
-			}
-		})
-	}else{
-		$("#class_name").val('');
-		$("#sort").val('');
-		$("#class_id").val('');	
-		$('#goods_list .alert-goods-info').remove();
-	}
-}
-
-//向板块中添加商品
-function addSelectGoods(event){
-	var goods_id_obj = $("#goods_list").find('input[name="selected_goods"]');
-	var goods_id_str = '';
-	for(var i=0; i<goods_id_obj.length; i++){ 
-		goods_id_str += ','+goods_id_obj[i].value; //如果选中，将value添加到变量s中 
-	} 
-	var goods_id = $(event).parent('.search-goods-info').children('input[name="select_goods"]').val();
-	var goods_url = $(event).attr("src");
-	var goods_name = $(event).parent('.search-goods-info').children('label').html();
-	//判断添加商品的个数
-	var goods_list_obj = $("#goods_list").find('input[name="selected_goods"]');
-	if(goods_list_obj.length<5){
-		
-	}else{
-		return false;
-	}
-	if(goods_id_str.indexOf(goods_id) > 0){
-		return false;
-	}else{
-		var html = '';
-		html += '<div class="alert-goods-info" onDblClick="remove_selected_goods(this)">';
-		html += '<button type="button" class="close" data-dismiss="alert" style="color:#555;">×</button>';
-		html += '<input type="checkbox" name="selected_goods" value="'+goods_id+'" style="display:none;">';
-		html += '<img class="imglogo" src="'+goods_url+'" width="60" height="60">';
-		html += '<label  class="goods-name" title="'+goods_name+'">'+goods_name+'</label>';
-		html += '</div>';
-		$("#goods_list").append(html);
-	}
-}
-//保存促销版块
-function save(){
-	var class_id = $("#class_id").val();
-	var class_name = $("#class_name").val();
-	var sort = $("#sort").val();
-	var goods_id_obj = $("#goods_list").find('input[name="selected_goods"]');
-	var goods_id_str = '';
-	for(var i=0; i<goods_id_obj.length; i++){ 
-		goods_id_str += ','+goods_id_obj[i].value; //如果选中，将value添加到变量s中 
-	} 
-	goods_id_str = goods_id_str.substr(1);
-	if(class_name == ''){
-		showMessage('error','版块名称不能为空！');
-		$("#class_name").focus();
-		return false;
-	}
-	var show_type = "{$show_type}";
-	$.ajax({
-		type: 'post',
-		url: "{:__URL('ADMIN_MAIN/config/updategoodsrecommendclass')}",
-		data: {'class_id':class_id,'class_name':class_name,'goods_id_str':goods_id_str,'sort':sort,'show_type':show_type},
-		success:function(data){
-			$("#data").modal("hide");
-			if(data['code'] > 0){
-				getPlatformGoodsRecommendClassInfo();
-			}else{
-				showMessage('error',data['message']);
-			}
-		}
-	});
-}
-
-//删除 促销版块
-function delGoodsRecommendClass(class_id,e){
-	if(class_id > 0){
-		$( "#dialog" ).dialog({
-			buttons: {
-				"确定": function() {
-					$(this).dialog('close');
-					$.ajax({
-						type:"post",
-						url:"{:__URL('ADMIN_MAIN/config/delgoodsrecommendclass')}",
-						data:{ 'class_id':class_id },
-						success:function (data) {
-							if(data['code'] > 0){
-								showMessage('success',data['message'],"");
-								getPlatformGoodsRecommendClassInfo();
-							}else{
-								showMessage('error', data['message']);
-							}
-						}
-					});
-				},
-				"取消,#e57373": function() {
-					$(this).dialog('close');
-				}
-			},
-			contentText:"确定删除？",
-		});
-	}else{
-		$(e).parents('#recommendAdd').remove()
-	}
-}
-//双击 移除已选择的商品
-function remove_selected_goods(event){
-	$(event).remove();
-}
+});
 
 function setConfigAjax(){
 	var notice_message = $("#notice_message").val();
@@ -379,58 +164,17 @@ function setConfigAjax(){
 	if($("#is_category").prop("checked")){
 		is_category = 1;
 	}
+	var classified_display_mode = $("input[name='input-classified-display-mode']:checked").val();
 	$.ajax({
 		type:"post",
-		url:"{:__URL('ADMIN_MAIN/config/updatenotice')}",
-		data:{ 'notice_message' : notice_message, 'is_enable' : is_enable },
+		url:"{:__URL('ADMIN_MAIN/config/updateWapBasicInformation')}",
+		data:{ 'notice_message' : notice_message, 'is_enable' : is_enable,'classified_display_mode' : classified_display_mode },
 		success:function (data) {
 			if (data["code"] > 0) {
 				showMessage('success', data["message"],"{:__URL('ADMIN_MAIN/config/fixedtemplate')}");
 			}else{
 				showMessage('error', data["message"]);
 			}
-		}
-	});
-}
-
-//ajax记载促销
-function getPlatformGoodsRecommendClassInfo(){
-	$.ajax({
-		type:"post",
-		url:"{:__URL('ADMIN_MAIN/system/getPlatformGoodsRecommendClass')}",
-		success:function (data) {
-			var html = '';
-			if(data.length > 0 || data == undefined){
-				html +='<div class="goodsRecommend" id="showblock">';
-				html +='<form class="" id="block_list">	';
-				$.each(data,function(k,v){
-					html +='<header class="panel-heading">';
-					html +=v['class_name']; 
-					html +='<a href="javascript:void(0);" onclick="delGoodsRecommendClass('+v.class_id+',this)" class="handle"><i class="fa fa-trash-o"></i>&nbsp; 删除 </a>';   	
-					html +='<a href="javascript:void(0);" onclick="updateGoodsRecommendClass('+v.class_id+')" class="handle" style="background:#01B044;"><i class="fa fa-cog"></i>&nbsp; 编辑 </a>';   		
-					html +='</header>';
-					html +='<div class="goods-logo-class">';
-					html +='<ul>';
-					if(v["goods_list"].length > 0 || v["goods_list"] == undefined){
-						$.each(v["goods_list"],function(m,t){
-							html +='<li >';
-								html +='<img class="imglogo" src="'+__IMG(t['picture_info']['pic_cover_small'])+'" alt="'+t['goods_info']['goods_name']+'" title="'+t['goods_info']['goods_name']+'"  style="border:1px dashed #e9e9e9;text-align:center;">';
-							html +='</li>';
-						});
-					}else{
-						html +='<li>暂未选择商品</li>';
-					}
-					html +='</ul>';
-					html +=' </div>';
-				});
-				html +='</form>';
-				html +=' </div>';
-				
-			}else{
-				html +='<div class="tip-box">当前系统还未设置促销板块，<a href="javascript:void(0);" onclick="addBlock()">马上设置</a></div>';  
-			}
-			$("#showblock").html(html);
-			$("#add-goodsRecommend").html('');
 		}
 	});
 }

@@ -74,7 +74,9 @@ div.p-r{
 	</div>
   
     <div class="com_content">
-    	
+    	<div class="coupon-contianer">
+    		
+    	</div>
     </div>
 <script type="text/javascript">
 	$(function(){
@@ -92,51 +94,53 @@ div.p-r{
 			data:{'type':type },
 			dataType:'json',
 			success:function(data){
-				var listhtml='<div class="com_content"><ul id="not_use">';
+				var listhtml='';
 				if(data.length>0){
-					$('.null_default').hide();
 					for(var i=0;i<data.length;i++){
 						var money = data[i]['money'] != null ? data[i]['money'] : "";
 						var coupon_code = data[i]['coupon_code'] != null ? data[i]['coupon_code'] : "";
 						var coupon_name = data[i]['coupon_name'] != null ? data[i]['coupon_name'] : "";
 						var start_time = data[i]['start_time'] != null ? data[i]['start_time'] : "";
 						var end_time = data[i]['end_time'] != null ? data[i]['end_time'] : "";
-						if(type==1){
-							listhtml+='<li><div class="clearfloat"><span class="title" style="float:left;">'+coupon_name+'</span><span style="float:right;">'+coupon_code+'</span></div><a class="not_use" href="javascript:;">';
+						var at_least = data[i]['at_least'];
+						if(type != 1){
+							listhtml += '<div class="coupon-item used">';
 						}else{
-							listhtml+='<li><div class="clearfloat"><span class="title" style="float:left;">'+coupon_name+'</span><span style="float:right;">'+coupon_code+'</span></div><a class="already-use" href="javascript:;">';	
+							listhtml += '<div class="coupon-item">';
 						}
-						if(type==1){
-							if(money > 0 && money <= 10){
-								listhtml+='<div class="p-r" style="background: #FFA72A;">';
-							}else if(money > 10 && money <= 100){
-								listhtml+='<div class="p-r" style="background: #FF4D5B;">';
-							}else if(money > 100){
-								listhtml+='<div class="p-r" style="background: #34D71E;">';
-							}
-						}else if(type==3 || type == 2){
-							listhtml+='<div class="p-r">';
-						}
-						listhtml+='<div class="active-msg"><img src="__TEMP__/{$style}/public/images/coupon_member.png" style="width:97%;"/><div class="coupon-price" style="">￥'+money+'</div>';
-						listhtml+='<div class="coupon-lose"><span>'+start_time+'</span>{:lang('until')}<span>'+end_time+'</span></div>';
-						listhtml+='</div></div>';
-						if(type==2){
-							listhtml+='<span class="uneless-img"></span></a></li>';	
-						}else if(type==3){
-							listhtml+='<span class="due-img"></span></a></li>';
-						}else{
-							listhtml+='</div></a></li>';
-						}
+							listhtml += '<div class="coupon-type">';
+							listhtml += '</div>';
+							listhtml += '<section>';
+								listhtml += '<div class="coupon-title"><i>￥</i><em>'+ money +'</em></div>';
+								listhtml += '<div class="coupon-time">'+start_time+' 至 '+end_time+'</div>';
+							listhtml += '</section>';
+						listhtml += '</div>';
+						listhtml += '<div class="coupon-desc">';
+							listhtml += '满'+at_least+'元可用';
+						listhtml += '</div>';
 					}
-					listhtml+='</ul></div>';
 				}else{
-					listhtml='<div class="null_default"><i class="icon-nocontent-youhuiquan"></i><span class="nulltext">{:lang("you_do_not_have_any_coupons_yet")}！</span></div>';
+					listhtml += '<div class="coupon-empty">';
+						listhtml += '<p>您还没有';
+						switch(type){
+							case 1:
+								listhtml += "{:lang('unused')}";
+							break;
+							case 2:
+								listhtml += "{:lang('used')}";
+							break;
+							case 3:
+								listhtml += "{:lang('expire')}";
+							break;
+						}
+						listhtml += '优惠券</p>';
+					listhtml += '</div>';
 				}
-				
-				$('.com_content').html(listhtml);
+				$('.com_content .coupon-contianer').html(listhtml);
 			}
 		})
 	}
+
     $("#backoutapp").click(function (){
         var json ={
         		"center" : "1",

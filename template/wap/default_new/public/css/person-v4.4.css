@@ -57,7 +57,7 @@
 .order-detail .order-detail-r .name .label{line-height:12px;font-size:12px; }
 .order-detail .order-detail-r .label {padding:0;background:none;color:#333; }
 .order-detail .order-detail-r .label.log-title{font-size:14px;}
-.order-detail-sum {padding:10px 15px;border-bottom:1px solid #4598c1;background:#51a5ce;color:#fff;}
+.order-detail-sum {padding:10px 15px;border-bottom:1px solid #FF834C;background:#FF834C;color:#fff;}
 .order-detail-sum .sum-r-ul .status{line-height:14px;font-size:14px; }
 .order-detail-sum .sum-r-ul .label {color:#fff;}
 .order-detail-address {padding:0 15px;background:#fff;color:#333;}
@@ -74,7 +74,7 @@
 .order-detail-noLogistics .alert-no{color:#999;}
 .order-detail-remark {padding:0 15px;border-bottom:1px solid #e3e3e3;background:#fff;color:#333;}
 .order-detail-remark .remark-out {padding:10px 0; }
-.order-detail .list-myorder{margin:10px 0 65px 0;padding-top:0px;border-top:1px solid #e3e3e3;border-bottom:1px solid #e3e3e3;background:#fff;}
+.order-detail .list-myorder{margin:10px 0 0px 0;padding-top:0px;border-top:1px solid #e3e3e3;border-bottom:1px solid #e3e3e3;background:#fff;}
 .order-detail .list-myorder .text{font-size:12px;overflow:hidden;}
 .order-detail .list-myorder .pro-name{color:#666;font-size:12px;}
 .order-detail .list-myorder .pro-pric{margin-top:5px;color:#333;font-size:12px;}
@@ -403,3 +403,77 @@
 .change-number .reduce,
 .change-number .add{float:left;height:37px;line-height:32px;width:50px;margin:0;border:1px solid #e4e4e4;background:#fff;text-align:center;color:#000;font-size:26px;font-weight:400;}
 .change-number .number{float:left;height:37px;line-height:37px;width:120px;padding:0 5px;margin:0;border-top:1px solid #e4e4e4;border-bottom:1px solid #e4e4e4;border-left:0;border-right:0;border-radius:0;box-shadow: none;background:#fff;color:#000;font-size:15px;}
+/*虚拟码*/
+.virtual_code{background: #fff; margin-top: 10px;border-top: 1px solid #e3e3e3;border-bottom: 1px solid #e3e3e3;}
+.virtual_code ul{padding:0 10px;margin: 0;}
+.virtual_code ul li{width: 100%;color: #666;line-height: 35px;height: 35px;border-bottom: 1px solid #e5e5e5;}
+.virtual_code ul li:last-child{border:none;}
+.virtual_code ul li .icon-virtual-code{width: 12px;height: 12px;display: inline-block;background: url(../images/code.png) no-repeat;background-size: 12px 12px;margin-right: 3px}
+.virtual_code ul li h5{font-size: 14px;font-weight: normal;padding: 0;margin: 0;height: 35px;line-height: 35px;display: inline-block;}
+.virtual_code ul li span.code{font-size: 13px;float: left;}
+.virtual_code ul li span.code-right{font-size: 12px;float: right;padding:0 5px;background:#e5e5e5;height: 20px;line-height: 20px;position: relative;top: 8px;}
+.order-opcation{
+	width: 100%;
+	height:45px;
+	background:#fff;
+	position: fixed;
+	bottom: 0;
+	line-height: 45px;
+	box-shadow: 0px 1px 3px;
+}
+.order-opcation .content{
+	padding: 0 10px;
+}
+.order-opcation a
+{
+   	float: right;
+    font-size: 14px;
+    height: 35px;
+    line-height: 35px;
+    width: 80px;
+    border-radius: 3px;
+    text-align: center;
+    border:1px solid #fff;
+    background:#f00;
+    border-color: #f00;
+    color: #fff;
+    margin: 5px 0 5px 10px;
+}
+.order-tablink{
+	border-top: 1px solid #e3e3e3;
+	border-bottom: 1px solid #e3e3e3;
+	background: #fff;
+	margin: 10px 0 0 0;
+	padding-bottom: 30px;
+}
+.order-tablink .tablink-box{
+	display: -webkit-box;
+	padding: 10px 15px;
+}
+.order-tablink .tablink-box .tablink{
+	-webkit-box-flex:1;
+}
+.order-tablink .tablink-box .tablink a{
+    display: block;
+    margin: 0 auto;
+    width: 90%;
+    height: 35px;
+    border: 1px solid #e7e7e7;
+    text-align: center;
+    line-height: 35px;
+    font-size: 14px;
+    border-radius: 2px;
+}
+.order-tablink .tablink-box .tablink a:hover{
+	color: #333;
+}
+.order-tablink .tablink-box .tablink a span.kefu{
+	background: url(../images/order_kefu.png) no-repeat left;	
+	background-size: 18px 18px;
+	padding-left: 20px;
+}
+.order-tablink .tablink-box .tablink a span.call{
+	background: url(../images/call.png) no-repeat left;	
+	background-size: 18px 18px;
+	padding-left: 20px;
+}

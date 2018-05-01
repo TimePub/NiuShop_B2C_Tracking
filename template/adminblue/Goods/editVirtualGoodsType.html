@@ -1,5 +1,7 @@
 {extend name="adminblue/base" /}
-{block name="resources"/}{/block}
+{block name="resources"/}
+<script type="text/javascript" src="__STATIC__/My97DatePicker/WdatePicker.js"></script>
+{/block}
 {block name="main"}
 <div class="set-style">
 	<dl>
@@ -100,7 +102,6 @@ function validation() {
 	
 	return true;
 }
-
 var flag = false;//防止重复提交
 function save() {
 	if (!validation()) return;

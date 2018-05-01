@@ -253,6 +253,7 @@ return [
     'goods_by_collection'             => 'por guardados',
     'goods_evaluation_quantity'       => 'por precio',
     'goods_by_sharing'                => 'por compartido',
+    'existing_integral'               => 'Existing integral',
   //  会员相关 member_
     
     'member_new_delivery_address'    => 'agregar direccion',
@@ -659,7 +660,8 @@ return [
     'member_effective_time'          => 'tiempo efectivo',
     'member_by'                      => 'hasta',
     'member_no_coupon_yet'           => 'aun no tienes cupones',
-    
+    'member_taocan_discount'         => 'Package is favorable',
+
 //login
     'mailbox_has_been_registered'    => 'el correo ha sido registrado',
     'two_input_is_inconsistent'      => ' Las dos entradas son incompatibles ',
@@ -1059,7 +1061,32 @@ return [
     'regular_orders'                                                      => 'Normal orden',
     'order_user_phone_instruction'                                        => 'Usted la compra de bienes virtuales en esta dirección, no necesita de recepción, por favor, rellene el número de teléfonos vendidos convenientemente en contacto con usted',
     'virtual_goods_orders_are_consumed_by_virtual_code'                   => 'Por órdenes de bienes virtuales consumo. Códigos virtual',
-    'contact_information'                                                 => 'Contactar con'
+    'contact_information'                                                 => 'Contactar con',
+    'combo_package'                                                       => 'Combo Package',
+    'package_price'                                                       => 'Package Price',
+    'please_select_goods_sku'                                             => 'Please Select Goods Sku',
+    'original_price'                                                      => 'Original Price',
+    'save_the_price'                                                      => 'Save The Price',
+    'goods_total_money'                                                   => 'Goods Total Money',
+    'ladder_preferential'                                                 => 'Ladder Preferential',
+    'delivery_time'                                                       => 'Tiempo de distribución de',
+    'days_and_holidays_can_be_delivered'                                  =>'Días de vacaciones, se puede ShuangXiuRi y entrega',
+    'modify'                                                              => 'modificar',
+    'delete'                                                              => 'eliminar',
+    'cancel_after_verification_platform'                                  => 'Cancel After Verification Platform',
+    'cash_account'                                                        => 'DiXian cuenta',
+    'please_enter_your_cash_account'                                      => 'Por favor ingrese DiXian cuenta secreta',
+    'get_coupons'                                                         => 'Cuello de cupones de',
+    'no_coupons'                                                          => 'Temporalmente sin cupones',
+    'you_do_not_have_any_virtual_code_yet'                                => 'You dont have virtual code',
+    'merchant_service'                                                    => 'Empresas de servicios',
+    'share'                                                               => 'Share',
+    'member_gift'                                                         => 'Gift',
+    'my_winning_record'                                                   => 'Me tocara registros',
+    'my_winning_records'                                                  => 'Me tocara registros',
+    'to_receive_the_prize'                                                => 'To receive the prize',
+    'immediately_receive'                                                 => 'Immediately to receive',
+    'member_bank_max_length'                                              => 'A lo largo de DiXian cuenta de las restricciones'
     
    
 ];

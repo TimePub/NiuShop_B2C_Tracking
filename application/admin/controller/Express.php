@@ -430,6 +430,11 @@ class Express extends BaseController
                 'url' => "config/distributionareamanagement",
                 'menu_name' => "货到付款地区管理",
                 "active" => 0
+            ),
+            array(
+                'url' => "config/expressmessage",
+                'menu_name' => "物流跟踪设置",
+                "active" => 0
             )
         );
         
@@ -474,19 +479,6 @@ class Express extends BaseController
             $retval = $expressCompany->addExpressCompany($shop_id, $company_name, $express_logo, $express_no, $is_enabled, $image, $phone, $orders, $is_default);
             return AjaxReturn($retval);
         }
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "express/expresscompany",
-                    'menu_name' => "物流公司",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . 'Express/addExpressCompany');
     }
 
@@ -519,19 +511,6 @@ class Express extends BaseController
         }
         $expressCompanyinfo = $expressCompany->expressCompanyDetail($co_id);
         $this->assign('expressCompany', $expressCompanyinfo);
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "express/expresscompany",
-                    'menu_name' => "物流公司",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . 'Express/updateExpressCompany');
     }
 

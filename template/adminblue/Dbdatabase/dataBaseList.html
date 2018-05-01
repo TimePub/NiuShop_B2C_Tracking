@@ -5,18 +5,11 @@
 <link rel="stylesheet" type="text/css"  href="__STATIC__/loading/msgbox.css" />
 <script type="text/javascript" src="__STATIC__/loading/msgbox.js"></script>
 <style type="text/css">
-.fun-a {
-	margin-top: 0px;
-	padding: 6px 15px 0 15px;
-}
+.fun-a {margin-top: 0;padding: 6px 15px 0 15px;}
 .num{width:40px;text-align:center;}	
 .cell_total{text-overflow:ellipsis;white-space:nowrap;overflow:hidden;width:250px;display: block;}
-.fun-a{
-	padding: 2px 15px;
-}
-.ns-main {
-    overflow: visible;
-}
+.fun-a{padding: 2px 15px;}
+.ns-main {overflow: visible;}
 </style>
 {/block}
 {block name="main"}
@@ -44,7 +37,7 @@
 			</colgroup>
 			<thead>
 				<tr align="center">
-					<th><label><input id="ckall" type="checkbox" onClick="CheckAll(this)"></label></th>
+					<th><input id="ckall" type="checkbox" onClick="CheckAll(this)"></th>
 					<th class="x-tab"><div class="iconbg-arrow up">表名</div></th>
 					<th class="x-tab"><div class="iconbg-arrow up">数据量</div></th>
 					<th class="x-tab"><div class="iconbg-arrow up">数据大小</div></th>
@@ -75,7 +68,7 @@ function getDataBaselist(page_index) {
 			if (data.length > 0) {
 				for (var i = 0; i < data.length; i++) {
 					html += '<tr align="center">';
-					html += '<td><div class="cell"><label><input name="sub" type="checkbox" value="'+ data[i]["name"]+'" ></label></div></td>';
+					html += '<td><div class="cell"><input name="sub" type="checkbox" value="'+ data[i]["name"]+'" ></div></td>';
 					html += '<td style="text-align:left;">'+ data[i]["name"]+'</td>';
 					html += '<td>'+ data[i]["rows"]+'</td>';
 					html += '<td>'+ data[i]["data_length_info"]+ '</td>';

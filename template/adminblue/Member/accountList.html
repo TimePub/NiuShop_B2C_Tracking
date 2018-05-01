@@ -28,12 +28,12 @@
 </table>
 <table class="table-class">
 	<thead>
-		<tr align="center">
+		<tr align="left">
 			<th>会员昵称</th>
-			<th style="text-align:left;">类别</th>
-			<th style="text-align:left;">金额</th>
-			<th style="text-align:left;">描述</th>
-			<th>时间</th>
+			<th>类别</th>
+			<th>金额</th>
+			<th>描述</th>
+			<th align="center">时间</th>
 		</tr>
 	</thead>
 	<tbody></tbody>
@@ -55,15 +55,15 @@ function LoadingInfo(page_index) {
 			var html = '';
 			if (data["data"].length > 0) {
 				for (var i = 0; i < data["data"].length; i++) {
-					html += '<tr align="center">';
+					html += '<tr align="left">';
 					if(data["data"][i]["nick_name"]==null){
 						html += '<td>--</td>';
 					}else{
 						html += '<td>'+ data["data"][i]["nick_name"] +'</td>';
 					}
-					html += '<td style="text-align:left;">'+data["data"][i]["type_name"]+'</td>';
-					html += '<td style="text-align:left;">'+ data["data"][i]["number"] +'</td>';	
-					html += '<td style="text-align:left;">'+ data["data"][i]["text"] +'</td>';
+					html += '<td>'+data["data"][i]["type_name"]+'</td>';
+					html += '<td>'+ data["data"][i]["number"] +'</td>';
+					html += '<td>'+ data["data"][i]["text"] +'</td>';
 					html += '<td align="center">'+ timeStampTurnTime(data["data"][i]["create_time"]) +'</td>';
 					html += '</tr>';
 				}

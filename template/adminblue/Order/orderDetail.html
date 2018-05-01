@@ -35,6 +35,14 @@
 		<table class="info-table">
 			<tbody>
 					<tr><th>配送方式：</th><td>{$order['shipping_type_name']}&nbsp;&nbsp;{$order['shipping_company_name']}</td></tr>
+					<tr>
+						<th>配送时间：</th>
+						{if condition="$order['shipping_time']>0"}
+						<td>{$order['shipping_time']|getTimeStampTurnTimeByYmd}</td>
+						{else/}
+						<td>工作日、双休日与节假日均可送货</td>
+						{/if}
+					</tr>
 				{switch name="$order.shipping_type"}
 					{case value="1"}
 					<!-- 物流 -->
@@ -217,7 +225,10 @@
 				{/if}
 				
 				{if condition="$order['promotion_money']>0"}
-				<span>满减优惠：￥{$order['promotion_money']}，</span>
+					{switch name="$order['promotion_type']"}
+					{case value="MANJIAN"}<span>满减优惠：￥{$order['promotion_money']}，</span>{/case}
+					{case value="ZUHETAOCAN"}<span>套餐优惠：￥{$order['promotion_money']}，</span>{/case}
+					{/switch}
 				{/if}
 				
 				{if condition="$order['point']>0"}

@@ -519,7 +519,6 @@ function goodsTypeChangeData(){
 }
 
 function editSkuData(spec_obj_str , sku_data){
-	console.log(spec_obj_str);
 	updateSpecObjData(spec_obj_str);
 	updateTempObjData(sku_data);
 	if($specObj.length > 0){
@@ -536,8 +535,6 @@ function updateSpecObjData(spec_obj_str){
 		$specObj = eval(spec_obj_str);
 	}
 	for(var i = 0 ; i <$specObj.length; i++ ){
-		//console.log(JSON.stringify($specObj[i]));
-		//console.log($(".goods-sku-block-"+$specObj[i]["spec_id"]).length);
 		if($(".goods-sku-block-"+$specObj[i]["spec_id"]).length == 0){
 			var spec = {
 					spec_id : $specObj[i]["spec_id"],
@@ -556,7 +553,6 @@ function updateSpecObjData(spec_obj_str){
 		}
 		for(var m = 0;m <$specObj[i]["value"].length ; m ++ ){
 			var selected_obj = $(".js-goods-sku article>span[data-spec-id="+$specObj[i]['spec_id']+"][data-spec-value-id="+$specObj[i]["value"][m]['spec_value_id']+"]");
-//	    	console.log(JSON.stringify(selected_obj));
 			//如果没有此规格值 创建他
 			if(selected_obj.length == 0){
 				$(".goods-sku-block-"+$specObj[i]["spec_id"]).find(".js-goods-spec-value-add").remove();//删除当前的添加按钮

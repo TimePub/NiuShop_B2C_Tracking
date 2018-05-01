@@ -33,11 +33,11 @@
 		<col style="width: 5%;">
 	</colgroup>
 	<thead>
-		<tr align="center">
-			<th>商品名称</th>
-			<th>价格</th>
-			<th>近30天下单商品数</th>
-			<th>近30天下单金额</th>
+		<tr>
+			<th align="left">商品名称</th>
+			<th align="right">价格</th>
+			<th align="right">近30天下单商品数</th>
+			<th align="right">近30天下单金额</th>
 		</tr>
 	</thead>
 	<colgroup>
@@ -69,11 +69,11 @@ function LoadingInfo(page_index) {
 					}else{
 						goods_name =  data["data"][i]["goods_name"];
 					}
-					html += '<tr align="center">';
-					html += '<td class="tal" title="' + data["data"][i]["goods_name"] + '">' + goods_name + '</td>';
-					html += '<td class="tal">' + data["data"][i]["price"] + '</td>';
-					html += '<td>' + data["data"][i]["sales_info"]["sales_num"] + '</td>';
-					html += '<td>' + data["data"][i]["sales_info"]["sales_money"] + '</td>';
+					html += '<tr>';
+					html += '<td align="left" class="tal" title="' + data["data"][i]["goods_name"] + '">' + goods_name + '</td>';
+					html += '<td align="right" class="tal">' + data["data"][i]["price"] + '</td>';
+					html += '<td align="right">' + data["data"][i]["sales_info"]["sales_num"] + '</td>';
+					html += '<td align="right">' + data["data"][i]["sales_info"]["sales_money"] + '</td>';
 					html += '</tr>';
 				}
 			} else {

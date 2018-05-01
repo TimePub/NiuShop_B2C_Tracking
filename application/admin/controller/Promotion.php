@@ -19,6 +19,7 @@ use data\service\Address;
 use data\service\Config;
 use data\service\promotion\PromoteRewardRule;
 use data\service\Promotion as PromotionService;
+use data\service\Member;
 
 /**
  * 营销控制器
@@ -95,19 +96,6 @@ class Promotion extends BaseController
             $retval = $coupon->addCouponType($coupon_name, $money, $count, $max_fetch, $at_least, $need_user_level, $range_type, $start_time, $end_time, $is_show, $goods_list);
             return AjaxReturn($retval);
         } else {
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "promotion/coupontypelist",
-                        'menu_name' => "优惠券",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
             return view($this->style . "Promotion/addCouponType");
         }
     }
@@ -144,20 +132,6 @@ class Promotion extends BaseController
             $coupon_type_data['goods_id_array'] = $goods_id_array;
             $this->assign("coupon_type_info", $coupon_type_data);
             
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "promotion/coupontypelist",
-                        'menu_name' => "优惠券",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
-            
             return view($this->style . "Promotion/updateCouponType");
         }
     }
@@ -188,19 +162,6 @@ class Promotion extends BaseController
             $retval = $pointConfig->setPointConfig($convert_rate, $is_open, $desc);
             return AjaxReturn($retval);
         }
-        $child_menu_list = array(
-            array(
-                'url' => "promotion/pointconfig",
-                'menu_name' => "积分管理",
-                "active" => 1
-            ),
-            array(
-                'url' => "promotion/integral",
-                'menu_name' => "积分奖励",
-                "active" => 0
-            )
-        );
-        $this->assign('child_menu_list', $child_menu_list);
         $pointconfiginfo = $pointConfig->getPointConfig();
         $this->assign("pointconfiginfo", $pointconfiginfo);
         return view($this->style . "Promotion/pointConfig");
@@ -212,10 +173,26 @@ class Promotion extends BaseController
      */
     public function giftList()
     {
+        $child_menu_list = array(
+            array(
+                'url' => "Promotion/giftList",
+                'menu_name' => "赠品列表",
+                "active" => 1
+            ),
+            array(
+                'url' => "promotion/giftGrantRecordsList",
+                'menu_name' => "赠品发放记录",
+                "active" => 0
+            )
+        );
+        
+        $this->assign("child_menu_list", $child_menu_list);
+        
         if (request()->isAjax()) {
             $page_index = request()->post("page_index", 1);
             $page_size = request()->post("page_size", PAGESIZE);
             $search_text = request()->post('search_text');
+            $type = request()->post("type", 0);
             $gift = new PromotionService();
             $condition = array(
                 'shop_id' => $this->instance_id,
@@ -224,10 +201,59 @@ class Promotion extends BaseController
                     '%' . $search_text . '%'
                 )
             );
+            
+            if ($type == 1) {
+                $condition["start_time"] = [
+                    "LT",
+                    time()
+                ];
+                $condition["end_time"] = [
+                    "GT",
+                    time()
+                ];
+            }
+            
             $list = $gift->getPromotionGiftList($page_index, $page_size, $condition);
             return $list;
         }
         return view($this->style . "Promotion/giftList");
+    }
+
+    /**
+     * 赠品发放记录列表
+     * 创建时间：2018年1月25日16:11:39 全栈小学生
+     *
+     * @return Ambigous <\data\model\multitype:unknown, multitype:unknown number >|Ambigous <\think\response\View, \think\response\$this, \think\response\View>
+     */
+    public function giftGrantRecordsList()
+    {
+        $child_menu_list = array(
+            array(
+                'url' => "Promotion/giftList",
+                'menu_name' => "赠品列表",
+                "active" => 0
+            ),
+            array(
+                'url' => "promotion/giftGrantRecordsList",
+                'menu_name' => "赠品发放记录",
+                "active" => 1
+            )
+        );
+        
+        $this->assign("child_menu_list", $child_menu_list);
+        if (request()->isAjax()) {
+            $page_index = request()->post("page_index", 1);
+            $page_size = request()->post("page_size", PAGESIZE);
+            $search_text = request()->post("search_text", "");
+            $condition['pgr.gift_name'] = [
+                'like',
+                "%$search_text%"
+            ];
+            $gift = new PromotionService();
+            $list = $gift->getPromotionGiftGrantRecordsList($page_index, $page_size, $condition, "pgr.id desc");
+            return $list;
+        }
+        return view($this->style . "Promotion/giftGrantRecordsList");
     }
 
     /**
@@ -239,14 +265,14 @@ class Promotion extends BaseController
     {
         if (request()->isAjax()) {
             $shop_id = $this->instance_id;
-            $gift_name = request()->post('gift_name', '');
-            $start_time = request()->post('start_time', '');
-            $end_time = request()->post('end_time', '');
-            $days = request()->post('days', '');
-            $max_num = request()->post('max_num', '');
-            $goods_id_array = request()->post('goods_id_array', '');
+            $gift_name = request()->post('gift_name', ''); // 赠品活动名称
+            $start_time = request()->post('start_time', ''); // 赠品活动开始时间
+            $end_time = request()->post('end_time', ''); // 赠品活动结束时间
+            $goods_id = request()->post('goods_id', ''); // 要赠送的商品id
+            $days = request()->post('days', ''); // 领取有效期/天（0表示不限），2.0版本不用
+            $max_num = request()->post('max_num', ''); // 领取限制(次/人 (0表示不限领取次数))，2.0版本不用
             $gift = new PromotionService();
-            $res = $gift->addPromotionGift($shop_id, $gift_name, $start_time, $end_time, $days, $max_num, $goods_id_array);
+            $res = $gift->addPromotionGift($shop_id, $gift_name, $start_time, $end_time, $days, $max_num, $goods_id);
             return AjaxReturn($res);
         }
         return view($this->style . "Promotion/addGift");
@@ -268,8 +294,8 @@ class Promotion extends BaseController
             $end_time = request()->post('end_time', '');
             $days = request()->post('days', '');
             $max_num = request()->post('max_num', '');
-            $goods_id_array = request()->post('goods_id_array', '');
-            $res = $gift->updatePromotionGift($gift_id, $shop_id, $gift_name, $start_time, $end_time, $days, $max_num, $goods_id_array);
+            $goods_id = request()->post('goods_id', '');
+            $res = $gift->updatePromotionGift($gift_id, $shop_id, $gift_name, $start_time, $end_time, $days, $max_num, $goods_id);
             return AjaxReturn($res);
         } else {
             $gift_id = request()->get('gift_id', 0);
@@ -292,6 +318,19 @@ class Promotion extends BaseController
         $gift = new PromotionService();
         $info = $gift->getPromotionGiftDetail($gift_id);
         return $info;
+    }
+
+    /**
+     * 删除赠品
+     *
+     * @return unknown[]
+     */
+    public function deleteGift()
+    {
+        $gift_id = request()->post("gift_id", 0);
+        $gift = new PromotionService();
+        $res = $gift->deletePromotionGift($gift_id);
+        return $res;
     }
 
     /**
@@ -374,19 +413,6 @@ class Promotion extends BaseController
             $res = $mansong->addPromotionMansong($mansong_name, $start_time, $end_time, $shop_id, '', $type, $range_type, $rule, $goods_id_array);
             return AjaxReturn($res);
         } else {
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "promotion/mansonglist",
-                        'menu_name' => "满减送",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
             return view($this->style . "Promotion/addMansong");
         }
     }
@@ -423,19 +449,6 @@ class Promotion extends BaseController
             $this->assign('coupon_type_list', $coupon_type_list);
             $this->assign('gift_list', $gift_list);
             $this->assign('mansong_info', $info);
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "promotion/mansonglist",
-                        'menu_name' => "满减送",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
             return view($this->style . "Promotion/updateMansong");
         }
     }
@@ -518,19 +531,6 @@ class Promotion extends BaseController
             $retval = $discount->addPromotiondiscount($discount_name, $start_time, $end_time, $remark, $goods_id_array);
             return AjaxReturn($retval);
         }
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "promotion/getdiscountlist",
-                    'menu_name' => "限时折扣",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . "Promotion/addDiscount");
     }
 
@@ -558,19 +558,6 @@ class Promotion extends BaseController
         }
         $info['goods_id_array'] = $goods_id_array;
         $this->assign("info", $info);
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "promotion/getdiscountlist",
-                    'menu_name' => "限时折扣",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . "Promotion/updateDiscount");
     }
 
@@ -701,19 +688,6 @@ class Promotion extends BaseController
      */
     public function integral()
     {
-        $child_menu_list = array(
-            array(
-                'url' => "promotion/pointconfig",
-                'menu_name' => "积分管理",
-                "active" => 0
-            ),
-            array(
-                'url' => "promotion/integral",
-                'menu_name' => "积分奖励",
-                "active" => 1
-            )
-        );
-        $this->assign('child_menu_list', $child_menu_list);
         $rewardRule = new PromoteRewardRule();
         if (request()->isAjax()) {
             $shop_id = $this->instance_id;
@@ -733,14 +707,35 @@ class Promotion extends BaseController
             $reg_partner_three_point = 0;
             $click_point = request()->post("click_point", 0);
             $comment_point = request()->post("comment_point", 0);
-            $res = $rewardRule->setPointRewardRule($shop_id, $sign_point, $share_point, $reg_member_self_point, $reg_member_one_point, $reg_member_two_point, $reg_member_three_point, $reg_promoter_self_point, $reg_promoter_one_point, $reg_promoter_two_point, $reg_promoter_three_point, $reg_partner_self_point, $reg_partner_one_point, $reg_partner_two_point, $reg_partner_three_point, $click_point, $comment_point);
+            
+            $reg_coupon = request()->post("reg_coupon", 0);
+            $click_coupon = request()->post("click_coupon", 0);
+            $comment_coupon = request()->post("comment_coupon", 0);
+            $sign_coupon = request()->post("sign_coupon", 0);
+            $share_coupon = request()->post("share_coupon", 0);
+            
+            $res = $rewardRule->setPointRewardRule($shop_id, $sign_point, $share_point, $reg_member_self_point, $reg_member_one_point, $reg_member_two_point, $reg_member_three_point, $reg_promoter_self_point, $reg_promoter_one_point, $reg_promoter_two_point, $reg_promoter_three_point, $reg_partner_self_point, $reg_partner_one_point, $reg_partner_two_point, $reg_partner_three_point, $click_point, $comment_point, $reg_coupon, $click_coupon, $comment_coupon, $sign_coupon, $share_coupon);
             return AjaxReturn($res);
         }
         $res = $rewardRule->getRewardRuleDetail($this->instance_id);
         $Config = new Config();
         $integralConfig = $Config->getIntegralConfig($this->instance_id);
+        $coupon = new PromotionService();
+        $condition = array(
+            'shop_id' => $this->instance_id,
+            'start_time' => array(
+                'ELT',
+                time()
+            ),
+            'end_time' => array(
+                'EGT',
+                time()
+            )
+        );
+        $couponlist = $coupon->getCouponTypeList($page_index, $page_size, $condition, 'start_time desc');
         $this->assign("res", $res);
         $this->assign("integralConfig", $integralConfig);
+        $this->assign("couponlist", $couponlist['data']);
         return view($this->style . "Promotion/integral");
     }
 
@@ -753,8 +748,13 @@ class Promotion extends BaseController
         $register = request()->post('register', 0);
         $sign = request()->post('sign', 0);
         $share = request()->post('share', 0);
+        $reg_coupon = request()->post('reg_coupon', 0);
+        $click_coupon = request()->post('click_coupon', 0);
+        $comment_coupon = request()->post('comment_coupon', 0);
+        $sign_coupon = request()->post('sign_coupon', 0);
+        $share_coupon = request()->post('share_coupon', 0);
         $Config = new Config();
-        $retval = $Config->SetIntegralConfig($this->instance_id, $register, $sign, $share);
+        $retval = $Config->SetIntegralConfig($this->instance_id, $register, $sign, $share, $reg_coupon, $click_coupon, $comment_coupon, $sign_coupon, $share_coupon);
         return AjaxReturn($retval);
     }
 }

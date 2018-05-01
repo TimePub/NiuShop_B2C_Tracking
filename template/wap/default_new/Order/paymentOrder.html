@@ -78,7 +78,6 @@
 	</div>
 	{/foreach}
 	
-	
 	{if condition="count($coupon_list) >0"}
 	<div class="item-options" data-flag="use-coupon">
 		<label class="float_left">{:lang('member_coupons')}</label>
@@ -134,7 +133,19 @@
 				<label>{:lang('member_logistics_company')}</label>
 				<span class="arrow-right color-gray">{:lang('please_fill_in_or_select_the_delivery_address_first')}</span>
 			</div>
-		{/if}	
+		{/if}
+	{/if}
+	
+	{if condition="$shop_config.order_designated_delivery_time"}
+	<div class="item-options" data-flag="shipping_time" style="display:none;">
+		<label>{:lang('delivery_time')}</label>
+		<div id="shipping_time">
+			<input type="hidden" class="item-options" data-flag="shipping_time"/>
+			<span class="time" data-default="{:lang('days_and_holidays_can_be_delivered')}">{:lang('days_and_holidays_can_be_delivered')}</span>
+			<span class="update">{:lang('modify')}</span>
+			<span class="delete">{:lang('delete')}</span>
+		</div>
+	</div>
 	{/if}
 	
 	<div class="item-options" data-flag="pickup_address" data-id="0" data-count="{$pickup_point_list.total_count}" style="display:none;">
@@ -150,6 +161,13 @@
 		</span>
 	</div>
 	{/if}
+
+	<div class="item-options">
+		<label>{:lang('existing_integral')}</label>
+		<span>
+			<b class="account_balance">{$member_account.point}</b>个
+		</span>
+	</div>
 	
 	{if condition="count($shop_config.order_invoice_content_list)"}
 	<div class="item-options" data-flag="invoice" data-select="0">
@@ -249,6 +267,7 @@
 		<input type="hidden" id="goods_sku_list" value="{$goods_sku_list}" />
 		<input type="hidden" id="hidden_order_invoice_tax" value="{$shop_config.order_invoice_tax}"/>
 		<input type="hidden" id="hidden_pick_up_money" value="{$pick_up_money}"/>
+		<input type="hidden" id="hidden_shipping_time" value="0" />
 	</div>
 </div>
 
@@ -261,12 +280,12 @@
 	<div class="header">{:lang('choose_coupons')}<span class="close"></span></div>
 	<div class="list">
 		<ul>
-			<li class="item active">
+			<li class="item">
 				<div class="check-img"></div>
 				<div class="single">{:lang('member_no_coupons')}</div>
 			</li>
-			{volist name="coupon_list" id="coupon"}
-			<li class="item" data-id="{$coupon['coupon_id']}" data-code="{$coupon['coupon_code']}" data-money="{$coupon['money']}">
+			{volist name="coupon_list" id="coupon" key="k"}
+			<li class="item {if condition="$k==1"}active{/if}" data-id="{$coupon['coupon_id']}" data-code="{$coupon['coupon_code']}" data-money="{$coupon['money']}">
 				<div class="check-img"></div>
 				<div>
 					<p class="font-size-12">{$coupon['coupon_name']}<em class="pull-right">{$coupon['money']}{:lang('element')}</em></p>
@@ -338,6 +357,16 @@
 	{/if}
 </div>
 <!-- 选择配送方式弹出框 -->
+
+<!-- 选择送货时间弹出框 -->
+<div class="mask-layer-control" data-flag="shipping_time">
+	<div class="header">{:lang('specify_delivery_time')}<span class="close"></span></div>
+	<div class="date-list"></div>
+	<div class="footer">
+		<button class="btn-green" style="margin: 0px;">{:lang('goods_determine')}</button>
+	</div>
+</div>
+<!-- 选择送货时间弹出框 -->
 
 <!-- 选择物流公司弹出框 -->
 {if condition="$shop_config.seller_dispatching"}
@@ -438,4 +467,14 @@
 {block name="bottom"}{/block}
 {block name="javascript"}
 <script type="text/javascript" src="__TEMP__/{$style}/public/js/payment_order.js"></script>
+<script>
+//解决 在IOS手机中，点击左上角返回按钮不会刷新当前页面的问题 2018年1月27日17:45:40
+var isPageHide = false;
+window.addEventListener('pageshow', function () {
+	if (isPageHide) location.href= __URL("APP_MAIN/order/paymentorder");
+});
+window.addEventListener('pagehide', function () {
+	isPageHide = true;
+});
+</script>
 {/block}

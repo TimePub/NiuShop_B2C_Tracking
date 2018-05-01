@@ -19,7 +19,7 @@ use data\service\Member as MemberService;
 use data\service\User;
 use data\service\Weixin;
 use data\service\Supplier;
-
+use data\service\Config as WebConfig;
 /**
  * 会员管理
  *
@@ -139,16 +139,35 @@ class Member extends BaseController
             $username = request()->get('username','');
             $exist = false;
             $member = new MemberService();
-            $user_list = $member->getMemberList();
-            foreach ($user_list["data"] as $user_list2) {
-                if ($user_list2["user_name"] == $username) {
-                    $exist = true;
-                }
+            $exist = $member -> judgeUserNameIsExistence($username);
+            return $exist;
+        }
+    }
+    
+    /**
+     * 判断用户信息是否存在
+     * @return boolean
+     */
+    public function checkUserInfoIsExist(){
+        if (request()->isAjax()) {
+            $info = request()->post('info', '');
+            $type = request()->post('type', '');
+            //是否存在
+            $exist = false;
+            $member = new MemberService();
+            
+            switch ($type) {
+                case "email":
+                    $exist = $member -> memberIsEmail($info);
+                break;
+                case "mobile":
+                    $exist = $member -> memberIsMobile($info);
+                break;
             }
             return $exist;
         }
     }
-
+    
     /**
      * 添加会员信息
      */
@@ -485,19 +504,6 @@ class Member extends BaseController
             $res = $member->addMemberLevel($this->instance_id, $level_name, $min_integral, $quota, $upgrade, $goods_discount, $desc, $relation);
             return AjaxReturn($res);
         }
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "member/memberlevellist",
-                    'menu_name' => "会员等级",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . 'Member/addMemberLevel');
     }
 
@@ -524,19 +530,6 @@ class Member extends BaseController
         $info = $member->getMemberLevelDetail($level_id);
         $info['goods_discount'] = $info['goods_discount'] * 100;
         $this->assign('info', $info);
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "member/memberlevellist",
-                    'menu_name' => "会员等级",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . 'Member/updateMemberLevel');
     }
 
@@ -605,7 +598,20 @@ class Member extends BaseController
             $condition["shop_id"] = $this->instance_id;
             $list = $member->getMemberBalanceWithdraw($pageindex, PAGESIZE, $condition, 'ask_for_date desc');
             return $list;
-        } else {
+        } else {            
+            $child_menu_list = array(
+                array(
+                    'url' => "Member/userCommissionWithdrawList",
+                    'menu_name' => "会员提现列表",
+                    "active" => 1
+                ),
+                array(
+                    'url' => "Config/memberwithdrawsetting",
+                    'menu_name' => "会员提现设置",
+                    "active" => 0
+                )
+            );
+            $this->assign("child_menu_list", $child_menu_list);
             return view($this->style . "Member/userCommissionWithdrawList");
         }
     }
@@ -832,5 +838,58 @@ class Member extends BaseController
             
            }
         }
+    }
+    
+    /**
+     * 获取用户日志列表
+     */
+    public function userOperationLogList(){
+        if(request()->isAjax()){
+            $member = new MemberService();
+            $start_date = request()->post('start_date') == "" ? 0 : getTimeTurnTimeStamp(request()->post('start_date'));
+            $end_date = request()->post('end_date') == "" ? 0 : getTimeTurnTimeStamp(request()->post('end_date'));
+            $page_index = request()->post("page_index", 1);
+            $page_size = request()->post("page_size", PAGESIZE);
+            $user_name = request()->post("search_text", "");
+            
+            if ($start_date != 0 && $end_date != 0) {
+                $condition["create_time"] = [
+                    [
+                        ">",
+                        $start_date
+                    ],
+                    [
+                        "<",
+                        $end_date
+                    ]
+                ];
+            } elseif ($start_date != 0 && $end_date == 0) {
+                $condition["create_time"] = [
+                    [
+                        ">",
+                        $start_date
+                    ]
+                ];
+            } elseif ($start_date == 0 && $end_date != 0) {
+                $condition["create_time"] = [
+                    [
+                        "<",
+                        $end_date
+                    ]
+                ];
+            }
+            if(!empty($user_name)){
+                $condition["user_name"] = [
+                    [
+                        "like",
+                        "%$user_name%"
+                    ]
+                ];
+            }
+            
+            $list = $member -> getUserOperationLogList($page_index, $page_size, $condition, "create_time desc");
+            return $list;
+        }
+        return view($this->style. "Member/userOperationLogList");
     }
 }

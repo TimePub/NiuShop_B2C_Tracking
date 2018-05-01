@@ -1017,16 +1017,20 @@ footer .logo-cop {
 	line-height: 28px;
 	border: 1px solid #dadada;
 }
+.cart-none{
+    margin-top: 50%;
+    transform: translateY(-50%);
+}
 .cart-none .cart-big {
 	display: block;
 	width: 100%;
-	height: 130px;
+	height: 60px;
 	margin-top: 50px;
 	background: url('../images/cart-big.png') no-repeat center center;
-	background-size: 128px 124px;
+	background-size: 60px;
 }
 .cart-none .text {
-	margin: 20px 0 10px 0;
+	margin: 10px 0 10px 0;
 	font-size: 15px;
 	color: #d4d4d4;
 	text-align: center;
@@ -1037,9 +1041,9 @@ footer .logo-cop {
 	height: 30px;
 	line-height: 30px;
 	width: 120px;
-	background: #e8e8e8;
-	border: 1px solid #d7d7d7;
-	color: #333;
+	background: #FF834C;
+	border: 1px solid #FF834C;
+	color: #fff;
 	text-align: center;
 	-webkit-border-radius: 3px;
 	-moz-border-radius: 3px;

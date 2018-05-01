@@ -53,6 +53,7 @@ define('ORDER_CASH_DELIVERY', '-4014');
 define('ORDER_GOODS_ZERO', '-4015');
 //活动定义变量
 define('ACTIVE_REPRET', '-5001');
+define('GOODS_HAVE_BEEN_GIFT', '-5002');
 
 //发送邮件
 define("EMAIL_SENDERROR", '-6001');
@@ -69,6 +70,10 @@ define('REGISTER_USERNAME_ERROR', '-2055');
 define('REGISTER_PASSWORD_ERROR', '-2056');
 
 define('UPLOAD_FILE_ERROR', '-7001');
+
+define('VIRIUAL_GOODS_TIME_ERROR', '-8001');
+define('VIRIUAL_GOODS_ERROR', '-8002');
+define('VIRIUAL_GOODS_MEMBER_ERROR', '-8003');
 function getErrorInfo($error_code)
 {
     $system_error_arr = array(
@@ -127,7 +132,12 @@ function getErrorInfo($error_code)
         REGISTER_PASSWORD_ERROR => '你所填的密码不符合注册规则！',
 
         EMAIL_SENDERROR=>'请开启或启用sockets扩展 和  socket_connect函数！',
-        UPLOAD_FILE_ERROR=>'文件权限不足！'
+        UPLOAD_FILE_ERROR=>'文件权限不足！',
+        
+        VIRIUAL_GOODS_TIME_ERROR=>'虚拟商品已过期或已使用！',
+        VIRIUAL_GOODS_ERROR=>'虚拟商品已不能使用！',
+        VIRIUAL_GOODS_MEMBER_ERROR=>'操作人没有核销资格！',
+        GOODS_HAVE_BEEN_GIFT => '该商品已经是赠品了！'
     );
         if(array_key_exists($error_code, $system_error_arr))
         {

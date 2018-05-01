@@ -18,7 +18,7 @@ input[type="radio"]{margin-top:6px;}
 		<dd>
 			<input class="input-medium input-common" type="text" id="start_time" style="width:250px;"onclick="WdatePicker({skin:'twoer',dateFmt:'yyyy-MM-dd HH:mm:ss'})">
 			<span class="mlr5">-</span> 
-			<input class="input-medium input-common" size="15"type="text" id="end_time" style="width:250px;"onclick="WdatePicker({skin:'twoer',dateFmt:'yyyy-MM-dd HH:mm:ss'})">
+			<input class="input-medium input-common" size="15" type="text" id="end_time" style="width:250px;"onclick="WdatePicker({skin:'twoer',dateFmt:'yyyy-MM-dd HH:mm:ss'})">
 			<p class="error">请输入活动有效期</p>
 			<p class="error">活动结束时间不能小于当前时间</p>
 			<p class="error">活动结束时间不能小于开始时间</p>
@@ -33,11 +33,12 @@ input[type="radio"]{margin-top:6px;}
 
 <script>
 $(function(){
+	$("[name='range_type']").parents("dl").hide();
 	$(".kucun").after('<th class="text-center cell-10">折扣</th>');
 	$('.type_dl dd').hide();
-	$("#some_pro").show();
 	$(".select-two thead th").eq(1).after("<th></th>");
 	LoadingInfo(1);
+	$("#some_pro").show();
 })
 function selected_goods(e){
 	$(e).parents("ul.ui-nav-tab").find(".js-tab").removeClass("active");
@@ -194,6 +195,7 @@ function addDiscount(){
 	var start_time = $("#start_time").val();
 	var end_time = $("#end_time").val();
 	var obj = $(".select-two table input[type='number'][name='discount']");
+	var range_type = 0;
 	var goods_id_array = '';
 	obj.each(function(i){
 		var dis = obj.eq(i).val() ? obj.eq(i).val() : 10;
@@ -208,7 +210,8 @@ function addDiscount(){
 		}
 	});
 	goods_id_array = goods_id_array.substring(1);
-	if(verify(discount_name, start_time, end_time, goods_id_array)){
+	
+	if(verify(discount_name, start_time, end_time, goods_id_array, range_type)){
 		if(flag){
 			return;
 		}
@@ -266,10 +269,8 @@ function verify(discount_name, start_time, end_time, goods_id_array){
 		$(".error").hide();
 	}
 	if(goods_id_array == ''){
-		$("#notSelect").show();
+		showTip("请至少选择一件商品","warning");
 		return false;
-	}else{
-		$("#notSelect").hide();
 	}
 	return true;
 }

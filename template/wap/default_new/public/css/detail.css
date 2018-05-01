@@ -1,9 +1,27 @@
 @CHARSET "UTF-8";
 
+.goodsDetailHead{
+	background: none;
+	border-bottom: none;
+}
+.goodsDetailHead a i.icon-back{
+	width: 24px;
+	height: 24px;
+	text-align: center;
+	line-height: 24px;
+	background: rgba(0,0,0,0.6);
+	border-radius: 50%;
+	color: #eee;
+	padding:3px;
+	display: inline-block; 
+	font-size: 24px;
+    margin-left: 8px;
+}	
+
 .title {
 	font-weight: normal;
 	margin: 0;
-	font-size: 16px;
+	font-size: 14px;
 	line-height: 22px;
 	text-align: left;
 	overflow: hidden;
@@ -14,8 +32,16 @@
 	color: #333;
 }
 
+.title .goods_tab{
+	background: #f44;
+	color: #fff;
+    font-size: 12px;
+    padding: 1px 4px;
+    margin-right: 3px;
+}
 .with-margin-l {
 	margin-left: 10px;
+	margin-right: 10px;
 	border: 0;
 	border-top: 1px solid #F0F0F0;
 }
@@ -23,9 +49,21 @@
 .stock-detail {
 	color: #999;
 	padding: 0 10px;
-	font-size: 12px;
-	height: 30px;
-	line-height: 30px;
+	font-size: 14px;
+	height: 40px;
+	line-height: 40px;
+}
+.stock-detail span{
+	display:inline-block;
+	width:32.3333333333333%;
+	font-size: 14px;
+	text-align: center;
+}
+.stock-detail span:first-child{
+	text-align: left;
+}
+.stock-detail span:last-child{
+	text-align: right;
 }
 
 .divider-line {
@@ -380,4 +418,296 @@
 
 .detail_list img {
 	width: 100% !important;
+}
+/*商品组合套餐*/
+.combo_package{
+    color: #999;
+    padding: 0 10px;
+    font-size: 12px;
+}
+.combo_package .title-text{
+	color: #333;
+	padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.combo_package .title-text .more{
+	float: right;
+    color: #333;
+    font-size: 20px;
+}
+.combo_package .combo_package_goods{
+	padding: 10px 0; 
+	display: flex;
+    align-items: center;
+}
+.combo_package .combo_package_goods .goods{
+	width: 25%;
+	display: inline-block;
+	border:1px solid #f2f2f2;
+}
+.combo_package .combo_package_goods .goods a{
+	max-width: 100%;
+	display: block;
+	position: relative;
+}
+.combo_package .combo_package_goods .goods a img.g-img{
+	max-width: 100%;
+}
+.combo_package .combo_package_goods .goods a p.g-price{
+	height: 20px;
+    line-height: 20px;
+    background: rgba(89, 86, 86, 0.7);
+    color: #fff;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+}
+.combo_package .combo_package_goods i.fa-plus{
+	width: 30px;
+	text-align: center;
+}
+
+/*controlGoodEvaluate 商品评价 */
+.evaluation-container{
+	padding: 6px;
+	background: #fff;
+}
+.evaluation-container .evaluation-title{
+    font-size: 14px;
+    color: #666;
+    margin: 6px;
+}
+.evaluation-container .evaluation-type{
+	margin: 10px 0;
+    overflow: hidden;
+}
+.evaluation-container .evaluation-type li{
+	float: left;
+    background-color: #FEE;
+    color: #666;
+    margin: 6px 3px;
+    padding: 6px 9px;
+    text-align: center;
+    border-radius: 8px;
+    -moz-border-radius: 10px;
+    font-size: 12px;
+}
+.evaluation-container .evaluation-type li.current{
+	background-color: #FF0036;
+    color: #FFF;
+}
+.evaluation-container .evaluation-comments{
+	margin: 6px;
+}
+.evaluation-container .evaluation-comments .evaluation-userinfo{
+    line-height: 16px;
+    font-size: 12px;
+    margin: 10px 0;
+    position: relative;
+}	
+.evaluation-container .evaluation-comments .evaluation-userinfo .headimg{
+	width: 24px;
+    height: 24px;
+    border-radius: 20px;
+    vertical-align: middle;
+}
+.evaluation-container .evaluation-comments .evaluation-userinfo .nickname
+{
+    vertical-align: middle;
+    padding: 5px;
+    line-height: 22px;
+    color: #999;
+}
+.evaluation-container .evaluation-comments .evaluation-userinfo .evaluation-time{
+    overflow: hidden;
+    color: #999;
+    margin-top: 5px;
+    float: right;
+}
+.evaluation-container .evaluation-comments .evaluation-content{
+	font-size: 13px;
+    line-height: 16px;
+    text-align: justify;
+    color: #051b28;
+}
+.evaluation-container .evaluation-comments .review{
+	color: #666;
+}
+.evaluation-container .evaluation-comments .evaluation-reply{
+	position: relative;
+    margin-top: 5px;
+    background-color: #f0f0f0;
+    padding: 8px;
+    font-size: 13px;
+    border-radius: 5px;
+}
+.evaluation-container .evaluation-comments  .evaluation-pics{
+    overflow: hidden;
+    margin-top: 5px;
+    list-style: none;
+    padding: 0;
+}
+.evaluation-container .evaluation-comments  .evaluation-pics li{
+    width: 55px;
+    height: 55px;
+    float: left;
+    margin: 0 5px 5px 0;
+    background-color: #fff;
+    display: -webkit-box;
+    -webkit-box-align: center;
+    -webkit-box-pack: center;
+}
+.evaluation-container .evaluation-comments  .evaluation-pics li .comment-pic{
+    max-width: 100%;
+    max-height: 100%;
+    vertical-align: top;
+}
+.evaluation-container .evaluation-comments .review-evaluation{
+	color: #FF0036;
+	font-size: 14px;
+}
+.evaluation-container .evaluation-comments .review-evaluation .review-time{
+	overflow: hidden;
+    color: #999;
+    float: right;
+    font-size:12px;
+}
+.evaluation-container .check-more{
+	text-align: center;
+}
+.evaluation-container .check-more button{
+	width: 107px;
+    height: 27px;
+    margin: 15px auto;
+    border: 1px solid #ccc;
+    color: #666;
+    background: #fff;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    line-height: 27px;
+    -webkit-appearance: none;
+    text-align: center;
+    font-size: 13px;
+}
+/*评价遮罩*/
+.evaluation-shade{
+	width: 100%;
+	height: 100%;
+	position: fixed;
+	background:#fff;
+	top: 0;
+	left: 100%;
+	z-index: 1100;
+}
+
+.evaluation-shade .head{
+	box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 0.5px 0 rgba(0,0,0,.09);
+	background: #fff;
+	border-bottom:none;
+	position: relative;
+	left: 0;
+	top: 0;
+}
+.evaluation-shade .body{
+	position: absolute;
+    top: 44px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    -webkit-overflow-scrolling: touch;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+.evaluation-shade .body .evaluation-list{
+
+}
+.evaluation-shade .body .evaluation-list li.item
+{
+	border-bottom: 1px solid #e5e5e5;
+    padding: 20px 0;
+}
+.evaluation-shade .body .evaluation-list li.item:last-child{
+	border-bottom: none;
+}
+.evaluation-shade .body .evaluation-list li.empty{
+    text-align: center;
+    color: #666;
+    border-top: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5!important;
+}
+.give-the-thumbs-up .data-icon-share{
+	width: 20px;
+	height: 20px;
+	display: inline-block;
+	background: url(../images/icon_share.png) no-repeat center;
+	background-size: 20px 20px;	
+}
+#store_service span{
+	padding-left: 20px;
+	background: url(../images/check_number.png) no-repeat left;
+	background-size: 16px 16px;
+	line-height: 16px;
+	font-size: 14px;
+	margin-right: 10px;
+}
+#store_service span:nth-child(4){
+	margin-right: 0;
+}
+.bottom_popup .coupon_list li p.service_title{
+	font-size: 14px;
+	color: #051b28;
+	line-height: 25px;
+	padding-left: 35px;
+	background: url(../images/check_number.png) no-repeat left;
+	background-size: 25px 25px;
+}
+.bottom_popup .coupon_list li p.service_desc{
+	padding-left: 35px;
+	font-size: 12px;
+	color: #999
+}
+.tab-module-title{
+    background: #FFF;
+    font-weight: 400;
+    height: 34px;
+    line-height: 34px;
+    position: relative;
+    padding: 6px 0 0 12px;
+    font-size: 14px;
+    color: #666;
+}
+#DataHeadNav{
+	opacity: 0;
+    transition: opacity ease .2s;
+}
+section.head .heav-nav{
+	text-align: center;
+    font-size: 13px;
+    opacity: 1;
+    transition: opacity ease .2s;
+    margin: 0 25%;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+section.head .heav-nav li{
+    color: #999;
+    height: 42px;
+    line-height: 44px;
+    flex: 1;
+   
+}
+section.head .heav-nav li span{
+	border-bottom: 2px solid #f7f7f7;
+    height: 100%;
+    display: inline-block;
+    padding: 0 5px;
+}
+section.head .heav-nav li.current span{
+	border-bottom-color: #f44;
 }

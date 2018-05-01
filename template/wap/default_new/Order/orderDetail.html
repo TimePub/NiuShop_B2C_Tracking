@@ -25,6 +25,7 @@
 					<li><span class="label">{:lang('member_payment_method')}：</span><span class="value">{$order.payment_type_name}</span></li>
 					<li><span class="label">{:lang('member_payment_status')}：</span><span class="value">{$order.pay_status_name}</span></li>
 					<li><span class="label">{:lang('member_delivery_mode')}：</span><span class="value">{$order.shipping_type_name}</span></li>
+					<li><span class="label">{:lang('delivery_time')}：</span><span class="value">{if condition="$order['shipping_time']>0"}{$order['shipping_time']|getTimeStampTurnTimeByYmd}{else/}{:lang('days_and_holidays_can_be_delivered')}{/if}</span></li>
 				</ul>
 			</div>
 		</div>
@@ -187,7 +188,10 @@
 				
 				{if condition="$order['promotion_money']>0"}
 				<div>
-					<span>{:lang('member_full_discount')}：</span>
+					{switch name="$order['promotion_type']"}
+						{case value="MANJIAN"}<span>{:lang('member_full_discount')}：</span>{/case}
+						{case value="ZUHETAOCAN"}<span>{:lang('member_taocan_discount')}：</span>{/case}
+					{/switch}
 					<span class="price">￥{$order['promotion_money']}</span>
 				</div>
 				{/if}
@@ -205,9 +209,32 @@
 				</div>
 			</div>
 		</div>
+		
+	</div>
+
+	<div class="order-tablink">
+		<div class="tablink-box">
+			<div class="tablink">
+				<a href="{$list['value']['service_addr']}"><span class="kefu">联系客服</span></a>
+			</div>
+			<div class="tablink">
+				<a href="tel:{$list['value']['web_phone']}"><span class="call">拨打电话</span></a>
+			</div>
+		</div>
 	</div>
 </div>
 
+
+{if count($order['member_operation']) > 0}
+<div style="height: 55px;"></div>
+<div class="order-opcation">
+	<div class="content">
+		{volist name="$order['member_operation']" id="vo"}
+		<a href="javascript:;" onclick="operation('{$vo.no}',{$order['order_id']})" style="background: {$vo.color};border-color: {$vo.color}">{$vo.name}</a>
+		{/volist}
+	</div>
+</div>
+{/if}
 <!-- <div class="bottom-btn-row clear"></div> -->
 {/block}
-{block name="buttom"}{/block}
+{block name="bottom"}{/block}

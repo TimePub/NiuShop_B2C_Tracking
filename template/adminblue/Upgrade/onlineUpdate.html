@@ -51,20 +51,14 @@ input[type="text"], input[type="password"], input.text, input.password{margin-to
 				<div class="modal-infp-style" style="height:165px;width:320px;margin:auto;">
 					<table class="modal-tab" style="width: 100%;">
 						<tr>
-							<td colspan="2" style="text-align:left">输入Niushop官方授权账号完成绑定
+							<td colspan="2" style="text-align:left">输入Niushop官方授权码完成绑定
 							<a style="float:right;color:#00C0FF;" href="http://www.niushop.com.cn/authorization.html" target="_blank" >授权</a>
 							</td>
 						</tr>
 						<tr>
-							<td>用户名：</td>
+							<td>授权码：</td>
 							<td>
-								<input id="user_name" type="text" class="input-common"/>
-							</td>
-						</tr>
-						<tr>
-							<td>密码：</td>
-							<td>
-								<input id="user_pass" type="text" class="input-common"/>
+								<input id="authorization_code" type="text" class="input-common"/>
 							</td>
 						</tr>
 					</table>
@@ -73,7 +67,7 @@ input[type="text"], input[type="password"], input.text, input.password{margin-to
 			
 			<div class="modal-footer">
 				<input type="hidden" id="modify_username_hidden" />
-				<button class="btn btn-primary" onclick="bind_mess()" id="butSubmit">绑定</button>
+				<button class="btn btn-primary" onclick="binding()" id="butSubmit">绑定</button>
 			</div>
 		</div>
 	</div>
@@ -85,15 +79,17 @@ function bind(){
 	$("#bind_user").modal("show");
 }
 
-function bind_mess(){
-	var user_name = $("#user_name").val();
-	var user_pass = $("#user_pass").val();
+function binding(){
+	var authorization_code = $("#authorization_code").val();
+	if(authorization_code.length == 0){
+		showTip("请输入授权码","warning");
+		return;
+	}
 	$.ajax({
 		type:'post',
 		url : "{:__URL('ADMIN_MAIN/Upgrade/onlineUpdate')}",
 		data:{
-			'user_name':user_name,
-			'password':user_pass
+			'authorization_code':authorization_code,
 		},
 		success:function(data){
 			if(data['code']==0){

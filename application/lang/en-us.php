@@ -252,6 +252,7 @@ return [
     'goods_by_collection'             => 'By collection',
     'goods_evaluation_quantity'       => 'Evaluation quantity',
     'goods_by_sharing'                => 'By sharing',
+    'existing_integral'               => 'Existing integral',
   //  会员相关 member_
     
     'member_new_delivery_address'    => 'Add shipping address',
@@ -311,7 +312,7 @@ return [
     'member_cash_available'          => 'Cash available',
     'member_cash_account'            => 'Cash account',
     'member_full_name'               => 'Name',
-'member_sub_branch_information'  => 'Sub branch information',
+    'member_sub_branch_information'  => 'Sub branch information',
     'member_bank_account'            => 'Bank account',
     'member_click_add'               => 'Add',
     'member_cash_withdrawal'         => 'Cash withdrawal',
@@ -658,6 +659,7 @@ return [
     'Member_effective_time' => 'effective time',
     'Member_by' => 'as of',
     'Member_no_coupon_yet' => 'You have no coupons yet',
+    'member_taocan_discount'         => 'Package is favorable',
     
 //login
     'Mailbox_has_been_registered' => 'The mailbox has been registered',
@@ -1058,6 +1060,32 @@ return [
     'regular_orders'                                                      => 'Regular orders',
     'order_user_phone_instruction'                                        => 'The virtual goods that you bought this time do not need to receive goods address, please fill in mobile phone number, convenient seller to contact with you',
     'virtual_goods_orders_are_consumed_by_virtual_code'                   => 'Virtual goods orders are consumed by virtual code',
-    'contact_information'                                                 => 'Contact information'
+    'contact_information'                                                 => 'Contact information',
+    'combo_package'                                                       => 'Combo Package',
+    'package_price'                                                       => 'Package Price',
+    'please_select_goods_sku'                                             => 'Please Select Goods Sku',
+    'original_price'                                                      => 'Original Price',
+    'save_the_price'                                                      => 'Save The Price',
+    'goods_total_money'                                                   => 'Goods Total Money',
+    'ladder_preferential'                                                 => 'Ladder Preferential',
+    'delivery_time'                                                       => 'Delivery time',
+    'days_and_holidays_can_be_delivered'                                  => 'Days, days and holidays can be delivered',
+    'modify'                                                              => 'Modify',
+    'delete'                                                              => 'Delete',
+    'cancel_after_verification_platform'                                  => 'Cancel After Verification Platform',
+    'cash_account'                                                        => 'Cach account',
+    'please_enter_your_cash_account'                                      => 'Please enter your cash account',
+    'get_coupons'                                                         => 'Get coupons',
+    'no_coupons'                                                          => 'There are no coupons',
+    'you_do_not_have_any_virtual_code_yet'                                => 'You dont have virtual code',
+    'merchant_service'                                                    => 'Merchant service',
+    'share'                                                               => 'Share',
+    'member_gift'                                                         => 'Gift',
+    'my_winning_record'                                                   => 'My winning record',
+    'my_winning_records'                                                  => 'My winning records',
+    'to_receive_the_prize'                                                => 'To receive the prize',
+    'immediately_receive'                                                 => 'Immediately to receive',
+    'member_bank_max_length'                                              => 'The withdrawal account length exceeds the limit'
+    
 ];
 

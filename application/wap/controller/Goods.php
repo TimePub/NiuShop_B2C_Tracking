@@ -26,6 +26,7 @@ use data\service\Platform;
 use data\service\promotion\GoodsExpress;
 use data\service\Address;
 use data\service\WebSite;
+use data\service\Promotion;
 
 /**
  * 商品相关
@@ -71,6 +72,9 @@ class Goods extends BaseController
         if ($this->getIsOpenVirtualGoodsConfig() == 0 && $goods_detail['goods_type'] == 0) {
             $this->error("未开启虚拟商品功能");
         }
+
+         //商品点击量
+        $goods -> updateGoodsClicks($goods_id);
         
         // 把属性值相同的合并
         $goods_attribute_list = $goods_detail['goods_attribute_list'];
@@ -344,6 +348,16 @@ class Goods extends BaseController
             $goods_category_list[$k]['num'] = $num;
         }
         $this->assign("title_before", "商品分类");
+
+        $webConfig = new WebConfig();
+        $show_type = $webConfig -> getWapClassifiedDisplayMode($this->instance_id);
+
+        if($show_type == 1){
+            return view($this->style . 'Goods/goodsClassificationFloor');
+        }else{
+            return view($this->style . 'Goods/goodsClassificationList');
+        }
+        
         return view($this->style . 'Goods/goodsClassificationList');
     }
 
@@ -981,5 +995,51 @@ class Goods extends BaseController
             $res = $member->memberGetCoupon($this->uid, $coupon_type_id, 3);
             return AjaxReturn($res);
         }
+    }
+
+
+    /**
+     * 领取优惠券
+     */
+    public function getCoupon()
+    {
+        $coupon_type_id = request()->get('coupon_type_id', "");
+        if (! empty($coupon_type_id)) {
+            $promotion = new Promotion();
+            $condition['coupon_type_id'] = [
+                'eq',
+                $coupon_type_id
+            ];
+            $data = $promotion->getCouponTypeDetail($coupon_type_id);
+            $this->assign('data', $data);
+        } else {
+            $this->error('当前页面不存在');
+        }
+        $path = $this->showMemberCouponQecode($coupon_type_id);
+        $this->assign('code_path', $path);
+        return view($this->style . 'Goods/getCoupon');
+    }
+
+    
+    /**
+     * 制作用户分享优惠券二维码
+     */
+    function showMemberCouponQecode($coupon_type_id)
+    {
+        $uid = ! empty($this->uid) ? $this->uid : 0;
+        
+        $url = __URL(__URL__ . '/wap/goods/getCoupon?coupon_type_id=' . $coupon_type_id . '&source_uid=' . $uid);
+        
+        // 查询并生成二维码
+        
+        $upload_path = "upload/qrcode/coupon_qrcode";
+        if (! file_exists($upload_path)) {
+            mkdir($upload_path, 0777, true);
+        }
+        $path = $upload_path . '/coupon_' . $coupon_type_id . '_' . $uid . '.png';
+        if (! file_exists($path)) {
+            getQRcode($url, $upload_path, "coupon_" . $coupon_type_id . '_' . $uid);
+        }
+        return $path;
     }
 }

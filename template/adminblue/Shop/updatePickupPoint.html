@@ -88,7 +88,7 @@ function GetProvince() {
 			}
 		}
 	});
-};
+}
 
 // 选择市区弹出区域
 function getSelCity() {
@@ -114,7 +114,6 @@ function getSelCity() {
 					$("#seleAreaFouth").val($("#districtid").val());
 					$("#districtid").val('-1');
 				}
-				
 			}
 		}
 	});
@@ -171,21 +170,6 @@ function updateReturnAjax() {
 		$(".error").hide();
 	}
 	if ($("#seleAreaFouth").val() < 0 || $("#seleAreaFouth").val() == "") {
-// 		if ($("#seleAreaNext").val() == "" || $("#seleAreaNext").val() < 0) {
-// 			showBox("请选择省份");
-// 			$("#seleAreaNext").focus();
-// 			return false;
-// 		}
-// 		if ($("#seleAreaThird").val() == "" || $("#seleAreaThird").val() < 0) {
-// 			showBox("请选择市");
-// 			$("#seleAreaThird").focus();
-// 			return false;
-// 		}
-// 		if ($("#seleAreaFouth").val() == "" || $("#seleAreaFouth").val() < 0) {
-// 			showBox("请选择区/县");
-// 			$("#seleAreaFouth").focus();
-// 			return false;
-// 		}
 		$("#seleAreaFouth").parent().next().show();
 		return false;
 	}else{

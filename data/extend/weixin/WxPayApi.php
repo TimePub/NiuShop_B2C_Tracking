@@ -55,7 +55,6 @@ class WxPayApi
         if ($inputObj->GetTrade_type() == "NATIVE" && ! $inputObj->IsProduct_idSet()) {
             throw new WxPayException("统一支付接口中，缺少必填参数product_id！trade_type为JSAPI时，product_id为必填参数！");
         }
-        
         // 异步通知url未设置，则使用配置文件中的url
         /*
          * if(!$inputObj->IsNotify_urlSet()){
@@ -63,18 +62,25 @@ class WxPayApi
          * }
          */
         $WxPayConfig = new WxPayConfig();
-        $inputObj->SetAppid($WxPayConfig->appid); // 公众账号ID
-        $inputObj->SetMch_id($WxPayConfig->MCHID); // 商户号
         $inputObj->SetSpbill_create_ip($_SERVER['REMOTE_ADDR']); // 终端ip
-                                                                 // $inputObj->SetSpbill_create_ip("1.1.1.1");
+        // $inputObj->SetSpbill_create_ip("1.1.1.1");
         $inputObj->SetNonce_str(self::getNonceStr()); // 随机字符串
-                                                      // 签名https://cpro.baidu.com/cpro/ui/uijs.php?en=mywWUA71T1YsFh7sT7qGujYsFhPh5HcsFhPC5H0huAbqrauGTdq9TZ0qnauJp1Y1PWPbPjI9Pym1mWNBuym1Fh_qpgf-f1R-wH0-wjD-fWR-wjD-fHT-wj0-fHn-f1R-f1R-f1n-wbchp10qpgf-f1R-wH0-wjD-fWR-wjD-fHT-wj0-fHn-f1R-f1R-f1n-wbchp1DqFRfdFRfzTA9sFRc1FRPjFRfsFRmzFRfYFRckFh_z5iNDPBNaniNjwBNAfiNjwBNaPiNjwaNanzuon1dspZ0-fWb-fHf-fWn-fYn-fYD-fHm-fWf-wbf-wjn-wWmhp1fqTA9sFRfkFRDLFRPAFRcsFRfkFRDLFRcLFRfkFhkdpvbqniuVmLKV5HDzPjRLriuk5yGBPH7xmLKzFMFB5H0hTMnqniu1uyk_ugFxpyfqniu1pyfquWPBuycduWP9PHfLnvf1PBu1IA-b5HDkPiuY5gwsmvkGmvV-ujPxpAnhIAfqnW6vPWm3rauYUgnqnHf4PWmYrjfYriuYIHddnW6vPWm3raud5y9YIZ0-nYD-nbm-nbuLILT-nbNJmWRkFHF7UhNYFMmqniuG5HF-nWnzPyRk&c=news&fv=25&itm=0&kdi0=8&kdi1=8&kdi2=8&kdi3=8&kdi4=8&lukid=1&mscf=22&n=10&nttp=1&p=baidu&ssp2=1&tsf=dtp:1&u=%2Farticle%2F14244%2Ehtm&urlid=0&jincheng1=1
-        $inputObj->SetSign();
+        // 签名https://cpro.baidu.com/cpro/ui/uijs.php?en=mywWUA71T1YsFh7sT7qGujYsFhPh5HcsFhPC5H0huAbqrauGTdq9TZ0qnauJp1Y1PWPbPjI9Pym1mWNBuym1Fh_qpgf-f1R-wH0-wjD-fWR-wjD-fHT-wj0-fHn-f1R-f1R-f1n-wbchp10qpgf-f1R-wH0-wjD-fWR-wjD-fHT-wj0-fHn-f1R-f1R-f1n-wbchp1DqFRfdFRfzTA9sFRc1FRPjFRfsFRmzFRfYFRckFh_z5iNDPBNaniNjwBNAfiNjwBNaPiNjwaNanzuon1dspZ0-fWb-fHf-fWn-fYn-fYD-fHm-fWf-wbf-wjn-wWmhp1fqTA9sFRfkFRDLFRPAFRcsFRfkFRDLFRcLFRfkFhkdpvbqniuVmLKV5HDzPjRLriuk5yGBPH7xmLKzFMFB5H0hTMnqniu1uyk_ugFxpyfqniu1pyfquWPBuycduWP9PHfLnvf1PBu1IA-b5HDkPiuY5gwsmvkGmvV-ujPxpAnhIAfqnW6vPWm3rauYUgnqnHf4PWmYrjfYriuYIHddnW6vPWm3raud5y9YIZ0-nYD-nbm-nbuLILT-nbNJmWRkFHF7UhNYFMmqniuG5HF-nWnzPyRk&c=news&fv=25&itm=0&kdi0=8&kdi1=8&kdi2=8&kdi3=8&kdi4=8&lukid=1&mscf=22&n=10&nttp=1&p=baidu&ssp2=1&tsf=dtp:1&u=%2Farticle%2F14244%2Ehtm&urlid=0&jincheng1=1
+        if($inputObj->GetTrade_type() == "APPLET"){
+            $inputObj->SetAppid($WxPayConfig->applet_appid); // 小程序ID
+            $inputObj->SetMch_id($WxPayConfig->applet_mchid); // 商户号
+            $inputObj->SetTrade_type('JSAPI');
+            $inputObj->SetAppletSign();
+        }else{
+            $inputObj->SetAppid($WxPayConfig->appid); // 公众账号ID
+            $inputObj->SetMch_id($WxPayConfig->MCHID); // 商户号
+            $inputObj->SetSign();
+        }
         $xml = $inputObj->ToXml();
-        
         $startTimeStamp = self::getMillisecond(); // 请求开始时间
         $response = self::postXmlCurl($xml, $url, false, $timeOut);
         $result = WxPayResults::Init($response);
+        $result["time_expire"]=$time_expire;
         $result1 = json_encode($result);
         self::reportCostTime($url, $startTimeStamp, $result); // 上报请求花费时间
         return $result;
@@ -589,7 +595,6 @@ class WxPayApi
         curl_setopt($ch, CURLOPT_HEADER, FALSE);
         // 要求结果为字符串且输出到屏幕上
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        
         if ($useCert == true) {
             // 设置证书
             // 使用证书：cert 与 key 分别属于两个.pem文件
@@ -631,6 +636,65 @@ class WxPayApi
         $time2 = explode(".", $time);
         $time = $time2[0];
         return $time;
+    }
+    
+    /**
+     * 企业转账到零钱
+     * @param unknown $inputObj
+     * @param number $timeOut
+     * @throws WxPayException
+     * @return multitype:string |unknown|multitype:string NULL
+     */
+    public static function transfers($inputObj, $timeOut = 6)
+    {
+        $url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers";
+        
+        // 检测必填参数
+        $WxPayConfig = new WxPayConfig();
+        if (! $inputObj->IsOpenidSet()) {
+            throw new WxPayException("转账接口，缺少必填参数openid！");
+        } elseif (! $inputObj->IsRe_user_nameSet()) {
+            throw new WxPayException("转账接口，缺少必填参数re_user_name！");
+        } elseif (! $inputObj->IsPartner_trade_noSet()) {
+            throw new WxPayException("转账接口，缺少必填参数partner_trade_no！");
+        } elseif (! $inputObj->IsAmountSet()) {
+            throw new WxPayException("转账接口，缺少必填参数amount！");
+        } elseif (! $inputObj->IsDescSet()) {
+            throw new WxPayException("转账接口，缺少必填参数desc！");
+        } elseif(empty($WxPayConfig->appid)){
+            throw new WxPayException("转账接口，缺少公众号ID");
+        } elseif(empty($WxPayConfig->MCHID)){
+            throw new WxPayException("转账接口，缺少商户号");
+        }elseif(empty($WxPayConfig->apiclient_cert)){
+            throw new WxPayException("转账接口，缺少apiclient_cert.pem");
+        }elseif(empty($WxPayConfig->apiclient_key)){
+            throw new WxPayException("转账接口，缺少apiclient_key.pem");
+        }
+        $WxPayConfig = new WxPayConfig();
+        $inputObj->SetMch_appid($WxPayConfig->appid); // 公众账号ID
+        $inputObj->SetMchid($WxPayConfig->MCHID); // 商户号
+        $inputObj->SetNonce_str(self::getNonceStr()); // 随机字符串
+        $inputObj->SetSign(); // 签名
+        $xml = $inputObj->ToXml();
+        $startTimeStamp = self::getMillisecond(); // 请求开始时间
+        try {
+            $response = self::postXmlCurl($xml, $url, true, $timeOut);
+            Log::write("gwgwgw".$response);
+            if($response == "微信数字证书未找到"){
+                return array(
+                    'return_code' => "FAIL",
+                    'return_msg' => "微信数字证书未找到"
+                );
+            }
+            $result = WxPayResults::TurnXml($response);
+            self::reportCostTime($url, $startTimeStamp, $result); // 上报请求花费时间
+            return $result;
+        } catch (\Exception $e) {
+            return array(
+                'return_code' => "FAIL",
+                'return_msg' => $e->getMessage()
+            );
+        }
     }
 }
 

@@ -207,7 +207,7 @@ class BaseController extends Controller
         $platform_help_class = $platform->getPlatformHelpClassList(1, 5, '', 'sort');
         $this->assign('platform_help_class', $platform_help_class['data']); // 帮助中心分类列表
         
-        $platform_help_Document = $platform->getPlatformHelpDocumentList(1, 0, '', 'sort');
+        $platform_help_Document = $platform->getPlatformHelpDocumentList(1, 0, 'is_visibility=1', 'sort');
         $this->assign('platform_help_document', $platform_help_Document['data']); // 帮助中心列表
     }
 

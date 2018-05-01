@@ -19,7 +19,7 @@
 	<thead>
 		<tr align="center">
 			<th>排序</th>
-			<th style="text-align: left;">商品标签</th>
+			<th align="left">商品标签</th>
 			<th>操作</th>
 		</tr>
 	</thead>
@@ -102,7 +102,7 @@ function LoadingInfo(page_index) {
 			if (data["data"].length > 0) {
 				for (var i = 0; i < data["data"].length; i++) {
 					html +='<tr class="pid_0" style="height: 30px;">';
-					html +='<td style="text-align: center;"><input type="number" class="sort" fieldid="'+data["data"][i]['group_id']+'" fieldname="sort" value="'+data["data"][i]['sort']+'" size="1"></td>';	
+					html +='<td style="text-align: center;"><input type="number" class="sort input-common input-common-sort" fieldid="'+data["data"][i]['group_id']+'" fieldname="sort" value="'+data["data"][i]['sort']+'" size="1"></td>';	
 					/* html +='<td style="text-align: center;">';
 					if(data["data"][i]['picture']['pic_cover'] != ''){
 						html +='<img src="'+__IMG(data["data"][i]['picture']['pic_cover'])+'" style="height:30px;">';	
@@ -111,7 +111,7 @@ function LoadingInfo(page_index) {
 					}
 					html +='</td>';	 */
 					
-					html +='<td><input type="text" fieldid="'+data["data"][i]['group_id']+'" fieldname="group_name" value="'+data["data"][i]['group_name']+'"></td>';	
+					html +='<td><input type="text" fieldid="'+data["data"][i]['group_id']+'" fieldname="group_name" value="'+data["data"][i]['group_name']+'" class="input-common"></td>';	
 					/* if(data["data"][i]["is_visible"] == 1){
 						html +='<td style="text-align: center;">是</td>';
 						

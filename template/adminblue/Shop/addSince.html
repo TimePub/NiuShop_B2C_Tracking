@@ -48,7 +48,6 @@ select{width:135px;}
 		<dd>
 			<p><input id="phone" type="text" class="input-common"></p>
 			<p class="error">自提点电话不能为空</p>
-			
 		</dd>
 	</dl>
 	<dl>
@@ -99,9 +98,7 @@ function getSelCity() {
 		type : "post",
 		url : "{:__URL('ADMIN_MAIN/shop/getdistrict')}",
 		dataType : "json",
-		data : {
-		"city_id" : id
-		},
+		data : { "city_id" : id },
 		success : function(data) {
 			if (data != null && data.length > 0) {
 				for (var i = 0; i < data.length; i++) {
@@ -167,21 +164,6 @@ function addReturnAjax() {
 		$(".error").hide();
 	}
 	if ($("#seleAreaFouth").val() < 0 || $("#seleAreaFouth").val() == "") {
-	// 	if ($("#seleAreaNext").val() == "" || $("#seleAreaNext").val() < 0) {
-	// 		showBox("请选择省份");
-	// 		$("#seleAreaNext").focus();
-	// 		return false;
-	// 	}
-	// 	if ($("#seleAreaThird").val() == "" || $("#seleAreaThird").val() < 0) {
-	// 		showBox("请选择市");
-	// 		$("#seleAreaThird").focus();
-	// 		return false;
-	// 	}
-	// 	if ($("#seleAreaFouth").val() == "" || $("#seleAreaFouth").val() < 0) {
-	// 		showBox("请选择区/县");
-	// 		$("#seleAreaFouth").focus();
-	// 		return false;
-	// 	}
 		$("#seleAreaFouth").parent().next().show();
 		return false;
 	}else{

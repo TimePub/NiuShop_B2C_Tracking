@@ -49,7 +49,6 @@ class Login extends Controller
     {
         $this->user = new AdminUser();
         $web_site = new WebSite();
-        $this->style = 'admin/';
         $web_info = $web_site->getWebSiteInfo();
         switch ($web_info['style_id_admin']) {
             case 3:

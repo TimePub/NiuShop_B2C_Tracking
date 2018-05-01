@@ -116,6 +116,17 @@
 			<p class="hint">是否开启虚拟商品</p>
 		</dd>
 	</dl>
+	<dl style="display: none;">
+		<dt>是否开启指定配送时间</dt>
+		<dd>
+			<div class="controls">
+				<label class="label-radio"><input type="radio" name="order_designated_delivery_time" value="1" />启用</label> 
+				<label class="label-radio"><input type="radio" name="order_designated_delivery_time" value="0" checked="checked">禁用</label>
+				<input type="hidden" id="hidden_order_designated_delivery_time" value="{$shopSet['order_designated_delivery_time']}">
+			</div>
+			<p class="hint">是否开启指定配送时间</p>
+		</dd>
+	</dl>
 	<dl>
 		<dt>购物返积分设置:</dt>
 		<dd>
@@ -225,6 +236,12 @@ window.onload=function(){
 		$("#open_virtual_goods").prop("checked","checked");
 	}
 	
+	var order_designated_delivery_time = $("#hidden_order_designated_delivery_time").val();
+	if(order_designated_delivery_time == ""){
+		order_designated_delivery_time = 0;
+	}
+	$("input[name='order_designated_delivery_time'][value='" + order_designated_delivery_time + "']").prop("checked","checked");
+	
 };
 
 function setConfigAjax(){
@@ -241,6 +258,7 @@ function setConfigAjax(){
 	var order_invoice_content = $("#order_invoice_content").val();
 	var shopping_back_points = $("#shopping_back_points").val();
 	var is_open_virtual_goods = $("input[type='radio'][name='is_open_virtual_goods']:checked").val();//是否开启虚拟商品
+	var order_designated_delivery_time = $("input[name='order_designated_delivery_time']:checked").val();//是否开启指定配送时间
 	if(validation){
 		$.ajax({
 			type:"post",
@@ -258,7 +276,8 @@ function setConfigAjax(){
 				"order_invoice_tax" : order_invoice_tax,
 				"order_invoice_content" : order_invoice_content,
 				"shopping_back_points" : shopping_back_points,
-				"is_open_virtual_goods" : is_open_virtual_goods
+				"is_open_virtual_goods" : is_open_virtual_goods,
+				"order_designated_delivery_time" : order_designated_delivery_time
 			},
 			success : function(data){
 				if(data['code'] > 0){

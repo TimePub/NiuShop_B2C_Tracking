@@ -10,7 +10,6 @@
 // +----------------------------------------------------------------------
 namespace addons\wxtemplatemsg;
 
-use addons\Addons;
 use data\extend\WchatOauth;
 use data\model\NsGoodsModel;
 use data\model\NsMemberBalanceWithdrawModel;
@@ -51,7 +50,7 @@ class Wxtemplatemsg extends \addons\Addons
             'hook_name' => 'wxtemplatemsg'
         ]
     );
- // 钩子名称（需要该钩子调用的页面）
+    // 钩子名称（需要该钩子调用的页面）
     
     /**
      * 实现第三方钩子

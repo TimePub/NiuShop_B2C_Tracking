@@ -1,25 +1,10 @@
 {extend name="adminblue/base" /}
 {block name="resources"/}
 <style>
-.adv_url{
-	max-width: 550px;
-	overflow : hidden;
-  	text-overflow: ellipsis;
-	white-space: nowrap;
-	text-align: left;
-}
-.silde_sort{
-	width: 40px;
-	margin-bottom: 0!important;
-}
-.button_active{
-	background: #FB9336;
-	outline: none;
-}
-.button_active:hover{
-	background: #FB9336;
-	opacity: 0.8;
-}
+.adv_url{max-width: 550px;overflow : hidden;text-overflow: ellipsis;white-space: nowrap;text-align: left;}
+.silde_sort{width: 40px;margin-bottom: 0 !important;}
+.button_active{background: #FB9336;outline: none;}
+.button_active:hover{background: #FB9336;opacity: 0.8;}
 </style>
 <script type="text/javascript" src="__STATIC__/My97DatePicker/WdatePicker.js"></script>
 {/block}
@@ -109,7 +94,7 @@ function LoadingInfo(page_index) {
 					html += '<td align="left">'+ data['data'][i]['adv_title']+'</td>';
 					html += '<td align="left">' + data['data'][i]['ap_name'] + '</td>';
 					html += '<td class="adv_url" title="' + data['data'][i]["adv_url"] + '">' + data['data'][i]["adv_url"] + '</td>';
-					html += '<td class="center"><input type="number" class="silde_sort" fieldid="'+ data['data'][i]['adv_id']+'"  value="'+ data['data'][i]["slide_sort"] + '" onchange="updateAdvSort(this)" size="1" ></td>';
+					html += '<td class="center"><input type="number" class="silde_sort input-common input-common-sort" fieldid="'+ data['data'][i]['adv_id']+'"  value="'+ data['data'][i]["slide_sort"] + '" onchange="updateAdvSort(this)" size="1" ></td>';
 					html += '<td class="center"><a href="'+__URL('ADMIN_MAIN/system/updateshopadv?adv_id=' + data['data'][i]["adv_id"]+'&type=' + data['data'][i]["type"])+'">编辑</a> ';
 					html += '<a href="javascript:;" onclick="delShopAdv(' + data['data'][i]["adv_id"] + ')">删除</a></td> ';
 					html += '</tr>';

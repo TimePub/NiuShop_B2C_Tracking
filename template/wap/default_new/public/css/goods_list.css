@@ -64,7 +64,8 @@
 		min-height: 25px;
 		padding-left: 8px;
 		position: relative;
-		margin-top:15px;
+		margin-top:5px;
+		height: 65px;
 	}
 	.info p.goods-title{
 	    overflow: hidden;
@@ -74,16 +75,16 @@
 	.info p.goods-title a{
 	    color: #333;
 	    overflow: hidden;
-	    white-space: nowrap;
 	    text-overflow: ellipsis;
         display: block;
 		width: 100%;
+		line-height: 20px;
+		max-height: 40px;
 	}
 	.info p.goods-price{
-    	margin: 0 10px 5px 0;
-    	margin-top: 5px;
 	    padding: 0px;
-        font-size: 12px;
+    	font-size: 12px;
+    	line-height: 20px;
 	}
 	.info p.goods-price>em{
 		font-style: normal;
@@ -199,3 +200,5 @@
 .show-type { display:block; width: 25px; height:25px;background-position:0px -121px; margin:13px auto 0;}
 .show-list{background-position:0px -76px;}
 .show-position{ width:100%; background:#fff;}
+i.goods_tab{font-style: normal;font-size: 12px!important;;background: #f44;color: #fff;padding: 1px 3px;margin-right: 2px;border-radius: 2px;font-weight: normal!important;}
+i.shipping_fee{font-style: normal;font-size: 12px!important;;background: #fff;color: #f44;padding: 1px 3px;margin-left: 5px;border-radius: 2px;border:1px solid #f44;display: inline-block;line-height: 1!important;font-weight: normal!important;}

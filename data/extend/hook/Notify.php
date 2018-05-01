@@ -11,6 +11,7 @@ use phpDocumentor\Reflection\Types\This;
 use data\model\NsOrderGoodsExpressModel;
 use think\Log;
 use data\model\NsOrderPaymentModel;
+use data\service\Notice;
 class Notify
 {
     public $result=array(
@@ -166,7 +167,7 @@ class Notify
         if(empty($user_obj)){
             $user_name="用户";
         }else{
-            $user_name=$user_obj["user_name"];
+            $user_name=$user_obj["nick_name"];
             $mobile=$user_obj["user_tel"];
             $email=$user_obj["user_email"];
         }
@@ -311,16 +312,18 @@ class Notify
         $order_goods_str=explode(",", $order_goods_ids);
         $result="";
         $user_name="";
+        $order_model=new NsOrderModel();
+        $user_model = new UserModel();
         if(count($order_goods_str)>0){
             $order_goods_id=$order_goods_str[0];
             $order_goods_model=new NsOrderGoodsModel();
             $order_goods_obj=$order_goods_model->get($order_goods_id);
             $shop_id=$order_goods_obj["shop_id"];
             $order_id=$order_goods_obj["order_id"];
-            $order_model=new NsOrderModel();
             $order_obj=$order_model->get($order_id);
-            $user_name=$order_obj["receiver_name"];
             $buyer_id=$order_obj["buyer_id"];
+            $user_obj = $user_model->get($buyer_id);
+            $user_name=$user_obj["nick_name"];
             $goods_name=$order_goods_obj["goods_name"];
             $goods_sku=$order_goods_obj["sku_name"];
             $order_no=$order_obj["out_trade_no"];
@@ -353,13 +356,11 @@ class Notify
             if(!empty($mobile) && $this->mobile_is_open==1){
                 $template_obj=$this->getTemplateDetail($shop_id, "order_deliver", "sms");
                 if(!empty($template_obj) && $template_obj["is_enable"]==1){
-                    $result=aliSmsSend($this->appKey, $this->secretKey, $template_obj["sign_name"], json_encode($sms_params), $mobile, $template_obj["template_title"], $this->ali_use_type);
+                    $this->createNoticeSmsRecords($template_obj, $shop_id, $buyer_id, $mobile, $sms_params, "订单发货短信发送", 5);
                 }
             }
             // 邮件发送
-            $user_model = new UserModel();
-            $user_obj = $user_model->get($buyer_id);
-            if (! empty($user_obj)) {
+            if (!empty($user_obj)) {
                 $email = $user_obj["user_email"];
                 if (! empty($email) && $this->email_is_open == 1) {
                     $template_obj = $this->getTemplateDetail($shop_id, "order_deliver", "email");
@@ -385,7 +386,7 @@ class Notify
                         $send_title = str_replace("{商品金额}", $goods_money, $send_title);
                         $send_title = str_replace("{物流公司}", $express_obj["express_name"], $send_title);
                         $send_title = str_replace("{快递编号}", $express_obj["express_no"], $send_title);
-                        $result=emailSend($this->email_host, $this->email_id, $this->email_pass, $this->email_port, $this->email_is_security, $this->email_addr, $email, $send_title, $content, $this->shop_name);
+                        $this->createNoticeEmailRecords($shop_id, $buyer_id, $email, $send_title, $content, 5);
                     }
                 }
             }
@@ -422,7 +423,7 @@ class Notify
         if (! empty($mobile) && $this->mobile_is_open == 1) {
             $template_obj = $this->getTemplateDetail($shop_id, "confirm_order", "sms");
             if (! empty($template_obj) && $template_obj["is_enable"] == 1) {
-                $result = aliSmsSend($this->appKey, $this->secretKey, $template_obj["sign_name"], json_encode($sms_params), $mobile, $template_obj["template_title"], $this->ali_use_type);
+                $this->createNoticeSmsRecords($template_obj, $shop_id, $buyer_id, $mobile, $sms_params, "订单确认短信发送", 2);
             }
         }
         // 邮件发送
@@ -444,8 +445,7 @@ class Notify
                     $send_title=str_replace("{用户名称}", $user_name, $send_title);
                     $send_title=str_replace("{主订单号}", $order_no, $send_title);
                     $send_title=str_replace("{订单金额}", $order_money, $send_title);
-                    
-                    $result=emailSend($this->email_host, $this->email_id, $this->email_pass, $this->email_port, $this->email_is_security, $this->email_addr, $email, $send_title, $content, $this->shop_name);
+                    $this->createNoticeEmailRecords($shop_id, $buyer_id, $email, $send_title, $content, 2);
                 }
             }
         }
@@ -484,8 +484,7 @@ class Notify
         if(!empty($mobile) && $this->mobile_is_open==1){
             $template_obj=$this->getTemplateDetail($shop_id, "pay_success", "sms");
             if(!empty($template_obj) && $template_obj["is_enable"]==1){
-                $result=aliSmsSend($this->appKey, $this->secretKey,
-                    $template_obj["sign_name"], json_encode($sms_params), $mobile, $template_obj["template_title"], $this->ali_use_type);
+                $this->createNoticeSmsRecords($template_obj, $shop_id, $buyer_id, $mobile, $sms_params, "订单付款成功通知", 3);
             }
         }
         #邮件发送
@@ -508,7 +507,7 @@ class Notify
                     $send_title=str_replace("{主订单号}", $order_no, $send_title);
                     $send_title=str_replace("{订单金额}", $order_money, $send_title);
                     $send_title=str_replace("{商品金额}", $goods_money, $send_title);
-                    $result=emailSend($this->email_host, $this->email_id, $this->email_pass, $this->email_port, $this->email_is_security, $this->email_addr, $email, $send_title, $content, $this->shop_name);
+                    $this->createNoticeEmailRecords($shop_id, $buyer_id, $email, $send_title, $content, 3);
                 }
             }
         }
@@ -546,8 +545,7 @@ class Notify
         if(!empty($mobile) && $this->mobile_is_open==1){
             $template_obj=$this->getTemplateDetail($shop_id, "create_order", "sms");
             if(!empty($template_obj) && $template_obj["is_enable"]==1){
-                $result=aliSmsSend($this->appKey, $this->secretKey,
-                    $template_obj["sign_name"], json_encode($sms_params), $mobile, $template_obj["template_title"], $this->ali_use_type);
+                $this->createNoticeSmsRecords($template_obj, $shop_id, $buyer_id, $mobile, $sms_params, "订单创建成功通知", 4);
             }
         }
             // 邮件发送
@@ -570,7 +568,7 @@ class Notify
                     $send_title = str_replace("{主订单号}", $order_no, $send_title);
                     $send_title = str_replace("{订单金额}", $order_money, $send_title);
                     $send_title = str_replace("{商品金额}", $goods_money, $send_title);
-                    $result = emailSend($this->email_host, $this->email_id, $this->email_pass, $this->email_port, $this->email_is_security, $this->email_addr, $email, $send_title, $content, $this->shop_name);
+                    $this->createNoticeEmailRecords($shop_id, $buyer_id, $email, $send_title, $content, 4);
                 }
             }
         }
@@ -654,8 +652,8 @@ class Notify
                 $user_obj=$user_model->get($user_id);
                 $sms_params=array(
                     "number"=>$rand."",
-                    "user_name"=>$user_obj["user_name"],
-                    "username"=>$user_obj["user_name"]
+                    "user_name"=>$user_obj["nick_name"],
+                    "username"=>$user_obj["nick_name"]
                 );
                 $this->result["param"]=$rand;
                 if(!empty($this->appKey) && !empty($this->secretKey) && !empty($template_obj["sign_name"]) && !empty($template_obj["template_title"])){
@@ -697,7 +695,7 @@ class Notify
                 $user_obj=$user_model->get($user_id);
                 $content=$template_obj["template_content"];
                 $content=str_replace("{验证码}", $rand, $content);
-                $content=str_replace("{用户名称}", $user_obj["user_name"], $content);
+                $content=str_replace("{用户名称}", $user_obj["nick_name"], $content);
                 $this->result["param"]=$rand;
                 if(!empty($this->email_host) && !empty($this->email_id) && !empty($this->email_pass) && !empty($this->email_addr)){
                     $result=emailSend($this->email_host, $this->email_id, $this->email_pass, $this->email_port, $this->email_is_security, $this->email_addr, $email, $template_obj["template_title"], $content, $this->shop_name);
@@ -753,7 +751,7 @@ class Notify
                 $send_title = str_replace("{主订单号}", $order_detial['order_no'], $send_title);
                 $send_title = str_replace("{订单金额}", $order_detial['order_money'], $send_title);
                 foreach ($email_array as $v){
-                    $result = emailSend($this->email_host, $this->email_id, $this->email_pass, $this->email_port, $this->email_is_security, $this->email_addr, $v, $send_title, $content, $this->shop_name);
+                    $this->createNoticeEmailRecords($shop_id, 0, $v, $send_title, $content, 7);
                 }
             }
             //短信提醒
@@ -771,7 +769,7 @@ class Notify
                     "ordermoney"=>$order_detial['order_money']
                 );
                 foreach ($mobile_array as $v){
-                    $result=aliSmsSend($this->appKey, $this->secretKey,$template_sms_obj["sign_name"], json_encode($sms_params), $v, $template_sms_obj["template_title"], $this->ali_use_type);
+                    $this->createNoticeSmsRecords($template_sms_obj, $shop_id, 0, $v, $sms_params, "订单提醒-商家通知", 7);
                 }
             }
         }
@@ -807,7 +805,7 @@ class Notify
                 $send_title = str_replace("{主订单号}", $order_detial['order_no'], $send_title);
                 $send_title = str_replace("{订单金额}", $order_detial['order_money'], $send_title);
                 foreach ($email_array as $v){
-                    $result = emailSend($this->email_host, $this->email_id, $this->email_pass, $this->email_port, $this->email_is_security, $this->email_addr, $v, $send_title, $content, $this->shop_name);
+                    $this->createNoticeEmailRecords($shop_id, 0, $v, $send_title, $content, 6);
                 }
             }
             //短信提醒
@@ -825,7 +823,7 @@ class Notify
                     "ordermoney"=>$order_detial['order_money']
                 );
                 foreach ($mobile_array as $v){
-                    $result=aliSmsSend($this->appKey, $this->secretKey,$template_sms_obj["sign_name"], json_encode($sms_params), $v, $template_sms_obj["template_title"], $this->ali_use_type);
+                    $this->createNoticeSmsRecords($template_sms_obj, $shop_id, 0, $v, $sms_params, "订单退货提醒-商家通知", 6);
                 }
             }
         }
@@ -840,7 +838,7 @@ class Notify
         $out_trade_no = $params["out_trade_no"];//订单号
         $shop_id = $params['shop_id'];
         $user = new UserModel();
-        $user_name = $user->getInfo(["uid"=>$params['uid']],"user_name")["user_name"];
+        $user_name = $user->getInfo(["uid"=>$params['uid']],"nick_name")["nick_name"];
         $result="";
         if(!empty($out_trade_no)){
             //获取支付详情
@@ -859,7 +857,7 @@ class Notify
                 $send_title = str_replace("{用户名称}", $user_name, $send_title);
                 $send_title = str_replace("{充值金额}", $order_payment['pay_money'], $send_title);
                 foreach ($email_array as $v){
-                    $result = emailSend($this->email_host, $this->email_id, $this->email_pass, $this->email_port, $this->email_is_security, $this->email_addr, $v, $send_title, $content, $this->shop_name);
+                    $this->createNoticeEmailRecords($shop_id, 0, $v, $send_title, $content, 8);
                 }
             }
             //短信提醒
@@ -875,7 +873,7 @@ class Notify
                     "rechargemoney"=>$order_payment['pay_money']
                 );
                 foreach ($mobile_array as $v){
-                    $result=aliSmsSend($this->appKey, $this->secretKey, $template_sms_obj["sign_name"], json_encode($sms_params), $v, $template_sms_obj["template_title"], $this->ali_use_type);
+                    $this->createNoticeSmsRecords($template_sms_obj, $shop_id, 0, $v, $sms_params, "余额充值-商家通知", 8);
                 }
             }
         }
@@ -891,7 +889,7 @@ class Notify
         $shop_id = $params['shop_id'];
         $user = new UserModel();
         $user_info = $user->getInfo(["uid"=>$params['uid']],"*");
-        $user_name = $user_info["user_name"];
+        $user_name = $user_info["nick_name"];
         $user_tel = $user_info["user_tel"];
         $user_email = $user_info["user_email"];
         $result="";
@@ -911,7 +909,7 @@ class Notify
                 $send_title = str_replace("{商场名称}", $this->shop_name, $send_title);
                 $send_title = str_replace("{用户名称}", $user_name, $send_title);
                 $send_title = str_replace("{充值金额}", $order_payment['pay_money'], $send_title);
-                $result = emailSend($this->email_host, $this->email_id, $this->email_pass, $this->email_port, $this->email_is_security, $this->email_addr, $user_email, $send_title, $content, $this->shop_name);
+                $this->createNoticeEmailRecords($shop_id, $user_info["uid"], $user_email, $send_title, $content, 1);
             }
             //短信提醒
             $template_sms_obj = $this->getTemplateDetail($shop_id, "recharge_success", "sms", "user");
@@ -925,9 +923,54 @@ class Notify
                     "username"=>$user_name,
                     "rechargemoney"=>$order_payment['pay_money']
                 );
-                $result=aliSmsSend($this->appKey, $this->secretKey, $template_sms_obj["sign_name"], json_encode($sms_params), $user_tel, $template_sms_obj["template_title"], $this->ali_use_type);
+                $this->createNoticeSmsRecords($template_sms_obj, $shop_id, $user_info["uid"], $user_tel, $sms_params, "用户余额充值", 1);
             }
         }
+    }
+
+    /**
+     * 添加短信记录
+     * @param unknown $template_obj
+     * @param unknown $shop_id
+     * @param unknown $buyer_id
+     * @param unknown $mobile
+     * @param unknown $sms_params
+     * @param unknown $title
+     * @param unknown $records_type
+     */
+    private function createNoticeSmsRecords($template_obj, $shop_id, $buyer_id, $mobile, $sms_params, $title, $records_type){
+        $notice_service=new Notice();
+        $send_config=array(
+            "appkey"=>$this->appKey,
+            "secret"=>$this->secretKey,
+            "signName"=>$template_obj["sign_name"],
+            "template_code"=>$template_obj["template_title"],
+            "sms_type"=>$this->ali_use_type
+        );
+        $notice_service->createNoticeRecords($shop_id, $buyer_id, 1, $mobile, $title, json_encode($sms_params), $records_type, json_encode($send_config));
+    }
+    
+    /**
+     * 添加邮箱记录
+     * @param unknown $shop_id
+     * @param unknown $buyer_id
+     * @param unknown $mobile
+     * @param unknown $send_title
+     * @param unknown $content
+     * @param unknown $records_type
+     */
+    private function createNoticeEmailRecords($shop_id, $buyer_id, $mobile, $send_title, $content, $records_type){
+        $notice_service=new Notice();
+        $send_config=array(
+            "email_host"=>$this->email_host,
+            "email_id"=>$this->email_id,
+            "email_pass"=>$this->email_pass,
+            "email_port"=>$this->email_port,
+            "email_is_security"=>$this->email_is_security,
+            "email_addr"=>$this->email_addr,
+            "shopName"=>$this->shop_name,
+        );
+        $notice_service->createNoticeRecords($shop_id, $buyer_id, 2, $mobile, $send_title, $content, $records_type, json_encode($send_config));
     }
 }
 

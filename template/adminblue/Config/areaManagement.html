@@ -29,7 +29,7 @@
 			{/if}
 		</div>
 		<div class="areaTd" style="width: 55px;">
-			<input type="text" class="sort input-common" fieldid="{$v1['province_id']}" fieldname="sort" value="{$v1['sort']}"  onkeyup="this.value=this.value.replace(/\D/g,'')" size="1" onchange="updateRegionAjax(1,1,this);" style="width: 32px;" />
+			<input type="text" class="sort input-common input-common-sort" fieldid="{$v1['province_id']}" fieldname="sort" value="{$v1['sort']}"  onkeyup="this.value=this.value.replace(/\D/g,'')" size="1" onchange="updateRegionAjax(1,1,this);" style="width: 32px;" />
 		</div>
 		<div class="areaTd province_{$v1['province_id']}" style="width: 335px;text-align: left;">
 			<input type="text" class="areaName input-common" style="width: 206px;text-align: left;" fieldid="{$v1['province_id']}" value="{$v1['province_name']}" onchange="updateRegionAjax(1,2,this);" />
@@ -139,7 +139,7 @@ function selectCityListAjax(province_id){
 					}
 					addInfo += '</div>';
 					addInfo += '<div class="areaTd" style="width: 55px;">';
-					addInfo += '<input type="text" class="sort input-common" fieldid="'+data[i]['city_id']+'" fieldname="sort" value="'+data[i]['sort']+'" size="1" onchange="updateRegionAjax(2,1,this);" style="width: 32px;"></div>';
+					addInfo += '<input type="text" class="sort input-common input-common-sort" fieldid="'+data[i]['city_id']+'" fieldname="sort" value="'+data[i]['sort']+'" size="1" onchange="updateRegionAjax(2,1,this);" style="width: 32px;"></div>';
 					addInfo += '<div class="areaTd city_'+data[i]['city_id']+'" style="width: 335px;text-align: left;">';
 					addInfo += '<span style="color: #ccc;">|——</span><input type="text" class="areaName input-common" style="width: 206px;text-align: left;" fieldid="'+data[i]['city_id']+'" value="'+data[i]['city_name']+'"  onchange="updateRegionAjax(2,2,this);"></div>';
 
@@ -173,7 +173,7 @@ function selectDistrictListAjax(province_id,city_id){
 					addInfo += '<div class="areaTd" style="width: 10px;">';
 					addInfo += '</div>';
 					addInfo += '<div class="areaTd" style="width: 55px;">';
-					addInfo += '<input type="text" class="sort input-common" fieldid="'+data[i]['district_id']+'" fieldname="sort" value="'+data[i]['sort']+'"  size="1" onchange="updateRegionAjax(3,1,this);" style="width: 32px;"></div>';
+					addInfo += '<input type="text" class="sort input-common input-common-sort" fieldid="'+data[i]['district_id']+'" fieldname="sort" value="'+data[i]['sort']+'"  size="1" onchange="updateRegionAjax(3,1,this);" style="width: 32px;"></div>';
 					addInfo += '<div class="areaTd district_'+data[i]['district_id']+'" style="width: 349px;text-align: left;">';
 					addInfo += '<span style="color: #ccc;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|——</span><input type="text" class="areaName input-common" style="width: 206px;text-align: left;" fieldid="'+data[i]['district_id']+'" value="'+data[i]['district_name']+'"  onchange="updateRegionAjax(3,2,this);"></div>';
 					addInfo += '<div class="areaTd" style="width: 349px;color: #13A5D5;"></div>';
@@ -419,7 +419,7 @@ function addOrUpdateAjax(){
 					addInfo += '<div class="areaTr city_pid_'+ superiorRegionId +'" id="city_id_'+data['code']+'" isClick="false" isShow="true">';
 					addInfo += '<div class="areaTd" style="width: 10px;"></div>';
 					addInfo += '<div class="areaTd" style="width: 55px;">';
-					addInfo += '<input type="text" class="sort input-common" fieldid="'+data['code']+'" fieldname="sort" value="'+regionSort+'"  size="1" onchange="updateRegionAjax(2,1,this);" style="width: 32px;"></div>';
+					addInfo += '<input type="text" class="sort input-common input-common-sort" fieldid="'+data['code']+'" fieldname="sort" value="'+regionSort+'"  size="1" onchange="updateRegionAjax(2,1,this);" style="width: 32px;"></div>';
 					addInfo += '<div class="areaTd city_'+data['code']+'" style="width: 335px;text-align: left;">';
 					addInfo += '<span style="color: #ccc;">|——</span><input type="text" class="areaName input-common" style="width: 206px;text-align: left;" fieldid="'+data['code']+'" value="'+regionName+'" onchange="updateRegionAjax(2,2,this);"></div>';
 					
@@ -441,7 +441,7 @@ function addOrUpdateAjax(){
 					addInfo += '<div class="areaTd" style="width: 10px;">';
 					addInfo += '</div>';
 					addInfo += '<div class="areaTd" style="width: 55px;">';
-					addInfo += '<input type="text" class="sort input-common" fieldid="'+data['code']+'" fieldname="sort" value="'+regionSort+'"  size="1" onchange="updateRegionAjax(3,1,this);" style="width: 32px;"></div>';
+					addInfo += '<input type="text" class="sort input-common input-common-sort" fieldid="'+data['code']+'" fieldname="sort" value="'+regionSort+'"  size="1" onchange="updateRegionAjax(3,1,this);" style="width: 32px;"></div>';
 					addInfo += '<div class="areaTd district_'+data['code']+'" style="width: 335px;text-align: left;">';
 					addInfo += '<span style="color: #ccc;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|——</span><input type="text" class="areaName input-common" style="width: 206px;text-align: left;" fieldid="'+data['code']+'" value="'+regionName+'"  onchange="updateRegionAjax(3,2,this);"></div>';
 					
@@ -463,7 +463,7 @@ function addOrUpdateAjax(){
 					addInfo += '<div class="areaTr pid_0" id="province_id_'+data['code']+'" isClick="false">';
 					addInfo += '<div class="areaTd" style="width: 10px;"></div>';
 					addInfo += '<div class="areaTd" style="width: 55px;">';
-					addInfo += '<input type="text" class="sort input-common" fieldid="'+data['code']+'" fieldname="sort" value="'+regionSort+'" size="1" onchange="updateRegionAjax(1,1,this);" style="width: 32px;"></div>';
+					addInfo += '<input type="text" class="sort input-common input-common-sort" fieldid="'+data['code']+'" fieldname="sort" value="'+regionSort+'" size="1" onchange="updateRegionAjax(1,1,this);" style="width: 32px;"></div>';
 					addInfo += '<div class="areaTd province_'+data['code']+'" style="width: 335px;text-align: left;">';
 					addInfo += '<input type="text" class="areaName input-common" style="width: 206px;text-align: left;" fieldid="'+data['code']+'" value="'+regionName+'" onchange="updateRegionAjax(1,2,this);"></div>';
 					addInfo += '<div class="areaTd province_38" style="width: 90px;">';

@@ -2,15 +2,9 @@
 {block name="resources"/}
 <link rel="stylesheet" type="text/css" href="ADMIN_CSS/product.css">
 <style type="text/css">
-.num{width:40px;text-align:center;}	
-.table-class table input {
-	margin-bottom: 0px;
-}
-
-.table-class table input.sort {
-	width: auto;
-	text-align: center;
-}
+.num{width:40px;text-align:center;}
+.table-class table input {margin-bottom: 0;}
+.table-class table input.sort {width: auto;text-align: center;}
 </style>
 {/block}
 {block name="main"}
@@ -26,10 +20,10 @@
 		</colgroup>
 	<thead>
 		<tr align="center">
-			<th>名称</th>
-			<th>标识</th>
-			<th>描述</th>
-			<th>状态</th>
+			<th align="left">名称</th>
+			<th align="left">标识</th>
+			<th align="left">描述</th>
+			<th align="left">状态</th>
 			<th>作者</th>
 			<th>版本</th>
 			<th>操作</th>
@@ -90,10 +84,10 @@ function LoadingInfo(page_index) {
 						status = '未安装';
 					}
 					html += '<tr align="center">';
-					html += '<td>'+ data['data'][i]['title'] +'</td>';
-					html += '<td>'+ data['data'][i]['name'] +'</td>';
-					html += '<td>'+ data['data'][i]['description'] +'</td>';
-					html += '<td>'+ status +'</td>';
+					html += '<td align="left">'+ data['data'][i]['title'] +'</td>';
+					html += '<td align="left">'+ data['data'][i]['name'] +'</td>';
+					html += '<td align="left">'+ data['data'][i]['description'] +'</td>';
+					html += '<td align="left">'+ status +'</td>';
 					html += '<td>'+ data['data'][i]['author'] +'</td>';
 					html += '<td>'+ data['data'][i]['version'] +'</td>';
 					html += '<td>'+ operation +'</td>';

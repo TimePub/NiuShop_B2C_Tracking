@@ -5,7 +5,7 @@ class AliyunClient
 
 	public $accessKeySecret;
 
-	public $serverUrl = "http://ecs.aliyuncs.com/";
+	public $serverUrl = "https://ecs.aliyuncs.com/";
 
 	public $format = "json";
 

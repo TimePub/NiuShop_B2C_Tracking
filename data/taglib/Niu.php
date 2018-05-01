@@ -15,11 +15,19 @@ use data\service\Goods;
 use data\service\GoodsCategory;
 use data\service\GoodsBrand;
 use data\service\Platform;
+use data\service\User as UserService;
 use data\service\Article;
+use data\service\Order;
 use data\service\WebSite;
 use data\service\Config;
 use data\service\Shop;
 use think\Log;
+use data\service\Member\MemberAccount;
+use app\admin\controller\Member;
+use data\service\Member as MemberService;
+use Qiniu\Tests\Base64Test;
+use app\wap\controller\BaseController;
+use app\api\controller\User;
 
 class Niu extends TagLib
 {
@@ -59,21 +67,6 @@ class Niu extends TagLib
         'webicp'              => ['attr' => '', 'close' => 0],//网站备案号
         'webclosereason'      => ['attr' => '', 'close' => 0],//网站关闭原因
         'webcount'            => ['attr' => '', 'close' => 0],//网站第三方统计代码
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         'goodslist'           => ['attr' => 'page,num,where,order,field,cache,name', 'close' => 1],//
         'goodsviewlist'       => ['attr' => 'page,num,where,order,field,cache,name', 'close' => 1],//直接查询商品列表
         'memberhistory'       => ['attr' => 'cache,name', 'close' => 1],//会员浏览历史
@@ -81,7 +74,7 @@ class Niu extends TagLib
         
         
         
-        'goodsinfo'           => ['attr' => 'id,field,cache,name', 'close' => 1],
+        'goodsinfo'           => ['attr' => 'id,cache,name', 'close' => 1],//商品详情
         'categorylist'        => ['attr' => 'page,num,where,order,field,cache', 'close' => 1],
         'categorytree'        => ['attr' => 'page,num,where,order,field,cache', 'close' => 1],
         'brandlist'           => ['attr' => 'page,num,where,order,field,cache', 'close' => 1],
@@ -93,7 +86,7 @@ class Niu extends TagLib
         'blockinfo'           => ['attr' => 'id,field,cache,name', 'close' => 1],//首页版块详情
         
         'linklist'            => ['attr' => 'page,num,where,order,field,cache', 'close' => 1],//友情链接列表
-        'categoryblock'       => ['attr' => 'name,cache,key,item', 'close' => 1],//分类楼层
+        'categoryblock'       => ['attr' => 'name,cache', 'close' => 1],//分类楼层
         'navigation'          => ['attr' => 'page,num,where,order,field,cache', 'close' => 1],
         
         
@@ -102,12 +95,703 @@ class Niu extends TagLib
         'categorybrands'      => ['attr' => 'id,cache,name', 'close' => 1],//品牌
         
         
+    
+        //订单
+        'orderlist'           => ['attr' => 'page,num,where,order,cache','close'=>1],//订单列表
+        'orderdetail'         => ['attr' => 'id,cache,name', 'close' => 1],//订单详情
+        'ordersum'            => ['attr' => 'cache,name', 'close' => 1],//订单数量（待支付、待收货...）
+        'shopconfig'          => ['attr' => 'id,cache,name','close' =>1],//店铺设置
+        'ordernumber'         => ['attr' => 'id,cache,name','close' =>1],//订单号
+        
+        //购物车
+        'cartlist'            => ['attr' => 'uid,shop_id,cache', 'close'=>1],//获取购物车
+        
+        //首页活动商品
+        'recommendgoodslist'  => ['attr' => 'name,cache','close'=>1],//首页促销商品
+        'discountgoodslist'   => ['attr' => 'page,num,where,order,name,cache','close'=>1],//首页限时折扣商品列表
+        
+        //会员信息
+        'addresslist'         => ['attr' => 'page,num,where,order,name,cache','close'=>1],//收货地址
+        'accountlist'         => ['attr' => 'page,num,where,order,file,cache','close'=>1],//余额积分流水
+        'memberaccount'       => ['attr' => 'id,account_type,start_time,end_time,name,cache','close'=>1],//一段时间内会员账户（积分或余额）account_type：1.积分2.余额3.购物币
+		'memberbankaccountlist'=>['attr' => 'is_default,name,cache'],//会员提现账户列表
+		
+		
+		'memberimg'          => ['attr' => '','close'=>0],//会员头像
+		'membernickname'     => ['attr' => '','close'=>0],//会员昵称
+		'memberrealname'     => ['attr' => '','close'=>0],//会员真实姓名
+		'memberbirthday'     => ['attr' => '','close'=>0],//会员出生年月
+		'membersex'		     => ['attr' => '','close'=>0],//会员性别
+		'memberlocation'	 => ['attr' => '','close'=>0],//会员地址
+		'memberqq'	         => ['attr' => '','close'=>0],//会员qq
+		'memberinfo'	     => ['attr' => 'name,cache','close'=>1],//会员详情
+		
+		
+		'membergoodsfavoriteslist' => ['attr'=>'page,num,where,order,name,cache','close'=>1],//会员收藏列表
+		'membercounponlist'        => ['attr'=>'type,name,cache','close'=>1],//会员优惠券 type:1已领取（未使用） 2已使用 3已过期
+
+		
+		
+		'orderevaluatedatalist'    => ['attr'=>'page,num,where,order,name,cache','close'=>1],// 评价信息 分页
+		
+		
+		'convertrate'         => ['attr' =>'id,name,cache','close'=>1],//获取兑换比例
+		'withdrawlist'        => ['attr' =>'page,num,where,name,order,cache','close'=>1],//余额提现记录 
+		
+		'usernotice'          => ['attr' =>'','close'=>0],//获取用户通知
+		'goodscoupon'         => ['attr' =>'goods_id,uid,name,cache','close'=>1],//商品优惠券
+		'categoryparentquery' => ['attr' =>'id,name,cache','close'=>1],//获取分类的父级分类
+		'evaluatecount'       => ['attr' =>'id,name,cache','close'=>1],//评价数量
+		'consultlist'         => ['attr' =>'page,num,where,order,name,cache','close'=>1],//购买咨询
+		
+		//=============================wap============================//
+		'notice'              => ['attr' => 'id,name,cache','close'=>1],//首页公告
+		'couponlist'          => ['attr' => 'shop_id,uid,name,cache','close'=>1],//优惠券列表
+		'platformlist'        => ['attr' => 'id,num,name,cache','close' => 1],//首页新品推荐列表
+		'indexblocklist'      => ['attr' => 'id,num,name,cache','close' => 1],//首页楼层版块
+		'currenttime'         => ['attr' => '','close'=>0],//当前时间戳
+		'withdrawconfig'      => ['arrt' => 'id,name,cache','close'=>1],//会员提现设置
+		'pointconfig'         => ['attr' => 'name,cache','close'=>1],//积分配置信息
+		'cmstype'             => ['attr' => 'name,cache','close'=>1],//cms分类
+		'formatcategorylist'  => ['attr' => 'name,cache','close'=>1],//获取格式化后的商品分类
+		'isfavorites'         => ['attr' => 'uid,goods_id,name,cache','close'=>1],//是否收藏了该商品
+		'spotfabulous'        => ['attr' => 'uid,goods_id,name,cache','close'=>1],//点赞
+		'customserviceconfig' => ['attr' => 'id,name,cache','close'=>1],//美洽客服
+		'ticket'              => ['attr' => 'name,cache','colse'=>1],//获取分享相关票据
     ];
     
     
+    /**
+     * 购买咨询
+     */
+    public function tagConsultList($tag, $content)
+    {
+    	$page  = isset($tag['page'])  ? $tag['page']  : '1';
+    	$num   = isset($tag['num'])   ? $tag['num']   : PAGESIZE;
+    	$where = isset($tag['where']) ? $tag['where'] : '';
+    	$order = isset($tag['order']) ? $tag['order'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Goods";
+    	$function_array = ['getConsultList', $page, $num, $where, $order];
+    	$function = 'getConsultList("'.$page.'","'. $num.'", "'.$where.'","'.$order.'")';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     *获取分享相关票据
+     */
+    public function tagTicket($tag,$content)
+    {
+    	$cache    = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name     = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$parse .= '<?php ';
+    	$parse .= '$base = new  app\wap\controller\BaseController();';
+        $parse .= '$'.$name.' = $base->getShareTicket();';
+        $parse .= '$'.$name.' = json_encode($'.$name.');';
+        $parse .= '$'.$name.' = json_decode($'.$name.', ture);';
+    	$parse .= ' ?>';
+    	$parse .= $content;
+    	return $parse;
+    }
+    /**
+     *美洽客服
+     */
+    public function tagCustomserviceconfig($tag,$content)
+    {
+    	$id = isset($tag['id'])    ? $tag['id']    : '0';
+    	$cache    = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name     = isset($tag['name'])  ? $tag['name']  : 'data';
+		$service_name = "Config";
+    	$function_array = ['getcustomserviceConfig',$id];
+    	$function = 'getcustomserviceConfig("'.$id.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     *查询点赞记录表，获取详情再判断当天该店铺下该商品该会员是否已点赞
+     */
+    public function tagSpotfabulous($tag,$content)
+    {
+    	$uid      = isset($tag['uid'])   ? $tag['uid']    : '';
+    	$goods_id = isset($tag['goods_id']) ? $tag['goods_id']    : '';
+    	$cache    = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name     = isset($tag['name'])  ? $tag['name']  : 'data';
+		$service_name = "Goods";
+    	$function_array = ['getGoodsSpotFabulous',$uid,$goods_id];
+    	$function = 'getGoodsSpotFabulous(0,"'.$uid.'","'.$goods_id.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     *是否收藏了该商品
+     */
+    public function tagIsfavorites($tag,$content)
+    {
+    	$uid      = isset($tag['uid'])   ? $tag['uid']    : '';
+    	$goods_id = isset($tag['goods_id'])    ? $tag['goods_id']    : '';
+    	$cache    = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name     = isset($tag['name'])  ? $tag['name']  : 'data';
+		$service_name = "Member";
+    	$function_array = ['getIsMemberFavorites',$uid,$goods_id];
+    	$function = 'getIsMemberFavorites("'.$uid.'","'.$goods_id.'","goods")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     *获取格式化后的商品分类
+     */
+    public function tagFormatcategorylist($tag,$content)
+    {
+    	$cache     = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name      = isset($tag['name'])  ? $tag['name']  : 'data';
+    
+    	$service_name = "GoodsCategory";
+    	$function_array = ['getFormatGoodsCategoryList'];
+    	$function = 'getFormatGoodsCategoryList()';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     *cms分类
+     */
+    public function tagCmstype($tag,$content)
+    {
+    	$cache     = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name      = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Article";
+    	$function_array = ['getArticleClassQuery'];
+    	$function = 'getArticleClassQuery()';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     *积分配置信息
+     */
+    public function tagPointconfig($tag,$content)
+    {
+    	$cache     = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name      = isset($tag['name'])  ? $tag['name']  : 'data';
+    
+    	$service_name = "Promotion";
+    	$function_array = ['getPointConfig'];
+    	$function = 'getPointConfig()';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     *会员提现配置
+     */
+    public function tagWithdrawconfig($tag,$content)
+    {
+    	$shop_id        = isset($tag['id'])    ? $tag['id']    : '0';
+    	$cache     = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name      = isset($tag['name'])  ? $tag['name']  : 'data';
+    
+    	$service_name = "Config";
+    	$function_array = ['getBalanceWithdrawConfig', $shop_id];
+    	$function = 'getBalanceWithdrawConfig("'.$shop_id.'")';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     *当前时间戳
+     */
+    public function tagCurrenttime($tag,$content)
+    {
+    	$time = time();
+    	$time = $time * 1000;
+    	return $time;
+    }
+    /**
+     *首页楼层版块
+     */
+    public function tagIndexblocklist($tag,$content)
+    {
+    	$id        = isset($tag['id'])    ? $tag['id']    : '0';
+    	$num       = isset($tag['show_num']) ? $tag['show_num']   : '4';
+    	$cache     = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name      = isset($tag['name'])  ? $tag['name']  : 'data';
+    	 
+    	$service_name = "GoodsCategory";
+    	$function_array = ['getGoodsCategoryBlockQuery', $id,$num];
+    	$function = 'getGoodsCategoryBlockQuery("'.$id.'","'.$num.'")';
+    	 
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     *首页新品推荐列表
+     */
+    public function tagPlatformlist($tag,$content)
+    {
+    	$id    = isset($tag['id'])    ? $tag['id']    : '0';
+    	$num   = isset($tag['num'])   ? $tag['num']   : '4';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	 
+    	$service_name = "Platform";
+    	$function_array = ['getRecommendGoodsList', $id,$num];
+    	$function = 'getRecommendGoodsList("'.$id.'","'.$num.'")';
+    	 
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     *优惠券
+     */
+    public function tagCouponlist($tag,$content)
+    {
+    	$uid   = isset($tag['uid'])    ? $tag['uid']   : '';
+    	$shop_id   = isset($tag['shop_id'])    ? $tag['shop_id']   : '0';
+    	$cache     = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name      = isset($tag['name'])  ? $tag['name']  : 'data';
+    	 
+    	$service_name = "Member";
+    	$function_array = ['getMemberCouponTypeList', $shop_id,$uid];
+    	$function = 'getMemberCouponTypeList("'.$shop_id.'","'.$uid.'")';
+    	 
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     *首页公告 
+     */
+    public function tagNotice($tag,$content)
+    {
+    	$shop_id   = isset($tag['id'])    ? $tag['id']   : '0';
+    	$cache     = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name      = isset($tag['name'])  ? $tag['name']  : 'data';
+    	 
+    	$service_name = "Config";
+    	$function_array = ['getNotice', $goods_id];
+    	$function = 'getNotice("'.$goods_id.'")';
+    	 
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 评价数量
+     * @evaluate_count总数量 @imgs_count带图的数量 @praise_count好评数量 @center_count中评数量 bad_count差评数量
+     */
+    public function tagEvaluatecount($tag,$content)
+    {
+    	$goods_id  = isset($tag['id'])   ? $tag['id']   : '';
+    	$cache     = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name      = isset($tag['name'])  ? $tag['name']  : 'data';
+    	
+    	$service_name = "Goods";
+    	$function_array = ['getGoodsEvaluateCount', $goods_id];
+    	$function = 'getGoodsEvaluateCount("'.$goods_id.'")';
+    	
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 获取分类的父级分类
+     */
+    public function tagCategoryparentquery($tag,$content)
+    {
+    	$category_id      = isset($tag['id'])   ? $tag['id']   : '';
+    	$cache            = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name             = isset($tag['name'])  ? $tag['name']  : 'data';
+    	
+    	$service_name = "GoodsCategory";
+    	$function_array = ['getCategoryParentQuery', $category_id];
+    	$function = 'getCategoryParentQuery("'.$category_id.'")';
+    	
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 商品优惠券
+     */
+    public function tagGoodscoupon($tag, $content)
+    {
+    	$goodsid  = isset($tag['goods_id'])  ? $tag['goods_id']  : '1';
+    	$uid      = isset($tag['uid'])   ? $tag['uid']   : '';
+    	$cache    = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name     = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Goods";
+    	$function_array = ['getGoodsCoupon', $goodsid, $uid];
+    	$function = 'getGoodsCoupon("'.$goodsid.'","'. $uid.'")';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 获取用户通知
+     */
+    public function tagUsernotice($tag,$content)
+    {
+    	$config = new Config();
+    	return $user_notice = $config->getUserNotice(0);
+    }
+    /**
+     * 余额提现记录 
+     */
+    public function tagWithdrawlist($tag, $content)
+    {
+    	$page  = isset($tag['page'])  ? $tag['page']  : '1';
+    	$num   = isset($tag['num'])   ? $tag['num']   : PAGESIZE;
+    	$where = isset($tag['where']) ? $tag['where'] : '';
+    	$order = isset($tag['order']) ? $tag['order'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Member";
+    	$function_array = ['getMemberBalanceWithdraw', $page, $num, $where, $order];
+    	$function = 'getMemberBalanceWithdraw("'.$page.'","'. $num.'", "'.$where.'","'.$order.'")';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 会员详情
+     */
+    public function tagMemberinfo($tag, $content)
+    {
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Member";
+    	$function_array = ['getMemberDetail'];
+    	$function = 'getMemberDetail(0)';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     *兑换比例 
+     */
+    public function tagConvertrate($tag,$content)
+    {
+    	$shop_id = isset($tag['id']) ? $tag['id'] : 0;
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$service_folder = 'Member';
+    	$service_name = 'MemberAccount';
+    	$function_array = ['getConvertRate', $shop_id];
+    	$function = 'getConvertRate("'.$shop_id.'")';
+    	
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array, $service_folder);
+    }
+    /**
+     * 订单号
+     */
+    public function tagOrdernumber($tag, $content)
+    {
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$order_id = isset($tag['id']) ? $tag['id'] : '';
+    	
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = 'Member';
+    	$function_array = ['getOrderNumber', $order_id];
+    	$function = 'getOrderNumber("'.$order_id.'")';
+    	
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 获取店铺设置 
+     */
+    public function tagShopconfig($tag, $content)
+    {
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$shop_id = isset($tag['id']) ? $tag['id'] : '0';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = 'Config';
+    	$function_array = ['getShopConfig', $shop_id];
+    	$function = 'getShopConfig("'.$shop_id.'")';
+    	
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 订单数量  
+     */
+    public function tagOrdersum($tag, $content)
+    {
+    	$where = isset($tag['where']) ?  $tag['where']:  '';//传入值为array,须有买家id
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = 'Order';
+    	$function_array = ['getOrderStatusNum2'];
+    	$function = 'getOrderStatusNum2()';
+    	
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 评价信息 分页
+     */
+    public function tagOrderevaluatedatalist($tag, $content)
+    {
+    	$page  = isset($tag['page'])  ? $tag['page']  : '1';
+    	$num   = isset($tag['num'])   ? $tag['num']   : PAGESIZE;
+    	$where = isset($tag['where']) ? $tag['where'] : '';
+    	$order = isset($tag['order']) ? $tag['order'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Order";
+    	$function_array = ['getOrderEvaluateDataList', $page, $num, $where, $order];
+    	$function = 'getOrderEvaluateDataList("'.$page.'","'. $num.'", "'.$where.'","'.$order.'")';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 会员优惠券
+     */
+    public function tagMembercounponlist($tag, $content)
+    {
+    	$type = isset($tag['type']) ? $tag['type'] : 1;
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Member";
+    	$function_array = ['getMemberCounponList', $type];
+    	$function = 'getMemberCounponList("'.$type.'")';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 会员收藏列表
+     */
+    public function tagMembergoodsfavoriteslist($tag, $content)
+    {
+    	$page  = isset($tag['page'])  ? $tag['page']  : '1';
+    	$num   = isset($tag['num'])   ? $tag['num']   : PAGESIZE;
+    	$where = isset($tag['where']) ? $tag['where'] : '';
+    	$order = isset($tag['order']) ? $tag['order'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_name = "Member";
+    	$function_array = ['getMemberGoodsFavoritesList', $page, $num, $where, $order];
+    	$function = 'getMemberGoodsFavoritesList("'.$page.'","'. $num.'", "'.$where.'","'.$order.'")';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     * 会员qq
+     */
+    public function tagmemberqq($tag,$content)
+    {
+    	$member = new MemberService();
+    	$member_info = $member->getMemberDetail();
+    	$memberqq = $member_info['user_info']['user_qq'];
+    	return $memberqq;
+    }
+    /**
+     * 会员地址
+     */
+    public function tagmemberlocation($tag,$content)
+    {
+    	$member = new MemberService();
+    	$member_info = $member->getMemberDetail();
+    	$memberlocation = $member_info['user_info']['location'];
+    	return $memberlocation;
+    }
+    /**
+     * 会员性别
+     */
+    public function tagmembersex($tag,$content)
+    {
+    	$member = new MemberService();
+    	$member_info = $member->getMemberDetail();
+    	$membersex = $member_info['user_info']['sex'];
+    	return $membersex;
+    }
+    /**
+     * 会员出生年月
+     */
+    public function tagMemberbirthday($tag,$content)
+    {
+    	$member = new MemberService();
+    	$member_info = $member->getMemberDetail();
+    	if ($member_info['user_info']['birthday'] == 0 || $member_info['user_info']['birthday'] == "") {
+    		$member_birthday = "";
+    	} else {
+    		$member_birthday = date('Y-m-d', $member_info['user_info']['birthday']);
+    	}
+    	return $member_birthday;
+    }
+    
+    /**
+     * 会员真实姓名
+     */
+    public function tagmemberrealname($tag,$content)
+    {
+    	$member = new MemberService();
+    	$member_info = $member->getMemberDetail();
+    	$memberrealname = $member_info['user_info']['real_name'];
+    	return $memberrealname;
+    }
+    
+    /**
+     * 会员昵称
+     */
+    public function tagmembernickname($tag,$content)
+    {
+    	$member = new MemberService();
+    	$member_info = $member->getMemberDetail();
+    	$membernickname = $member_info['user_info']['nick_name'];
+    	return $membernickname;
+    }
+    
+    /**
+     * 会员头像
+     */
+	public function tagMemberimg($tag,$content)
+	{
+		$member = new MemberService();
+		$member_info = $member->getMemberDetail();
+		if (! empty($member_info['user_info']['user_headimg'])) {
+			$member_img = $member_info['user_info']['user_headimg'];
+		} elseif (! empty($member_info['user_info']['qq_openid'])) {
+			$member_img = $member_info['user_info']['qq_info_array']['figureurl_qq_1'];
+		} elseif (! empty($member_info['user_info']['wx_openid'])) {
+			$member_img = '0';
+		} else {
+			$member_img = '0';
+		}
+		return $member_img;
+	}    
+    /**
+     * 
+     * 会员提现账户列表  
+     */
+    public function tagMemberbankaccountlist($tag,$content)
+    {
+    	
+    	$is_default  = isset($tag['is_default'])  ? $tag['is_default'] : '0';
+    	$name  = isset($tag['name'])  ? $tag['name'] : 'name';
+    	$cache = isset($tag['cache']) ? $tag['cache']: '';
+    	$service_name = "Member";
+    	$function_array = ['getMemberBankAccount'];
+    	$function = 'getMemberBankAccount("'.$is_default.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    /**
+     *一段时间内会员账户（积分和余额）
+     */
+    public function tagMemberaccount($tag,$content )
+    {
+    	$uid  = isset($tag['id'])  ? $tag['id']  : '';
+    	$account_type = isset($tag['account_type'])   ? $tag['account_type']   : '';
+    	$start_time = isset($tag['start_time']) ? $tag['start_time'] : '';
+    	$end_time = isset($tag['end_time']) ? $tag['end_time'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    	$service_folder = 'Member';
+    	$service_name = "MemberAccount";
+    	$function_array = ['getMemberAccount',0,$uid,$account_type,$start_time,$end_time];
+    	$function = 'getMemberAccount(0,"'.$uid.'","'.$account_type.'","'.$start_time.'","'.$end_time.'")';
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array,$service_folder);
+//     	$member = new MemberAccount();
+//     	$member_account = $member->getMemberAccount(0,$uid,$account_type,$start_time,$end_time);
+//     	return $member_account;
+    }
+    /**
+     *会员余额积分流水
+     */
+    public function tagAccountList($tag,$content)
+    {
+    	$page  = isset($tag['page'])  ? $tag['page']  : '1';
+    	$num   = isset($tag['num'])   ? $tag['num']   : PAGESIZE;
+    	$where = isset($tag['where']) ? $tag['where'] : '';
+    	$order = isset($tag['order']) ? $tag['order'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$field = isset($tag['field']) ? $tag['field'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    
+    	$service_name = "Member";
+    	$function_array = ['getAccountList', $page, $num, $where, $order,$field];
+    	$function = 'getAccountList("'.$page.'","'. $num.'", "'.$where.'","'.$order.'","'.$field.'")';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    
 
+    /**
+     *收货地址
+     */
+    public function tagAddresslist($tag,$content)
+    {
+    	$page  = isset($tag['page'])  ? $tag['page']  : '1';
+    	$num   = isset($tag['num'])   ? $tag['num']   : PAGESIZE;
+    	$where = isset($tag['where']) ? $tag['where'] : '';
+    	$order = isset($tag['order']) ? $tag['order'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    
+    	$service_name = "Member";
+    	$function_array = ['getMemberExpressAddressList', $page, $num, $where, $order];
+    	$function = 'getMemberExpressAddressList("'.$page.'","'. $num.'", "'.$where.'","'.$order.'")';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
+    
+    /**
+     *首页限时折扣商品
+     */
+    public function tagDiscountgoodslist($tag,$content)
+    {
+    	$page  = isset($tag['page'])  ? $tag['page']  : '1';
+    	$num   = isset($tag['num'])   ? $tag['num']   : PAGESIZE;
+    	$where = isset($tag['where']) ? $tag['where'] : '';
+    	$order = isset($tag['order']) ? $tag['order'] : '';
+    	$cache = isset($tag['cache']) ? $tag['cache'] : '';
+    	$name  = isset($tag['name'])  ? $tag['name']  : 'data';
+    
+    	$service_name = "Goods";
+    	$function_array = ['getDiscountGoodsList', $page, $num, $where, $order];
+    	$function = 'getDiscountGoodsList("'.$page.'","'. $num.'", "'.$where.'","'.$order.'")';
+    
+    	return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
     
     
+    /**
+     * 首页促销商品
+     */
+     public function tagRecommendGoodslist($tag,$content)
+     {
+    	$cache   = isset($tag['cache'])  ? $tag['cache'] : '';
+    	$name    = isset($tag['name'])   ? $tag['name']  : 'data';
+    	$service_name = 'Platform';
+    	$function_array = ['getRecommendGoodsQuery'];
+    	$function = 'getRecommendGoodsQuery(0)';
+		return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array); 	 
+    }
+    /**
+     * 获取购物车
+     */
+    public function tagCartlist($tag,$content)
+    {
+    	$uid     = isset($tag['uid'])     ? $tag['uid'] : '';
+    	$shop_id = isset($tag['shop_id']) ? $tag['shop_id'] : '0';
+    	$cache   = isset($tag['cache'])   ? $tag['cache'] : '';
+    	$name    = isset($tag['name'])    ? $tag['name'] : 'data';
+    	$service_name = 'Goods';
+    	$function_array = ['getCart',$uid,$shop_id];
+    	$function = 'getCart("'.$uid.'","'.$shop_id.'")';
+		return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array); 	 
+    }
+    
+    /**
+     *订单详情 
+     */
+	public function tagorderdetail($tag,$content)
+	{
+		$id    = isset($tag['id'])    ? $tag['id'] : '';
+		$cache = isset($tag['cache']) ? $tag['cache'] : '';
+		$name  = isset($tag['name'])  ? $tag['name'] : 'data';
+		
+		$service_name  = 'Order';
+		$function_array = ['getOrderDetail',$id];
+		$function = 'getOrderDetail("'.$id.'")';
+		return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+	}
+	/**
+     *订单列表 
+     */
+    public function tagOrderlist($tag,$content)
+    {
+    	$page  = isset($tag['page'])  ? $tag['page']  : '1';
+        $num   = isset($tag['num'])   ? $tag['num']   : PAGESIZE;
+        $where = isset($tag['where']) ? $tag['where'] : '';
+        $order = isset($tag['order']) ? $tag['order'] : '';
+        $cache = isset($tag['cache']) ? $tag['cache'] : '';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
+        
+        $service_name = "Order";
+        $function_array = ['getOrderList', $page, $num, $where, $order];
+        $function = 'getOrderList("'.$page.'","'. $num.'", "'.$where.'","'.$order.'")';
+        
+        return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
+    }
     /**
      * 筛选条件-价格区间标签
      */
@@ -115,7 +799,7 @@ class Niu extends TagLib
     {
         $id    = isset($tag['id'])    ? $tag['id']    : '';
         $cache = isset($tag['cache']) ? $tag['cache'] : 0;
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_price_grades';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
         
         $service_name = "GoodsCategory";
         $function_array = ['getGoodsCategoryPriceGrades', $id];
@@ -130,7 +814,7 @@ class Niu extends TagLib
     {
         $id    = isset($tag['id'])    ? $tag['id']    : '';
         $cache = isset($tag['cache']) ? $tag['cache'] : 0;
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_price_grades';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
         
         $service_name = "GoodsCategory";
         $function_array = ['getGoodsCategoryBrands', $id];
@@ -161,7 +845,7 @@ class Niu extends TagLib
         $order = isset($tag['order']) ? $tag['order'] : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_navigation_list';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
         
         $service_name = "Shop";
         $function_array = ['ShopNavigationList', $page, $num, $where, $order];
@@ -176,13 +860,12 @@ class Niu extends TagLib
     public function tagGoodsinfo($tag, $content)
     {
         $id    = isset($tag['id'])    ? $tag['id']    : '';
-        $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : 0;
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_goods_info';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
         
         $service_name = "Goods";
-        $function_array = ['getGoodsDetail', $id, $field];
-        $function = 'getGoodsDetail("'.$id.'", "'.$field.'")';
+        $function_array = ['getGoodsDetail', $id,];
+        $function = 'getGoodsDetail("'.$id.'")';
         
         return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
     }
@@ -197,7 +880,7 @@ class Niu extends TagLib
         $order = isset($tag['order']) ? $tag['order'] : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_category_list';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
         
         $service_name = "GoodsCategory";
         $function_array = ['getGoodsCategoryList', $page, $num, $where, $order, $field];
@@ -211,7 +894,7 @@ class Niu extends TagLib
     public function tagCategorytree($tag, $content)
     {
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_category_tree';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
         
         $service_name = "GoodsCategory";
         $function_array = ['getCategoryTreeUseInShopIndex'];
@@ -232,7 +915,7 @@ class Niu extends TagLib
         $order = isset($tag['order']) ? $tag['order'] : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_link_list';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
         
         $service_name = "Platform";
         $function_array = ['getLinkList', $page, $num, $where, $order, $field];
@@ -248,7 +931,7 @@ class Niu extends TagLib
         $id    = isset($tag['id'])    ? $tag['id']    : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_adv';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
         
         $service_name = "Platform";
         $function_array = ['getPlatformAdvPositionDetail', $id, $field];
@@ -267,7 +950,7 @@ class Niu extends TagLib
         $order = isset($tag['order']) ? $tag['order'] : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_block_list';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
         
         $service_name = "Platform";
         $function_array = ['webBlockList', $page, $num, $where, $order, $field];
@@ -283,7 +966,7 @@ class Niu extends TagLib
         $id    = isset($tag['id'])    ? $tag['id']    : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_block';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
         
         $service_name = "Platform";
         $function_array = ['getWebBlockDetail', $id, $field];
@@ -423,7 +1106,7 @@ class Niu extends TagLib
      * 热门搜索
      */
     public function tagHotsearch($tag, $content){
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_hot_search';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
         $config = new Config();
         $hot_keys = $config->getHotsearchConfig(0);
         return $this->loadContent($hot_keys, $name, $content);
@@ -433,7 +1116,7 @@ class Niu extends TagLib
      */
     public function tagCategoryblock($tag, $content)
     {
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_category_block';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
         if($cache !== ''){
             $goods_category = new GoodsCategory();
@@ -522,7 +1205,7 @@ class Niu extends TagLib
         $order = isset($tag['order']) ? $tag['order'] : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_helpclass_list';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
     
         $service_name = "Platform";
         $function_array = ['getPlatformHelpClassList', $page, $num, $where, $order, $field];
@@ -541,7 +1224,7 @@ class Niu extends TagLib
         $order = isset($tag['order']) ? $tag['order'] : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_helpdocument_list';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
     
         $service_name = "Platform";
         $function_array = ['getPlatformHelpDocumentList', $page, $num, $where, $order, $field];
@@ -557,7 +1240,7 @@ class Niu extends TagLib
         $id    = isset($tag['id'])    ? $tag['id']    : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_document';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
     
         $service_name = "Platform";
         $function_array = ['getPlatformDocumentDetail', $id, $field];
@@ -576,7 +1259,7 @@ class Niu extends TagLib
         $order = isset($tag['order']) ? $tag['order'] : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_notice_list';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
     
         $service_name = "Platform";
         $function_array = ['getNoticeList', $page, $num, $where, $order, $field];
@@ -592,10 +1275,10 @@ class Niu extends TagLib
         $id    = isset($tag['id'])    ? $tag['id']    : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_document';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
     
         $service_name = "Platform";
-        $function_array = ['getNoticeList', $id, $field];
+        $function_array = ['getNoticeDetail', $id, $field];
         $function = 'getNoticeDetail("'.$id.'", "'.$field.'")';
     
         return $this->loadPageListContent($name, $content, $cache, $service_name, $function, $function_array);
@@ -611,7 +1294,7 @@ class Niu extends TagLib
         $order = isset($tag['order']) ? $tag['order'] : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_articleclass_list';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
     
         $service_name = "Article";
         $function_array = ['getArticleClass', $page, $num, $where, $order];
@@ -630,7 +1313,7 @@ class Niu extends TagLib
         $order = isset($tag['order']) ? $tag['order'] : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_article_list';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
         $service_name = "Article";
         $function_array = ['getArticleList', $page, $num, $where, $order];
         $function = 'getArticleList("'.$page.'","'. $num.'", "'.$where.'","'.$order.'")';
@@ -645,7 +1328,7 @@ class Niu extends TagLib
         $id    = isset($tag['id'])    ? $tag['id']    : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_document';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
     
         $service_name = "Article";
         $function_array = ['getArticleDetail', $id, $field];
@@ -661,7 +1344,7 @@ class Niu extends TagLib
         $id    = isset($tag['id'])    ? $tag['id']    : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_document';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
     
         $service_name = "Article";
         $function_array = ['getTopicDetail', $id, $field];
@@ -675,7 +1358,7 @@ class Niu extends TagLib
     public function tagmemberlikes($tag, $content)
     {
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_member_history';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
     
         $service_name = "Member";
         $function_array = ['getGuessMemberLikes'];
@@ -689,7 +1372,7 @@ class Niu extends TagLib
     public function tagMemberhistory($tag, $content)
     {
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_member_history';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
     
         $service_name = "Member";
         $function_array = ['getMemberViewHistory'];
@@ -708,7 +1391,7 @@ class Niu extends TagLib
         $order = isset($tag['order']) ? $tag['order'] : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_goods_list';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
     
         $service_name = "Goods";
         $function_array = ['getGoodsList', $page, $num, $where, $order];
@@ -727,7 +1410,7 @@ class Niu extends TagLib
         $order = isset($tag['order']) ? $tag['order'] : '';
         $field = isset($tag['field']) ? $tag['field'] : '*';
         $cache = isset($tag['cache']) ? $tag['cache'] : '';
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_brand_list';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
     
         $service_name = "GoodsBrand";
         $function_array = ['getGoodsBrandList', $page, $num, $where, $order, $field];
@@ -742,7 +1425,7 @@ class Niu extends TagLib
     {
         $id    = isset($tag['id'])    ? $tag['id']    : '';
         $cache = isset($tag['cache']) ? $tag['cache'] : 0;
-        $name  = isset($tag['name'])  ? $tag['name']  : 'niu_price_grades';
+        $name  = isset($tag['name'])  ? $tag['name']  : 'data';
     
         $service_name = "GoodsBrand";
         $function_array = ['getGoodsBrandInfo', $id];
@@ -753,10 +1436,14 @@ class Niu extends TagLib
     /**
      * 组装返回代码
      */
-    protected function loadPageListContent($name, $content, $cache, $service_name, $function, $function_array){
+    protected function loadPageListContent($name, $content, $cache, $service_name, $function, $function_array, $service_folder = ''){
         $parse .= '<?php ';
         if($cache === ''){
-            $parse .= '$service = new data\service\\'.$service_name.';';
+        	if($service_folder == '') {
+            	$parse .= '$service = new data\service\\'.$service_name.';';
+            }else {
+            	$parse .= '$service = new data\service\\'.$service_folder.'\\'.$service_name.';';
+            }
             $parse .= '$'.$name.' = $service->'.$function.';';
             $parse .= '$'.$name.' = json_encode($'.$name.');';
             $parse .= '$'.$name.' = json_decode($'.$name.', ture);';
@@ -765,7 +1452,11 @@ class Niu extends TagLib
             $parse .= 'if(cache("TAG_".md5($tag_md5))):';
             $parse .= '$'.$name.' = cache("TAG_".md5($tag_md5));';
             $parse .= 'else:';
-            $parse .= '$service = new data\service\\'.$service_name.';';
+          	if($service_folder == '') {
+            	$parse .= '$service = new data\service\\'.$service_name.';';
+            }else {
+           		$parse .= '$service = new data\service\\'.$service_folder.'\\'.$service_name.';';
+            }
             $parse .= '$'.$name.' = $service->'.$function.';';
             $parse .= '$'.$name.' = json_encode($'.$name.');';
             $parse .= '$'.$name.' = json_decode($'.$name.', ture);';
@@ -777,3 +1468,4 @@ class Niu extends TagLib
         return $parse;
     }
 }
+

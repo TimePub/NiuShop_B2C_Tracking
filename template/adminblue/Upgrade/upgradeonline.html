@@ -115,6 +115,9 @@
 		<div class="prompt_information"> 
 			本次更新为{$upgradeDetail['patch_no']}版本更新，建议您在更新前，备份相关的程序及数据信息，更新失败系统将会自动还原到升级前的版本。
 		</div>
+		<div style="margin:20px 0 8px 20px;">
+			是否备份数据库:<input id="is_beifen" type="checkbox" class="checkbox" checked="checked">
+		</div>
 		<div id="start_update_info" style="display: none;">
 			<div class="upgrade_information">
 				<img id="up_loding" src="ADMIN_IMG/762.gif" alt="" style="width:15px; margin-right: 5px;"><span id="upgrade_info">系统正在更新中，更新过程中请不要关闭此页面！</span>
@@ -192,8 +195,12 @@ function message_success(){
 function upPatch(){
 	$(".upPatch").attr("disabled","disabled").css("background","#989898");
 	$("#start_update_info").css('display','block');
-	message_true("正在备份数据库，请您耐心等待，备份过程中请不要关闭此页面！");
-	ajax_ids($table_name_list);
+	if($("#is_beifen").is(":checked")){
+		message_true("正在备份数据库，请您耐心等待，备份过程中请不要关闭此页面！");
+		ajax_ids($table_name_list);
+	}else{
+		downloadzip();
+	}
 }
 
 function ajax_ids(_tables){

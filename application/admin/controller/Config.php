@@ -42,6 +42,86 @@ class Config extends BaseController
     }
 
     /**
+     * 基础设置 下级菜单
+     *
+     * @param unknown $tag            
+     */
+    public function infrastructureChildMenu($tag)
+    {
+        $child_menu_list = array(
+            array(
+                'url' => "config/webconfig",
+                'menu_name' => "网站设置",
+                "active" => 0,
+                "tag" => 1
+            ),
+            array(
+                'url' => "config/seoConfig",
+                'menu_name' => "SEO设置",
+                "active" => 0,
+                "tag" => 2
+            ),
+            array(
+                'url' => "config/copyrightinfo",
+                'menu_name' => "版权",
+                "active" => 0,
+                "tag" => 4
+            ),
+            array(
+                'url' => "config/visitconfig",
+                'menu_name' => "运营",
+                "active" => 0,
+                "tag" => 5
+            ),
+            array(
+                'url' => "config/registerandvisit",
+                'menu_name' => "注册与访问",
+                "active" => 0,
+                "tag" => 6
+            ),
+            array(
+                'url' => "config/pictureuploadsetting",
+                'menu_name' => "上传设置",
+                "active" => 0,
+                "tag" => 7
+            ),
+            array(
+                'url' => "config/customPseudoStaticRule",
+                'menu_name' => "伪静态路由",
+                "active" => 0,
+                "tag" => 10
+            ),
+            array(
+                'url' => "config/partylogin",
+                'menu_name' => "第三方登录",
+                "active" => 0,
+                "tag" => 11
+            ),
+            array(
+                'url' => "config/notifyindex",
+                'menu_name' => "通知系统",
+                "active" => 0,
+                "tag" => 12
+            ),
+            array(
+                'url' => "config/customservice",
+                'menu_name' => "客服",
+                "active" => 0,
+                "tag" => 14
+            )
+        );
+        
+        if (! empty($tag)) {
+            foreach ($child_menu_list as $k => $v) {
+                if ($v['tag'] == $tag) {
+                    $child_menu_list[$k]["active"] = 1;
+                }
+            }
+        }
+        $this->assign("child_menu_list", $child_menu_list);
+    }
+
+    /**
      * 网站设置
      */
     public function webConfig()
@@ -54,8 +134,6 @@ class Config extends BaseController
             $key_words = request()->post('key_words', ''); // 网站关键字
             $web_icp = request()->post('web_icp', ''); // 网站备案号
             $web_style_pc = 1; // request()->post('web_style_pc', ''); // 前台网站风格 已废弃，改为读取配置
-            $web_style_admin = request()->post('web_style_admin', ''); // 后台网站风格
-            $visit_pattern = request()->post('visit_pattern', '');
             $web_qrcode = request()->post('web_qrcode', ''); // 网站公众号二维码
             $web_url = request()->post('web_url', ''); // 店铺网址
             $web_phone = request()->post('web_phone', ''); // 网站联系方式
@@ -64,53 +142,16 @@ class Config extends BaseController
             $web_weixin = request()->post('web_weixin', ''); // 网站微信号
             $web_address = request()->post('web_address', ''); // 网站联系地址
             $web_popup_title = request()->post("web_popup_title", ""); // 网站弹出框标题
-            
-            $web_status = request()->post("web_status", ''); // 网站运营状态
-            $wap_status = request()->post("wap_status", ''); // 手机端网站运营状态
             $third_count = request()->post("third_count", ''); // 第三方统计
-            $close_reason = request()->post("close_reason", ''); // 站点关闭原因
             $web_wechat_share_logo = request()->post("web_wechat_share_logo", ""); // 网站微信分享logo
             $web_gov_record = request()->post("web_gov_record", ""); // 公安网备信息
             $web_gov_record_url = request()->post("web_gov_record_url", ""); // 公安网备链接
             
-            $retval = $this->website->updateWebSite($title, $logo, $web_desc, $key_words, $web_icp, $web_style_pc, $web_style_admin, $visit_pattern, $web_qrcode, $web_url, $web_phone, $web_email, $web_qq, $web_weixin, $web_address, $web_status, $wap_status, $third_count, $close_reason, $web_popup_title, $web_wechat_share_logo, $web_gov_record, $web_gov_record_url);
+            $retval = $this->website->updateWebSite($title, $logo, $web_desc, $key_words, $web_icp, $web_style_pc, $web_qrcode, $web_url, $web_phone, $web_email, $web_qq, $web_weixin, $web_address, $third_count, $web_popup_title, $web_wechat_share_logo, $web_gov_record, $web_gov_record_url);
             return AjaxReturn($retval);
         } else {
+            $this->infrastructureChildMenu(1);
             
-            $child_menu_list = array(
-                array(
-                    'url' => "config/webconfig",
-                    'menu_name' => "网站设置",
-                    "active" => 1
-                ),
-                array(
-                    'url' => "config/seoConfig",
-                    'menu_name' => "SEO设置",
-                    "active" => 0
-                ),
-                array(
-                    'url' => "config/codeconfig",
-                    'menu_name' => "验证码设置",
-                    "active" => 0
-                ),
-                array(
-                    'url' => "config/shopset",
-                    'menu_name' => "购物设置",
-                    "active" => 0
-                ),
-                array(
-                    'url' => "config/expressmessage",
-                    'menu_name' => "物流跟踪设置",
-                    "active" => 0
-                ),
-                array(
-                    'url' => "config/copyrightinfo",
-                    'menu_name' => "版权设置",
-                    "active" => 0
-                )
-            );
-            
-            $this->assign('child_menu_list', $child_menu_list);
             $list = $this->website->getWebSiteInfo();
             $style_list_pc = $this->website->getWebStyleList([
                 'type' => 1
@@ -133,41 +174,7 @@ class Config extends BaseController
      */
     public function seoConfig()
     {
-        $child_menu_list = array(
-            array(
-                'url' => "config/webconfig",
-                'menu_name' => "网站设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/seoConfig",
-                'menu_name' => "SEO设置",
-                "active" => 1
-            ),
-            array(
-                'url' => "config/codeconfig",
-                'menu_name' => "验证码设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/shopset",
-                'menu_name' => "购物设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/expressmessage",
-                'menu_name' => "物流跟踪设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/copyrightinfo",
-                'menu_name' => "版权设置",
-                "active" => 0
-            )
-        );
-        
-        $this->assign('child_menu_list', $child_menu_list);
-        
+        $this->infrastructureChildMenu(2);
         $Config = new WebConfig();
         if (request()->isAjax()) {
             $shop_id = $this->instance_id;
@@ -190,39 +197,7 @@ class Config extends BaseController
      */
     public function copyrightinfo()
     {
-        $child_menu_list = array(
-            array(
-                'url' => "config/webconfig",
-                'menu_name' => "网站设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/seoConfig",
-                'menu_name' => "SEO设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/codeconfig",
-                'menu_name' => "验证码设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/shopset",
-                'menu_name' => "购物设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/expressmessage",
-                'menu_name' => "物流跟踪设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/copyrightinfo",
-                'menu_name' => "版权设置",
-                "active" => 1
-            )
-        );
-        $this->assign('child_menu_list', $child_menu_list);
+        $this->infrastructureChildMenu(4);
         $Config = new WebConfig();
         if (request()->isAjax()) {
             $shop_id = $this->instance_id;
@@ -364,7 +339,31 @@ class Config extends BaseController
                 $data = $web_config->getWpayConfig($this->instance_id);
                 $this->assign("config", $data);
                 // 获取当前域名
-                $this->assign('root_url', __URL(__URL__ . "/wap/pay"));
+                $root_url = __URL(__URL__ . "/wap/pay");
+                $root_url = str_replace(".html", "/", $root_url);
+                $this->assign('root_url', $root_url);
+                
+                $pay_list = $web_config->getPayConfig($this->instance_id);
+                $wechat_is_use = 0; // 微信支付开启标识
+                foreach ($pay_list as $v) {
+                    if ($v['key'] == "ALIPAY") {
+                        $alipay_is_use = $v['is_use'];
+                    } elseif ($v['key'] == 'WPAY') {
+                        $wechat_is_use = $v['is_use'];
+                    }
+                }
+                
+                $this->assign("wechat_is_use", $wechat_is_use);
+                
+                // 退款
+                $refund_data = $web_config->getOriginalRoadRefundSetting($this->instance_id, 'wechat');
+                
+                if (! empty($data)) {
+                    $original_road_refund_setting_info = json_decode($refund_data['value'], true);
+                }
+                $this->assign("original_road_refund_setting_info", $original_road_refund_setting_info);
+                
+                
                 return view($this->style . "Config/payConfig");
             }
         }
@@ -388,6 +387,26 @@ class Config extends BaseController
         }
         $data = $web_config->getAlipayConfig($this->instance_id);
         $this->assign("config", $data);
+        
+        $pay_list = $web_config->getPayConfig($this->instance_id);
+        $wechat_is_use = 0; // 微信支付开启标识
+        foreach ($pay_list as $v) {
+            if ($v['key'] == "ALIPAY") {
+                $alipay_is_use = $v['is_use'];
+            } elseif ($v['key'] == 'WPAY') {
+                $wechat_is_use = $v['is_use'];
+            }
+        }
+        $this->assign("alipay_is_use", $alipay_is_use);
+        
+        // 退款
+        $refund_data = $web_config->getOriginalRoadRefundSetting($this->instance_id, 'alipay');
+        
+        if (! empty($data)) {
+            $original_road_refund_setting_info = json_decode($refund_data['value'], true);
+        }
+        $this->assign("original_road_refund_setting_info", $original_road_refund_setting_info);
+        
         return view($this->style . "Config/payAliConfig");
     }
 
@@ -490,7 +509,6 @@ class Config extends BaseController
             $list = $shop->ShopNavigationList($page_index, $page_size, '', 'sort');
             return $list;
         } else {
-            $this->pcConfigChildMenuList(1);
             return view($this->style . "Config/shopNavigationList");
         }
     }
@@ -502,7 +520,6 @@ class Config extends BaseController
      */
     public function pcTemplate()
     {
-        $this->pcConfigChildMenuList(8);
         $this->getCollatingTemplateList("shop");
         $config = new WebConfig();
         $use_template = $config->getUsePCTemplate($this->instance_id);
@@ -514,6 +531,20 @@ class Config extends BaseController
             $this->updateTemplateUse("shop", "blue");
         }
         $this->assign("use_template", $value);
+        
+        $child_menu_list = array(
+            array(
+                'url' => "config/pctemplate",
+                'menu_name' => "电脑端模板",
+                "active" => 1
+            ),
+            array(
+                'url' => "config/fixedtemplate",
+                'menu_name' => "手机端模板",
+                "active" => 0
+            )
+        );
+        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . "Config/pcTemplate");
     }
 
@@ -551,6 +582,7 @@ class Config extends BaseController
         );
         switch ($folder) {
             case "shop":
+                
                 // XML标签配置，PC端专属属性
                 array_push($xmlTag, "bgcolor");
                 break;
@@ -681,20 +713,6 @@ class Config extends BaseController
             $shopNavTemplate = $shop->getShopNavigationTemplate(1);
             $this->assign("shopNavTemplate", $shopNavTemplate);
             
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "config/shopnavigationlist",
-                        'menu_name' => "导航管理",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
-            
             return view($this->style . "Config/addShopNavigation");
         }
     }
@@ -728,20 +746,6 @@ class Config extends BaseController
             $this->assign('data', $data);
             $shopNavTemplate = $shop->getShopNavigationTemplate(1);
             $this->assign("shopNavTemplate", $shopNavTemplate);
-            
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "config/shopnavigationlist",
-                        'menu_name' => "导航管理",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
             
             return view($this->style . "Config/updateShopNavigation");
         }
@@ -801,7 +805,6 @@ class Config extends BaseController
             ], 'link_sort ASC');
             return $list;
         }
-        $this->pcConfigChildMenuList(5);
         return view($this->style . "Config/linkList");
     }
 
@@ -823,19 +826,6 @@ class Config extends BaseController
             $res = $platform->addLink($link_title, $link_url, $link_pic, $link_sort, $is_blank, $is_show);
             return AjaxReturn($res);
         }
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "config/linklist",
-                    'menu_name' => "友情链接",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . "Config/addLink");
     }
 
@@ -862,19 +852,6 @@ class Config extends BaseController
         }
         $link_info = $platform->getLinkDetail($link_id);
         $this->assign('link_info', $link_info);
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "config/linklist",
-                    'menu_name' => "友情链接",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . "Config/updateLink");
     }
 
@@ -901,10 +878,34 @@ class Config extends BaseController
     {
         $type = request()->get('type', 'hot');
         if ($type == "hot") {
-            $this->pcConfigChildMenuList(6);
+            $child_menu_list = array(
+                array(
+                    'url' => "config/searchConfig?type=hot",
+                    'menu_name' => "热门搜索",
+                    "active" => 1
+                ),
+                array(
+                    'url' => "config/searchConfig?type=default",
+                    'menu_name' => "默认搜索",
+                    "active" => 0
+                )
+            );
         } else {
-            $this->pcConfigChildMenuList(7);
+            $child_menu_list = array(
+                array(
+                    'url' => "config/searchConfig?type=hot",
+                    'menu_name' => "热门搜索",
+                    "active" => 0
+                ),
+                array(
+                    'url' => "config/searchConfig?type=default",
+                    'menu_name' => "默认搜索",
+                    "active" => 1
+                )
+            );
         }
+        $this->assign("child_menu_list", $child_menu_list);
+        
         $web_config = new WebConfig();
         // 热门搜索
         $keywords_array = $web_config->getHotsearchConfig($this->instance_id);
@@ -918,6 +919,7 @@ class Config extends BaseController
         $default_keywords = $web_config->getDefaultSearchConfig($this->instance_id);
         $this->assign('default_keywords', $default_keywords);
         $this->assign('type', $type);
+        
         return view($this->style . "Config/searchConfig");
     }
 
@@ -955,41 +957,7 @@ class Config extends BaseController
      */
     public function codeConfig()
     {
-        $child_menu_list = array(
-            array(
-                'url' => "config/webconfig",
-                'menu_name' => "网站设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/seoConfig",
-                'menu_name' => "SEO设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/codeconfig",
-                'menu_name' => "验证码设置",
-                "active" => 1
-            ),
-            array(
-                'url' => "config/shopset",
-                'menu_name' => "购物设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/expressmessage",
-                'menu_name' => "物流跟踪设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/copyrightinfo",
-                'menu_name' => "版权设置",
-                "active" => 0
-            )
-        );
-        
-        $this->assign('child_menu_list', $child_menu_list);
-        
+        $this->infrastructureChildMenu(3);
         $webConfig = new WebConfig();
         if (request()->isAjax()) {
             $platform = 0;
@@ -1193,19 +1161,6 @@ class Config extends BaseController
             $res = $platform->addPlatformHelpClass(1, $class_name, 0, $sort);
             return AjaxReturn($res);
         }
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "config/helpclass",
-                    'menu_name' => "帮助类型",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . 'Config/addHelpClass');
     }
 
@@ -1267,30 +1222,18 @@ class Config extends BaseController
             $link_url = request()->post('link_url', '');
             $content = request()->post('content', '');
             $image = request()->post('image', '');
+            $is_visibility = request()->post("is_visibility", 1);
             $sort = request()->post('sort', 0);
-            $revle = $platform->updatePlatformDocument($id, $uid, $class_id, $title, $link_url, $sort, $content, $image);
+            $revle = $platform->updatePlatformDocument($id, $uid, $class_id, $title, $link_url, $is_visibility, $sort, $content, $image);
             return AjaxReturn($revle);
         } else {
             $id = request()->get('id', '');
             $this->assign('id', $id);
             $document_detail = $platform->getPlatformDocumentDetail($id);
-            $document_detail["content"] = htmlspecialchars($document_detail["content"]);
+            $document_detail["content"] = htmlspecialchars($document_detail["content"], ENT_COMPAT, "UTF-8");
             $this->assign('document_detail', $document_detail);
             $help_class_list = $platform->getPlatformHelpClassList();
             $this->assign('help_class_list', $help_class_list['data']);
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "config/helpdocument",
-                        'menu_name' => "帮助内容",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
             return view($this->style . 'Config/updateDocument');
         }
     }
@@ -1323,89 +1266,15 @@ class Config extends BaseController
             $link_url = request()->post('link_url', '');
             $content = request()->post('content', '');
             $image = request()->post('image', '');
+            $is_visibility = request()->post("is_visibility", 1);
             $sort = request()->post('sort', '');
-            $result = $platform->addPlatformDocument($uid, $class_id, $title, $link_url, $sort, $content, $image);
+            $result = $platform->addPlatformDocument($uid, $class_id, $title, $link_url, $is_visibility, $sort, $content, $image);
             return AjaxReturn($result);
         } else {
             $help_class_list = $platform->getPlatformHelpClassList();
             $this->assign('help_class_list', $help_class_list['data']);
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "config/helpdocument",
-                        'menu_name' => "帮助内容",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
             return view($this->style . 'Config/addDocument');
         }
-    }
-
-    /**
-     * pc端子菜单列表
-     * 2017年7月24日 14:25:56 王永杰
-     *
-     * @param $flag 1:导航管理，2：促销板块，3：首页楼层，4：首页公告，5：友情链接，6：热门搜索，7：默认搜索，8：手机模板，9：自定义模板            
-     */
-    public function pcConfigChildMenuList($flag)
-    {
-        $child_menu_list = array(
-            array(
-                'url' => "config/shopnavigationlist",
-                'menu_name' => "导航管理",
-                "active" => 0,
-                'flag' => 1
-            ),
-            array(
-                'url' => "system/goodscategoryblock",
-                'menu_name' => "商品楼层",
-                "active" => 0,
-                'flag' => 3
-            ),
-            array(
-                'url' => "config/usernotice",
-                'menu_name' => "首页公告",
-                "active" => 0,
-                'flag' => 4
-            ),
-            
-            array(
-                'url' => "config/linklist",
-                'menu_name' => "友情链接",
-                "active" => 0,
-                'flag' => 5
-            ),
-            array(
-                'url' => "config/searchConfig?type=hot",
-                'menu_name' => "热门搜索",
-                "active" => 0,
-                'flag' => 6
-            ),
-            array(
-                'url' => "config/searchConfig?type=default",
-                'menu_name' => "默认搜索",
-                "active" => 0,
-                'flag' => 7
-            ),
-            array(
-                'url' => "config/pcTemplate",
-                'menu_name' => "模板",
-                "active" => 0,
-                'flag' => 8
-            )
-        );
-        
-        foreach ($child_menu_list as $k => $v) {
-            if ($v['flag'] == $flag) {
-                $child_menu_list[$k]['active'] = 1;
-            }
-        }
-        $this->assign('child_menu_list', $child_menu_list);
     }
 
     /**
@@ -1453,8 +1322,13 @@ class Config extends BaseController
         $web_config = new WebConfig();
         $platform = new Platform();
         $goods_category = new GoodsCategory();
-        $this->getThreeLevelModule();
+        
         $shop_id = $this->instance_id;
+        
+        // 分类显示方式
+        $classified_display_mode = $web_config->getWapClassifiedDisplayMode($shop_id);
+        $this->assign("classified_display_mode", $classified_display_mode);
+        
         $condition = [
             'class_type' => 2,
             'is_use' => 1,
@@ -1501,6 +1375,21 @@ class Config extends BaseController
         $lists = $web_config->getcategoryConfig($shop_id);
         $this->assign("list", $list);
         $this->assign("lists", $lists);
+        
+        $child_menu_list = array(
+            array(
+                'url' => "config/pctemplate",
+                'menu_name' => "电脑端模板",
+                "active" => 0
+            ),
+            array(
+                'url' => "config/fixedtemplate",
+                'menu_name' => "手机端模板",
+                "active" => 1
+            )
+        );
+        $this->assign("child_menu_list", $child_menu_list);
+        
         return view($this->style . 'Config/fixedtemplate');
     }
 
@@ -1550,7 +1439,6 @@ class Config extends BaseController
             $list = $platform->getNoticeList($page_index, $page_size, "", "create_time desc");
             return $list;
         }
-        $this->pcConfigChildMenuList(4);
         return view($this->style . 'Config/userNotice');
     }
 
@@ -1601,13 +1489,15 @@ class Config extends BaseController
      *
      * @return Ambigous <multitype:unknown, multitype:unknown unknown string >|Ambigous <\think\response\View, \think\response\$this, \think\response\View>
      */
-    public function updateNotice()
+    public function updateWapBasicInformation()
     {
         $web_config = new WebConfig();
         $shopid = $this->instance_id;
         if (request()->isAjax()) {
             $notice_message = request()->post('notice_message', '');
             $is_enable = request()->post('is_enable', '');
+            $classified_display_mode = request()->post("classified_display_mode", 1);
+            $web_config->setWapClassifiedDisplayMode($shopid, $classified_display_mode);
             $res = $web_config->setNotice($shopid, $notice_message, $is_enable);
             return AjaxReturn($res);
         }
@@ -1644,6 +1534,11 @@ class Config extends BaseController
             array(
                 'url' => "config/distributionareamanagement",
                 'menu_name' => "货到付款地区管理",
+                "active" => 0
+            ),
+            array(
+                'url' => "config/expressmessage",
+                'menu_name' => "物流跟踪设置",
                 "active" => 0
             )
         );
@@ -1822,33 +1717,13 @@ class Config extends BaseController
     {
         $child_menu_list = array(
             array(
-                'url' => "config/webconfig",
-                'menu_name' => "网站设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/seoConfig",
-                'menu_name' => "SEO设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/codeconfig",
-                'menu_name' => "验证码设置",
-                "active" => 0
-            ),
-            array(
                 'url' => "config/shopset",
                 'menu_name' => "购物设置",
                 "active" => 1
             ),
             array(
-                'url' => "config/expressmessage",
-                'menu_name' => "物流跟踪设置",
-                "active" => 0
-            ),
-            array(
-                'url' => "config/copyrightinfo",
-                'menu_name' => "版权设置",
+                'url' => "config/paymentconfig",
+                'menu_name' => "支付配置",
                 "active" => 0
             )
         );
@@ -1870,13 +1745,13 @@ class Config extends BaseController
             $is_logistics = request()->post("is_logistics", '1');
             $shopping_back_points = request()->post("shopping_back_points", 0);
             $is_open_virtual_goods = request()->post("is_open_virtual_goods", 0); // 是否开启虚拟商品
-            $retval = $Config->SetShopConfig($shop_id, $order_auto_delinery, $order_balance_pay, $order_delivery_complete_time, $order_show_buy_record, $order_invoice_tax, $order_invoice_content, $order_delivery_pay, $order_buy_close_time, $buyer_self_lifting, $seller_dispatching, $is_logistics, $shopping_back_points, $is_open_virtual_goods);
+            $order_designated_delivery_time = request()->post("order_designated_delivery_time", 0); // 是否开启指定配送时间
+            $retval = $Config->SetShopConfig($shop_id, $order_auto_delinery, $order_balance_pay, $order_delivery_complete_time, $order_show_buy_record, $order_invoice_tax, $order_invoice_content, $order_delivery_pay, $order_buy_close_time, $buyer_self_lifting, $seller_dispatching, $is_logistics, $shopping_back_points, $is_open_virtual_goods, $order_designated_delivery_time);
             return AjaxReturn($retval);
         } else {
             // 订单收货之后多长时间自动完成
             $shop_id = $this->instance_id;
             $shopSet = $Config->getShopConfig($shop_id);
-            
             $this->assign("shopSet", $shopSet);
             return view($this->style . "Config/shopSet");
         }
@@ -1891,6 +1766,7 @@ class Config extends BaseController
         $shop_id = $this->instance_id;
         $notify_list = $config_service->getNoticeConfig($shop_id);
         $this->assign("notify_list", $notify_list);
+        $this->infrastructureChildMenu(12);
         return view($this->style . 'Config/notifyConfig');
     }
 
@@ -1991,11 +1867,37 @@ class Config extends BaseController
         if (request()->isAjax()) {
             $shop_id = $this->instance_id;
             $key = 'WITHDRAW_BALANCE';
+            $withdraw_account_arr = request()->post("withdraw_account", "1");
+            $withdraw_account_arr = explode(",", $withdraw_account_arr);
+            $withdraw_account = array(
+                array(
+                    'id' => 'bank_card',
+                    'name' => '银行卡',
+                    'value' => 1,
+                    'is_checked' => 0
+                ),
+                array(
+                    'id' => 'wechat',
+                    'name' => '微信',
+                    'value' => 2,
+                    'is_checked' => 0
+                ),
+                array(
+                    'id' => 'alipay',
+                    'name' => '支付宝',
+                    'value' => 3,
+                    'is_checked' => 0
+                )
+            );
+            foreach ($withdraw_account_arr as $v) {
+                $withdraw_account[$v - 1]['is_checked'] = 1;
+            }
             $value = array(
                 'withdraw_cash_min' => request()->post('cash_min', 0),
                 'withdraw_multiple' => request()->post('multiple', 1),
                 'withdraw_poundage' => request()->post('poundage', 0),
-                'withdraw_message' => request()->post('message', '')
+                'withdraw_message' => request()->post('message', ''),
+                'withdraw_account' => $withdraw_account
             );
             $is_use = request()->post('is_use', '');
             $retval = $config_service->setBalanceWithdrawConfig($shop_id, $key, $value, $is_use);
@@ -2003,14 +1905,22 @@ class Config extends BaseController
         } else {
             $shop_id = $this->instance_id;
             $list = $config_service->getBalanceWithdrawConfig($shop_id);
-            if (empty($list)) {
-                $list['id'] = '';
-                $list['value']['withdraw_cash_min'] = '';
-                $list['value']['withdraw_multiple'] = '';
-                $list['value']['withdraw_poundage'] = '';
-                $list['value']['withdraw_message'] = '';
-            }
             $this->assign("list", $list);
+            
+            $child_menu_list = array(
+                array(
+                    'url' => "Member/userCommissionWithdrawList",
+                    'menu_name' => "会员提现列表",
+                    "active" => 0
+                ),
+                array(
+                    'url' => "Member/memberwithdrawsetting",
+                    'menu_name' => "会员提现设置",
+                    "active" => 1
+                )
+            );
+            $this->assign("child_menu_list", $child_menu_list);
+            
             return view($this->style . "Config/memberWithdrawSetting");
         }
     }
@@ -2035,6 +1945,7 @@ class Config extends BaseController
                 $list['value']['service_addr'] = '';
             }
             $this->assign("list", $list);
+            $this->infrastructureChildMenu(14);
             return view($this->style . "Config/customservice");
         }
     }
@@ -2098,6 +2009,19 @@ class Config extends BaseController
         $shop_id = $this->instance_id;
         $pay_list = $config_service->getPayConfig($shop_id);
         $this->assign("pay_list", $pay_list);
+        $child_menu_list = array(
+            array(
+                'url' => "config/shopset",
+                'menu_name' => "购物设置",
+                "active" => 0
+            ),
+            array(
+                'url' => "config/paymentconfig",
+                'menu_name' => "支付配置",
+                "active" => 1
+            )
+        );
+        $this->assign('child_menu_list', $child_menu_list);
         return view($this->style . 'Config/paymentConfig');
     }
 
@@ -2127,6 +2051,7 @@ class Config extends BaseController
         $wchat_config['value']["CALLBACK"] = $wchat_call_back;
         $wchat_config['name'] = '微信登录';
         $this->assign("wchat_config", $wchat_config);
+        $this->infrastructureChildMenu(11);
         return view($this->style . 'Config/partyLogin');
     }
 
@@ -2165,6 +2090,11 @@ class Config extends BaseController
                 'url' => "config/distributionareamanagement",
                 'menu_name' => "货到付款地区管理",
                 "active" => 1
+            ),
+            array(
+                'url' => "config/expressmessage",
+                'menu_name' => "物流跟踪设置",
+                "active" => 0
             )
         );
         
@@ -2208,11 +2138,27 @@ class Config extends BaseController
             $terms_of_service = request()->post('terms_of_service', '');
             $is_requiretel = request()->post('is_requiretel', '');
             $is_use = request()->post('is_use', '1');
-            $res = $config_service->setRegisterAndVisit($shop_id, $is_register, $register_info, $name_keyword, $pwd_len, $pwd_complexity, $terms_of_service, $is_requiretel, $is_use);
-            return AjaxReturn($res);
+            
+            $platform = 0;
+            $admin = request()->post('adminCode', 0);
+            $pc = request()->post('pcCode', 0);
+            $res_one = $config_service->setLoginVerifyCodeConfig($this->instance_id, $platform, $admin, $pc);
+            
+            $res_two = $config_service->setRegisterAndVisit($shop_id, $is_register, $register_info, $name_keyword, $pwd_len, $pwd_complexity, $terms_of_service, $is_requiretel, $is_use);
+            
+            if ($res_one && $res_two) {
+                return AjaxReturn(1);
+            } else {
+                return AjaxReturn(- 1);
+            }
         } else {
+            $this->infrastructureChildMenu(6);
             $register_and_visit = $config_service->getRegisterAndVisit($this->instance_id);
             $this->assign('register_and_visit', json_decode($register_and_visit['value'], true));
+            
+            $code_config = $config_service->getLoginVerifyCodeConfig($this->instance_id);
+            $this->assign('code_config', $code_config["value"]);
+            
             return view($this->style . "Config/registerAndVisit");
         }
     }
@@ -2251,34 +2197,39 @@ class Config extends BaseController
     {
         $child_menu_list = array(
             array(
-                'url' => "config/webconfig",
-                'menu_name' => "网站设置",
+                'url' => "express/expresscompany",
+                'menu_name' => "物流公司",
                 "active" => 0
             ),
             array(
-                'url' => "config/seoConfig",
-                'menu_name' => "SEO设置",
+                'url' => "config/areamanagement",
+                'menu_name' => "地区管理",
                 "active" => 0
             ),
             array(
-                'url' => "config/codeconfig",
-                'menu_name' => "验证码设置",
+                'url' => "order/returnsetting",
+                'menu_name' => "商家地址",
                 "active" => 0
             ),
             array(
-                'url' => "config/shopset",
-                'menu_name' => "购物设置",
+                'url' => "shop/pickuppointlist",
+                'menu_name' => "自提点管理",
+                "active" => 0
+            ),
+            array(
+                'url' => "shop/pickuppointfreight",
+                'menu_name' => "自提点运费",
+                "active" => 0
+            ),
+            array(
+                'url' => "config/distributionareamanagement",
+                'menu_name' => "货到付款地区管理",
                 "active" => 0
             ),
             array(
                 'url' => "config/expressmessage",
                 'menu_name' => "物流跟踪设置",
                 "active" => 1
-            ),
-            array(
-                'url' => "config/copyrightinfo",
-                'menu_name' => "版权设置",
-                "active" => 0
             )
         );
         
@@ -2290,7 +2241,8 @@ class Config extends BaseController
             $appkey = request()->post("appkey", "");
             $back_url = request()->post('back_url', "");
             $is_use = request()->post("is_use", "");
-            $res = $config_service->updateOrderExpressMessageConfig($shop_id, $appid, $appkey, $back_url, $is_use);
+            $type = request()->post("type", 1); // 快递接口 1：快递鸟 2：快递100
+            $res = $config_service->updateOrderExpressMessageConfig($shop_id, $appid, $appkey, $back_url, $is_use, $type);
             return AjaxReturn($res);
         } else {
             $shop_id = $this->instance_id;
@@ -2313,6 +2265,9 @@ class Config extends BaseController
         $config_qiniu_info = $web_config->getQiniuConfig($this->instance_id);
         $config_data["data"]["qiniu"] = $config_qiniu_info;
         $this->assign("config_data", $config_data);
+        
+        $this->infrastructureChildMenu(8);
+        
         return view($this->style . "Config/uploadType");
     }
 
@@ -2416,8 +2371,20 @@ class Config extends BaseController
             $retval = $config_service->setPictureUploadSetting($this->instance_id, json_encode($data));
             return AjaxReturn($retval);
         } else {
+            $this->infrastructureChildMenu(7);
             $info = $config_service->getPictureUploadSetting($this->instance_id);
-            $this->assign("info", $info);
+            $this->assign("pic_info", $info);
+            
+            // 附件上传
+            
+            $config_data = array();
+            $upload_type = $config_service->getUploadType($this->instance_id);
+            $config_data["type"] = $upload_type;
+            // 获取七牛参数
+            $config_qiniu_info = $config_service->getQiniuConfig($this->instance_id);
+            $config_data["data"]["qiniu"] = $config_qiniu_info;
+            $this->assign("config_data", $config_data);
+            
             return view($this->style . 'Config/pictureUploadSetting');
         }
     }
@@ -2470,11 +2437,6 @@ class Config extends BaseController
             
             $child_menu_list = array(
                 array(
-                    'url' => "config/originalroadrefundsetting?type=wechat",
-                    'menu_name' => "微信配置",
-                    "active" => 0
-                ),
-                array(
                     'url' => "config/originalroadrefundsetting?type=alipay",
                     'menu_name' => "支付宝配置",
                     "active" => 1
@@ -2486,11 +2448,6 @@ class Config extends BaseController
                     'url' => "config/originalroadrefundsetting?type=wechat",
                     'menu_name' => "微信配置",
                     "active" => 1
-                ),
-                array(
-                    'url' => "config/originalroadrefundsetting?type=alipay",
-                    'menu_name' => "支付宝配置",
-                    "active" => 0
                 )
             );
         }
@@ -2520,23 +2477,70 @@ class Config extends BaseController
     }
 
     /**
+     * 转账配置设置
+     */
+    public function transferAccountsSetting()
+    {
+        $config_service = new WebConfig();
+        $type = request()->get("type", "wechat"); // 默认微信
+        if (empty($type)) {
+            $type = "wechat"; // （type=），这种情况下获取到的值为空
+        }
+        
+        // 设置默认值
+        if ($type == 'wechat') {
+            $transfer_accounts_setting_info = [
+                "is_use" => 0,
+                "apiclient_cert" => "",
+                "apiclient_key" => ""
+            ];
+        } elseif ($type == "alipay") {
+            $transfer_accounts_setting_info = [
+                "is_use" => 0
+            ];
+        }
+        
+        $pay_list = $config_service->getPayConfig($this->instance_id);
+        
+        $wechat_is_use = 0; // 微信支付开启标识
+        foreach ($pay_list as $v) {
+            if ($v['key'] == "ALIPAY") {
+                $alipay_is_use = $v['is_use'];
+            } elseif ($v['key'] == 'WPAY') {
+                $wechat_is_use = $v['is_use'];
+            }
+        }
+        $this->assign("alipay_is_use", $alipay_is_use);
+        $this->assign("wechat_is_use", $wechat_is_use);
+        
+        if ($type == "alipay") {
+            
+            $child_menu_list = array(
+                array(
+                    'url' => "config/transferAccountsSetting?type=alipay",
+                    'menu_name' => "支付宝配置",
+                    "active" => 1
+                )
+            );
+        } else {
+            $child_menu_list = array(
+                array(
+                    'url' => "config/transferAccountsSetting?type=wechat",
+                    'menu_name' => "微信配置",
+                    "active" => 1
+                )
+            );
+        }
+        $this->assign('child_menu_list', $child_menu_list);
+        $this->assign("type", $type);
+        return view($this->style . "Config/transferAccountsSetting");
+    }
+
+    /**
      * 添加首页公告
      */
     public function addHomeNotice()
     {
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "config/usernotice",
-                    'menu_name' => "首页公告",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . "Config/addHomeNotice");
     }
 
@@ -2553,19 +2557,6 @@ class Config extends BaseController
         } else {
             $this->assign("info", $info);
         }
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "config/usernotice",
-                    'menu_name' => "首页公告",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . "Config/updateHomeNotice");
     }
 
@@ -2629,6 +2620,7 @@ class Config extends BaseController
             $rule_list = $webSite->getUrlRouteList($page_index, $page_size);
             return $rule_list;
         }
+        $this->infrastructureChildMenu(10);
         return view($this->style . "Config/customPseudoStaticRule");
     }
 
@@ -2647,19 +2639,6 @@ class Config extends BaseController
             $res = $webSite->addUrlRoute($rule, $route, $is_open, $route_model, $remark);
             return AjaxReturn($res);
         }
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "config/customPseudoStaticRule",
-                    'menu_name' => "伪静态路由设置",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . "Config/addRoutingRules");
     }
 
@@ -2686,19 +2665,6 @@ class Config extends BaseController
         } else {
             $this->assign("routeDetail", $routeDetail);
         }
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "config/customPseudoStaticRule",
-                    'menu_name' => "伪静态路由设置",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . "Config/updateRoutingRules");
     }
 
@@ -2738,7 +2704,287 @@ class Config extends BaseController
     {
         $config = new WebConfig();
         $is_enabled = $config->settingVirtualGoodsConfigInfo($this->instance_id);
-    
+        
         return $is_enabled;
+    }
+
+    /**
+     * 设置默认图
+     */
+    public function setDefaultImg()
+    {
+        $this->infrastructureChildMenu(9);
+        // 获取默认图
+        $config = new WebConfig();
+        $result = $config->getDefaultImages($this->instance_id);
+        $this->assign("info", $result);
+        return view($this->style . "Config/setDefaultImg");
+    }
+
+    /**
+     * 保存默认图配置
+     *
+     * @return unknown[]
+     */
+    public function setDefaultImgAjax()
+    {
+        if (request()->isAjax()) {
+            $value = array(
+                "default_goods_img" => request()->post("default_goods_img", ""),
+                "default_headimg" => request()->post("default_headimg", "")
+            );
+            $value = json_encode($value);
+            $config = new WebConfig();
+            $res = $config->setDefaultImages($this->instance_id, $value);
+            return AjaxReturn($res);
+        }
+    }
+
+    /**
+     * 访问设置
+     */
+    public function visitConfig()
+    {
+        if (request()->isPost()) {
+            
+            $web_style_admin = request()->post('web_style_admin', ''); // 后台网站风格
+            $web_status = request()->post("web_status", ''); // 网站运营状态
+            $wap_status = request()->post("wap_status", ''); // 手机端网站运营状态
+            $visit_pattern = request()->post('visit_pattern', '');
+            $close_reason = request()->post("close_reason", ''); // 站点关闭原因
+            $is_show_follow = request()->post("is_show_follow", 1);
+            
+            $retval = $this->website->updateVisitWebSite($web_style_admin, $visit_pattern, $web_status, $wap_status, $is_show_follow, $close_reason);
+            return AjaxReturn($retval);
+        } else {
+            
+            $this->infrastructureChildMenu(5);
+            $list = $this->website->getWebSiteInfo();
+            $style_list_pc = $this->website->getWebStyleList([
+                'type' => 1
+            ]); // 前台网站风格
+            $style_list_admin = $this->website->getWebStyleList([
+                'type' => 2
+            ]); // 后台网站风格
+            $path = "";
+            $path = getQRcode(__URL(__URL__), 'upload/qrcode', 'url');
+            $this->assign('style_list_pc', $style_list_pc);
+            $this->assign('style_list_admin', $style_list_admin);
+            $this->assign("website", $list);
+            $this->assign("qrcode_path", $path);
+            return view($this->style . "Config/visitConfig");
+        }
+    }
+
+    /**
+     * 设置微信和支付宝开关状态是否启用 原路退款设置
+     */
+    public function setRefundStatus()
+    {
+        $web_config = new WebConfig();
+        if (request()->isAjax()) {
+            $is_use = request()->post("is_use", '');
+            $type = request()->post("type", '');
+            $retval = $web_config->setRefundStatusConfig($this->instance_id, $is_use, $type);
+            return AjaxReturn($retval);
+        }
+    }
+
+    /**
+     * 原路退款设置
+     *
+     * @return Ambigous <\think\response\View, \think\response\$this, \think\response\View>
+     */
+    public function refundroadConfig()
+    {
+        $config_service = new WebConfig();
+        $shop_id = $this->instance_id;
+        $pay_list = $config_service->getRefundConfig($shop_id);
+        
+        $refund_value = array();
+        foreach ($pay_list as $k => $v) {
+            $refund_value = json_decode($v['value'], true);
+            $v['is_open'] = $refund_value['is_use'];
+        }
+        $this->assign("pay_list", $pay_list);
+        $child_menu_list = array(
+            array(
+                'url' => "config/shopset",
+                'menu_name' => "购物设置",
+                "active" => 0
+            ),
+            array(
+                'url' => "config/paymentconfig",
+                'menu_name' => "支付配置",
+                "active" => 0
+            ),
+            array(
+                'url' => "config/refundroadConfig",
+                'menu_name' => "原路退款配置",
+                "active" => 1
+            ),
+            array(
+                'url' => "config/transferAccounts",
+                'menu_name' => "转账配置",
+                "active" => 0
+            )
+        );
+        $this->assign('child_menu_list', $child_menu_list);
+        return view($this->style . 'Config/refundroadConfig');
+    }
+
+    /**
+     * 转账页面
+     */
+    public function transferAccounts()
+    {
+        $config_service = new WebConfig();
+        $shop_id = $this->instance_id;
+        $pay_list = $config_service->getTransferConfig($shop_id);
+        
+        $refund_value = array();
+        foreach ($pay_list as $k => $v) {
+            $refund_value = json_decode($v['value'], true);
+            $v['is_open'] = $refund_value['is_use'];
+        }
+        $this->assign("pay_list", $pay_list);
+        $child_menu_list = array(
+            array(
+                'url' => "config/shopset",
+                'menu_name' => "购物设置",
+                "active" => 0
+            ),
+            array(
+                'url' => "config/paymentconfig",
+                'menu_name' => "支付配置",
+                "active" => 0
+            ),
+            array(
+                'url' => "config/refundroadConfig",
+                'menu_name' => "原路退款配置",
+                "active" => 0
+            ),
+            array(
+                'url' => "config/transferAccounts",
+                'menu_name' => "转账配置",
+                "active" => 1
+            )
+        );
+        $this->assign('child_menu_list', $child_menu_list);
+        
+        return view($this->style . 'Config/transferAccounts');
+    }
+
+    /**
+     * 设置微信和支付宝开关状态是否启用 转账设置
+     */
+    public function setTransferStatus()
+    {
+        $web_config = new WebConfig();
+        if (request()->isAjax()) {
+            $is_use = request()->post("is_use", '');
+            $type = request()->post("type", '');
+            $retval = $web_config->setTransferStatusConfig($this->instance_id, $is_use, $type);
+            return AjaxReturn($retval);
+        }
+    }
+
+    /**
+     * 保存支付设置 微信
+     */
+    public function wchatConfig()
+    {
+        $web_config = new WebConfig();
+        if (request()->isAjax()) {
+            // 微信支付
+            $type = request()->post('type', '');
+            $appkey = str_replace(' ', '', request()->post('appkey', ''));
+            $appsecret = str_replace(' ', '', request()->post('appsecret', ''));
+            $paySignKey = str_replace(' ', '', request()->post('paySignKey', ''));
+            $MCHID = str_replace(' ', '', request()->post('MCHID', ''));
+            $is_use = request()->post('is_use', 0);
+            
+            $value = request()->post("value", "");
+            
+            $transferValue = request()->post("transferValue", "");
+            
+            $res_one = $web_config->setWpayConfig($this->instance_id, $appkey, $appsecret, $MCHID, $paySignKey, $is_use);
+            $res_two = $web_config->setOriginalRoadRefundSetting($this->instance_id, 'wechat', $value);
+            
+            if ($res_one > 0 && $res_two > 0) {
+                return AjaxReturn(1);
+            } else {
+                return AjaxReturn(- 1);
+            }
+        }
+    }
+
+    /**
+     * 支付宝配置 保存支付设置
+     */
+    public function alipayConfig()
+    {
+        $web_config = new WebConfig();
+        if (request()->isAjax()) {
+            // 支付宝
+            $partnerid = str_replace(' ', '', request()->post('partnerid', ''));
+            $seller = str_replace(' ', '', request()->post('seller', ''));
+            $ali_key = str_replace(' ', '', request()->post('ali_key', ''));
+            $is_use = request()->post('is_use', 0);
+            // 获取数据
+            $res_one = $web_config->setAlipayConfig($this->instance_id, $partnerid, $seller, $ali_key, $is_use);
+            
+            $value = request()->post("value", "");
+            
+            $transferValue = request()->post("transferValue", "");
+            
+            $res_two = $web_config->setOriginalRoadRefundSetting($this->instance_id, 'alipay', $value);
+            
+            if ($res_one > 0 && $res_two) {
+                return AjaxReturn(1);
+            } else {
+                return AjaxReturn(- 1);
+            }
+        }
+    }
+
+    /**
+     * 保存 图片 类
+     */
+    public function pictureSetting()
+    {
+        $config_service = new WebConfig();
+        if (request()->isAjax()) {
+            $thumb_type = request()->post("thumb_type", "1");
+            $upload_size = request()->post("upload_size", "0");
+            $upload_ext = request()->post("upload_ext", "gif,jpg,jpeg,bmp,png");
+            
+            $data = array(
+                "thumb_type" => $thumb_type,
+                "upload_size" => $upload_size,
+                "upload_ext" => $upload_ext
+            );
+            $res_one = $config_service->setPictureUploadSetting($this->instance_id, json_encode($data));
+            
+            $shop_id = $this->instance_id;
+            $Accesskey = request()->post("Accesskey", "");
+            $Secretkey = request()->post("Secretkey", "");
+            $Bucket = request()->post("Bucket", "");
+            $QiniuUrl = request()->post("QiniuUrl", "");
+            $qi_value = array(
+                "Accesskey" => trim($Accesskey),
+                "Secretkey" => trim($Secretkey),
+                "Bucket" => trim($Bucket),
+                "QiniuUrl" => trim($QiniuUrl)
+            );
+            $qi_value = json_encode($qi_value);
+            $res_two = $config_service->setQiniuConfig($shop_id, $qi_value);
+            
+            if ($res_one > 0 && $res_two > 0) {
+                return AjaxReturn(1);
+            } else {
+                return AjaxReturn(- 1);
+            }
+        }
     }
 }

@@ -65,6 +65,15 @@ var STATIC = "__STATIC__";
 		$('.right_login_mobile').click(function() {
 			$("#mobile").val("");
 		})
+		//找回密码弹窗
+			$('#msgback').click(function(){
+				$('#mask-layer-login').show();
+				$('#layui-layer').show();
+			})
+			$('#mask-layer-login').click(function(){
+				$('#mask-layer-login').hide();
+				$('#layui-layer').hide();
+			})
 	})
 	function check(){
 		
@@ -89,7 +98,12 @@ var STATIC = "__STATIC__";
 			success : function(data) {
 				 if(data["code"] > 0 ){
 					 if(data["code"] == 1){
-						 setTimeout(function(){location.href = data['url']},1000);						 
+					 	var tag = "findPasswd";
+					 	if (data['url'].indexOf(tag) ==-1 ) {
+						 	setTimeout(function(){location.href = data['url']},1000);	
+						 }else{
+						 	setTimeout(function(){location.href = "{:__URL('APP_MAIN/member/index')}"},1000);
+						 }					 
 					 }else{
 						 setTimeout(function(){location.href = "{:__URL('APP_MAIN/member/index')}"},1000);
 					 }
@@ -264,6 +278,37 @@ function check_mobile(){
 	background-size: 20px 20px;
 	margin: 2px 0 0 8px;
 }
+.clear{clear: both;}
+.findback{
+	text-align: center;
+	background: #FFF;
+	display: none;
+	z-index: 19891015; 
+	position: fixed;
+	top: 35%;
+	width: 70%;
+	margin-left: 10%;
+	padding: 0% 5%;
+	border-radius:10px;
+}
+.findback a{
+	display: block!important;
+	float: left!important;
+	padding: 10% 8%;
+	width: 30%;
+	color: black;
+	font-size: 17px;
+}
+.findback img{
+	position: relative;
+	width: 70%!important;
+}
+.findback p{
+	height: 30px;
+	line-height: 30px;
+	margin-top: 5px;
+	font-size: 14px;
+}
 </style>
 </head>
 <body>
@@ -323,11 +368,11 @@ function check_mobile(){
 					<button id="login-button" class="lang-btn" onclick="check()" style="margin-top: 30px;">{:lang("login")}</button>
 					<a href="{:__URL('APP_MAIN/login/register')}">
 					<button class="lang-btn register_immediately">{:lang("register_immediately")}</button></a>
-					<!-- <div class="msg cl">
-					    <a  href="APP_MAIN/login/reg" style="color:#F34048;">忘记密码？</a>
-						<input type="checkbox" />记住密码 
-						<a class="y"  href="{:__URL('APP_MAIN/login/register')}">{:lang("register_immediately")}</a>
-					</div> -->
+					<div class="msg cl">
+					    <a  href="javascript:;" style="color:#F34048;" id="msgback">忘记密码？</a>
+						<!-- <input type="checkbox" />记住密码 
+						<a class="y"  href="{:__URL('APP_MAIN/login/register')}">{:lang("register_immediately")}</a> -->
+					</div>
 				</div>
 <!-- 			</form> -->
 <!-- 			<form id="LoginForm" action="APP_MAIN/Login/" method="post" onsubmit="return check_mobile()"> -->
@@ -453,5 +498,13 @@ function check_mobile(){
 			</div>
 		</div>
 	</div>
+	<!-- 找回密码弹窗 -->
+<div id="mask-layer-login" style="position: fixed; top: 0px; width: 100%; height: 100%; z-index: 999999; background: rgba(0, 0, 0, 0.75); display: none;"></div>
+<div class="layui-layer layui-layer-page layer-anim findback" id="layui-layer" type="page" times="100002" contype="string">
+	<a href="{:__URL('APP_MAIN/Login/findPasswd','type=1')}" style="margin-right: 5%;"><img src="__TEMP__/{$style}/public/images/default/phone.png"/><p>手机找回</p></a>
+	<a href="{:__URL('APP_MAIN/Login/findPasswd','type=2')}"><img src="__TEMP__/{$style}/public/images/default/email.png"/><p>邮箱找回</p></a>
+	<div class="clear"></div>
+</div>
+<!-- 结束 -->
 </body>
 </html>

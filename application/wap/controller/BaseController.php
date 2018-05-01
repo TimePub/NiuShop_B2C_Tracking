@@ -92,7 +92,14 @@ class BaseController extends Controller
         // wap端关闭后
         if ($web_info['wap_status'] == 3 && $web_info['web_status'] == 1) {
             Cookie::set("default_client", "shop");
-            $this->redirect(__URL(\think\Config::get('view_replace_str.SHOP_MAIN') . "/shop"));
+            $controller = request()->controller();
+            $action = request()->action();
+            if($controller == "Goods" && $action == "goodsDetail"){
+                $goods_id = request()->get("id", 0);
+                $this->redirect(__URL(\think\Config::get('view_replace_str.SHOP_MAIN') . "/shop/goods/goodsinfo?goodsid=" . $goods_id));
+            }else{
+                $this->redirect(__URL(\think\Config::get('view_replace_str.SHOP_MAIN') . "/shop"));
+            }
         } else 
             if ($web_info['wap_status'] == 2) {
                 webClose($web_info['close_reason']);
@@ -114,7 +121,7 @@ class BaseController extends Controller
         $use_wap_template = $config->getUseWapTemplate($this->instance_id);
         
         if (empty($use_wap_template)) {
-            $use_wap_template['value'] = 'default';
+            $use_wap_template['value'] = 'default_new';
         }
         // 检查模版是否存在
         if (! checkTemplateIsExists("wap", $use_wap_template['value'])) {

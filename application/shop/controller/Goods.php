@@ -83,7 +83,9 @@ class Goods extends BaseController
         if (! empty($goodsid)) {
             
             $default_client = request()->cookie("default_client", "");
-            if ($default_client == "shop") {} elseif (request()->isMobile() && $web_info['wap_status'] != 2) {
+            if ($default_client == "shop") {
+                
+            } elseif (request()->isMobile() && $web_info['wap_status'] == 1) {
                 $redirect = __URL(__URL__ . "/wap/goods/goodsdetail?id=" . $goodsid);
                 $this->redirect($redirect);
                 exit();
@@ -104,7 +106,9 @@ class Goods extends BaseController
             
             // 商品详情
             $goods_info = $this->goods->getGoodsDetail($goodsid);
-            
+            // 更新商品点击数
+            $this->goods->updateGoodsClicks($goodsid);
+
             if ($this->getIsOpenVirtualGoodsConfig() == 0 && $goods_info['goods_type'] == 0) {
                 $this->error("未开启虚拟商品功能");
             }
@@ -1625,5 +1629,50 @@ class Goods extends BaseController
         $this->assign('total_count', $goods_list['total_count']);
         $this->assign('page', $page);
         return view($this->style . 'Goods/goodsList');
+    }
+
+    /**
+     * 促销专区
+     */
+    public function promotionZone()
+    {
+        $page_index = request()->get('page', '1');
+        $group_id = request()->get("group_id", "");
+        
+        $goods_group = new GoodsGroupService();
+        $groupList = $goods_group -> getGoodsGroupList(1, 0, [
+            'shop_id' => $this->instance_id,
+            'pid' => 0
+        ]);
+        $curr_group = $goods_group -> getGoodsGroupDetail($group_id);
+        $this->assign("curr_group", $curr_group);
+        //促销类别列表
+        $this->assign("groupList", $groupList["data"]);
+        $this->assign("group_id", $group_id);
+        
+        $this->goods = new GoodsService();
+        $condition = array();
+        if(!empty($group_id)){
+            $str = "FIND_IN_SET(" . $group_id . ",ng.group_id_array)";
+            $condition[""] = array("EXP",$str);
+        }
+        $goods_list = $this->goods ->getGoodsList($page_index, PAGESIZE, $condition, "");
+        $this->assign("goods_list", $goods_list);
+        $this->assign('page_count', $goods_list['page_count']);
+        $this->assign('total_count', $goods_list['total_count']);
+        $this->assign('page', $page_index);
+        
+        // 浏览历史
+        $this->member = new MemberService();
+        $member_histrorys = $this->member->getMemberViewHistory();
+        $this->assign('member_histrorys', $member_histrorys);
+        
+        // 猜您喜欢
+        $guess_member_likes = $this->member->getGuessMemberLikes();
+        $this->assign("guess_member_likes", $guess_member_likes);
+        $this->assign("guess_member_likes_count", count($guess_member_likes));
+        
+        $this->assign("title_before", "促销专区");
+        return view($this->style . 'Goods/promotionZone');
     }
 }

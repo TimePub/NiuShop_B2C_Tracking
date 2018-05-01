@@ -34,7 +34,18 @@
 			<p class="hint">注册时是否需要填写邮箱及手机，填写后如配置邮件及短信，则需要进行验证后方能注册成功</p>
 		</dd>
 	</dl>
-	
+	<dl>
+		<dt>后台验证码是否开启:</dt>
+		<dd>
+			<input id="adminCode" type="checkbox" class="checkbox" {if condition="$code_config.admin=='1'"}checked="checked"{/if}/>
+		</dd>
+	</dl>
+	<dl>
+		<dt>商城验证码是否开启:</dt>
+		<dd>
+			<input id="pcCode" type="checkbox" class="checkbox" {if condition="$code_config.pc=='1'"}checked="checked"{/if}/>
+		</dd>
+	</dl>
 	<dl>
 		<dt>用户名保留关键字:</dt>
 		<dd>
@@ -128,6 +139,15 @@ function setConfigAjax(){
 	})
 	var terms_of_service = $('#terms_of_service').val();
 	
+	var adminCode = 0;
+	var pcCode = 0;
+	if($("#adminCode").is(":checked")){
+		adminCode = 1;
+	}
+	if($("#pcCode").is(":checked")){
+		pcCode = 1;
+	}
+	
 	$.ajax({
 		type:"post",
 		url : "{:__URL('ADMIN_MAIN/config/registerandvisit')}",
@@ -138,7 +158,9 @@ function setConfigAjax(){
 			"pwd_len" : pwd_len,
 			"pwd_complexity" : pwd_complexity,
 			'is_requiretel' : is_requiretel,
-			"terms_of_service" : terms_of_service
+			"terms_of_service" : terms_of_service,
+			'adminCode':adminCode,
+			'pcCode' : pcCode
 		},
 		success : function(data){
 			if(data['code'] > 0){

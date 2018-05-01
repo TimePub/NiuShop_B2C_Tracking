@@ -162,24 +162,40 @@
 		
 		{block name="ns_notice"}{/block}
 		
-		<div style="position:relative;margin:10px 0;">
+		<div style="position:relative;margin:0;">
+			<!-- 面包屑导航 -->
+			{if condition="!isset($is_index)"}
+			<div class="breadcrumb-nav">
+				<a href="{:__URL('ADMIN_MAIN')}">{$title_name}</a>
+				{if condition="$frist_menu.module_name != ''"}
+					<span class="sep">&gt;</span>
+					<a href="{:__URL('ADMIN_MAIN/'.$frist_menu['url'])}">{$frist_menu.module_name}</a>
+				{/if}
+				{if condition="$secend_menu.module_name != ''"}
+					<span class="sep">&gt;</span>
+					<!-- 需要加跳转链接用这个：ADMIN_MAIN/{$secend_menu.url} -->
+					<a href="javascript:;">{$secend_menu.module_name}</a>
+				{/if}
+			</div>
+			{/if}
 			<!-- 三级导航菜单 -->
 			{block name="thirdmenu"}
-			<nav class="ns-third-menu">
-				<ul>
-				{notempty name="$child_menu_list[0]['superior_menu']"}
-					<li><span class="selected" onclick="location.href='{:__URL('ADMIN_MAIN/'.$child_menu_list[0]['superior_menu']['url'])}';" style="color: #0072D2;">{$child_menu_list.0.superior_menu.menu_name}</span>&nbsp;&nbsp;<i class="fa fa-angle-right fa-lg" aria-hidden="true"></i>&nbsp;&nbsp;<span onmousemove="this.style.color='#333'">{$child_menu_list.0.menu_name}</span></li>
-				{else/}
+				{if count($child_menu_list) > 1}
+				<nav class="ns-third-menu">
+					<ul>
 					{foreach name="child_menu_list" item="child_menu" key="k" }
-					{eq name="child_menu['active']" value="1"}
-						<li class="selected" onclick="location.href='{:__URL('ADMIN_MAIN/'.$child_menu['url'])}';">{$child_menu.menu_name}</li>
-					{else/}
-						<li onclick="location.href='{:__URL('ADMIN_MAIN/'.$child_menu['url'])}';">{$child_menu.menu_name}</li>
-					{/eq}
+						{eq name="child_menu['active']" value="1"}
+							<li class="selected" onclick="location.href='{:__URL('ADMIN_MAIN/'.$child_menu['url'])}';">{$child_menu.menu_name}</li>
+						{else/}
+							<li onclick="location.href='{:__URL('ADMIN_MAIN/'.$child_menu['url'])}';">{$child_menu.menu_name}</li>
+						{/eq}
 					{/foreach}
-				{/notempty}
-				</ul>
-			</nav>
+					<!-- {if count($child_menu_list) > 10}
+					<button class="btn-common btn-more">更多</button>
+					{/if} -->
+					</ul>
+				</nav>
+				{/if}
 			{/block}
 			
 			<div class="right-side-operation">
@@ -197,18 +213,14 @@
 			<div class="alert alert-info">
 				<button type="button" class="close">&times;</button>
 				<h4>
-					<i class="fa fa-info-circle"></i>
-					<span>操作提示</span>
-				</h4>
-				<div style="font-size:12px;text-indent:18px;">
 					{block name="alert_info"}
-						{foreach name="leftlist" item="leftitem"}
-						{if condition="strtoupper($leftitem['module_id']) eq $second_menu_id"}
-						{$leftitem.module_name}
+					<i class="fa fa-info-circle"></i>
+					<span class="operating-hints">操作提示</span>
+						{if condition="$secend_menu.desc"}
+						<span>{$secend_menu.desc}</span>
 						{/if}
-						{/foreach}
 					{/block}
-				</div>
+				</h4>
 			</div>
 		</div>
 		{/block}
@@ -219,7 +231,7 @@
 		
 	</section>
 </article>
-	
+
 <!-- 公共的操作提示弹出框 common-success：成功，common-warning：警告，common-error：错误，-->
 <div class="common-tip-message js-common-tip">
 	<div class="inner"></div>
@@ -267,6 +279,15 @@
 <script src="__STATIC__/blue/js/ns_common_blue.js"></script>
 <script>
 $(function(){
+	$(".ns-third-menu ul .btn-more").toggle(
+		function(){
+			$(".ns-third-menu ul").animate({height:"84px"},300);
+		},
+		function(){
+			$(".ns-third-menu ul").animate({height:"42px"},300);
+		}
+	)
+
 	//顶部导航管理显示隐藏
 	$(".ns-navigation-title>span").click(function(){
 		$(".ns-navigation-management").slideUp(400);
@@ -314,7 +335,6 @@ function addFavorite() {
 		alert('您的浏览器不支持,请按 Ctrl+D 手动收藏!');
 	}
 }
-
 </script>
 {block name="script"}{/block}
 </body>

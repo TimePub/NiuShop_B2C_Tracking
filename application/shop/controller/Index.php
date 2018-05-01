@@ -253,13 +253,10 @@ class Index extends BaseController
      */
     public function getRecommendGoodsList()
     {
-        $recommend_goods_list = Cache::get("shop_recommend_goods_list" . $this->instance_id);
-        
-        if (empty($recommend_goods_list)) {
+
             $Platform = new Platform();
             $recommend_goods_list = $Platform->getRecommendGoodsQuery($this->instance_id);
-            Cache::set("shop_recommend_goods_list" . $this->instance_id, $recommend_goods_list, '300');
-        }
+    
         $this->assign("recommend_goods_list", $recommend_goods_list);
     }
 

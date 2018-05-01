@@ -24,6 +24,7 @@ use data\service\Upgrade;
 use data\service\WebSite;
 use think\Cache;
 use think\Controller;
+use data\service\Notice;
 \think\Loader::addNamespace('data', 'data/');
 
 /**
@@ -59,6 +60,9 @@ class Task extends Controller
         $retval_mansong_operation = $event->mansongOperation();
         $retval_discount_operation = $event->discountOperation();
         $retval_auto_coupon_close = $event->autoCouponClose();
+        
+        $notice=new Notice();
+        $notice->sendNoticeRecords();
     }
 
     /**

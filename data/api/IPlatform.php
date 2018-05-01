@@ -275,7 +275,7 @@ interface IPlatform
      * @param unknown $content
      * @param unknown $image
      */
-    function updatePlatformDocument($id, $uid, $class_id, $title, $link_url, $sort, $content, $image);
+    function updatePlatformDocument($id, $uid, $class_id, $title, $link_url, $is_visibility, $sort, $content, $image);
     
     /**
      *  修改帮助中心内容的标题与排序

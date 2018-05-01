@@ -43,10 +43,15 @@ define("UPLOAD_COMMENT", UPLOAD . "/comment/");
 
 // 插件目录
 define('ADDON_PATH', ROOT_PATH . 'addons' . DS);
-//数据库路径
-define('DB_PATH', UPLOAD .'/dbspl');
-//条形码存放路径
-define("BAR_CODE", UPLOAD.'/barcode');
+// 数据库路径
+define('DB_PATH', UPLOAD . '/dbspl');
+// 条形码存放路径
+define("BAR_CODE", UPLOAD . '/barcode');
+
+// 商品视频存放路径
+define("GOODS_VIDEO_PATH", UPLOAD . '/goods_video');
+// 系统默认图
+define("UPLOAD_WEB_COMMON", UPLOAD . '/web_common/');
 urlRoute();
 
 /**
@@ -319,6 +324,32 @@ function getUserLocation()
     return $obj;
 }
 
+function httpUtil($url, $data = '', $method = 'GET')
+{
+    try {
+        
+        $curl = curl_init(); // 启动一个CURL会话
+        curl_setopt($curl, CURLOPT_URL, $url); // 要访问的地址
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); // 对认证证书来源的检查
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false); // 从证书中检查SSL加密算法是否存在
+        curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']); // 模拟用户使用的浏览器
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1); // 使用自动跳转
+        curl_setopt($curl, CURLOPT_AUTOREFERER, 1); // 自动设置Referer
+        if ($method == 'POST') {
+            curl_setopt($curl, CURLOPT_POST, 1); // 发送一个常规的Post请求
+            if ($data != '') {
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $data); // Post提交的数据包
+            }
+        }
+        curl_setopt($curl, CURLOPT_TIMEOUT, 30); // 设置超时限制防止死循环
+        curl_setopt($curl, CURLOPT_HEADER, 0); // 显示返回的Header区域内容
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1); // 获取的信息以文件流的形式返回
+        $tmpInfo = curl_exec($curl); // 执行操作
+        curl_close($curl); // 关闭CURL会话
+        return json_decode($tmpInfo, true); // 返回数据
+    } catch (Exception $e) {}
+}
+
 /**
  * 根据 ip 获取 当前城市
  */
@@ -333,7 +364,7 @@ function get_city_by_ip()
     } else {
         $cip = "";
     }
-    $url = 'http://restapi.amap.com/v3/ip';
+    $url = 'https://restapi.amap.com/v3/ip';
     $data = array(
         'output' => 'json',
         'key' => '16199cf2aca1fb54d0db495a3140b8cb',
@@ -352,17 +383,31 @@ function get_city_by_ip()
     $context = stream_context_create($opts);
     
     $result = file_get_contents($url, false, $context);
-    $res = json_decode($result, true);
-    if (count($res['province']) == 0) {
-        $res['province'] = '北京市';
+    if (! empty($result)) {
+        $res = json_decode($result, true);
+        if (! empty($res)) {
+            
+            if (count($res['province']) == 0) {
+                $res['province'] = '北京市';
+            }
+            if (! empty($res['province']) && $res['province'] == "局域网") {
+                $res['province'] = '北京市';
+            }
+            if (count($res['city']) == 0) {
+                $res['city'] = '北京市';
+            }
+        } else {
+            $res['province'] = '北京市';
+            $res['city'] = '北京市';
+        }
+        
+        return $res;
+    } else {
+        return array(
+            "province" => '北京市',
+            "city" => '北京市'
+        );
     }
-    if (! empty($res['province']) && $res['province'] == "局域网") {
-        $res['province'] = '北京市';
-    }
-    if (count($res['city']) == 0) {
-        $res['city'] = '北京市';
-    }
-    return $res;
 }
 
 /**
@@ -875,6 +920,15 @@ function getTimeStampTurnTime($time_stamp)
     return $time;
 }
 
+function getTimeStampTurnTimeByYmd($time)
+{
+    $res = "";
+    if ($time > 0) {
+        $res = date("Y-m-d", $time);
+    }
+    return $res;
+}
+
 /**
  * 时间转时间戳
  *
@@ -1136,15 +1190,18 @@ function filterStr($str)
 {
     if ($str) {
         $name = $str;
-        $name = preg_replace_callback('/\xEE[\x80-\xBF][\x80-\xBF]|\xEF[\x81-\x83][\x80-\xBF]/', function ($matches) {
+        $name = preg_replace_callback('/\xEE[\x80-\xBF][\x80-\xBF]|\xEF[\x81-\x83][\x80-\xBF]/', function ($matches)
+        {
             return '';
         }, $name);
-        $name = preg_replace_callback('/xE0[x80-x9F][x80-xBF]‘.‘|xED[xA0-xBF][x80-xBF]/S', function ($matches) {
+        $name = preg_replace_callback('/xE0[x80-x9F][x80-xBF]‘.‘|xED[xA0-xBF][x80-xBF]/S', function ($matches)
+        {
             return '';
         }, $name);
         // 汉字不编码
         $name = json_encode($name);
-        $name = preg_replace_callback("/\\\ud[0-9a-f]{3}/i", function ($matches) {
+        $name = preg_replace_callback("/\\\ud[0-9a-f]{3}/i", function ($matches)
+        {
             return '';
         }, $name);
         if (! empty($name)) {
@@ -1343,11 +1400,32 @@ function cover_up_username($username)
 
 /**
  * 生成条形码
- * @param unknown $content
+ *
+ * @param unknown $content            
  * @return string
  */
-function getBarcode($content){
+function getBarcode($content)
+{
     $barcode = new Barcode(14, $content);
-    $path = $barcode ->generateBarcode();
+    $path = $barcode->generateBarcode();
     return $path;
+}
+
+
+/**
+ * 过滤特殊符号
+ * 创建时间：2018年1月30日15:39:32
+ * @param unknown $string
+ * @return mixed
+ */
+function ihtmlspecialchars($string) {
+    if(is_array($string)) {
+        foreach($string as $key => $val) {
+            $string[$key] = ihtmlspecialchars($val);
+        }
+    } else {
+        $string = preg_replace('/&amp;((#(d{3,5}|x[a-fa-f0-9]{4})|[a-za-z][a-z0-9]{2,5});)/', '&\1',
+            str_replace(array('&', '"', '<', '>'), array('&amp;', '&quot;', '&lt;', '&gt;'), $string));
+    }
+    return $string;
 }

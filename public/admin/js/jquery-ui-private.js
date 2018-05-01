@@ -11752,7 +11752,8 @@ $.widget( "ui.dialog", {
 		resize: null,
 		resizeStart: null,
 		resizeStop: null,
-		time:0
+		time:0,
+		msgType : "warning" 
 	},
 
 	sizeRelatedOptions: {
@@ -11956,7 +11957,7 @@ $.widget( "ui.dialog", {
 
 		this._trigger( "open" );
 		//添加的动作
-		this.element.html("<h2 class='text-h2'>"+this.options.title+"</h2><p class='text-class'>"+this.options.contentText+"</p><p class='text-class time-class'></p>");
+		this.element.html("<div class='text-img'><i class='dlalog-icon "+this.options.msgType+"'></i></div><h2 class='text-h2'>"+this.options.title+"</h2><p class='text-class'>"+this.options.contentText+"</p><p class='text-class time-class'></p>");
 		var time = this.options.time;
 		if(time >0){
 			//$(".time-class").show();

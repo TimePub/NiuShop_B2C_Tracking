@@ -58,6 +58,12 @@
 		</dd>
 	</dl>
 	<dl>
+		<dt>是否显示：</dt>
+		<dd>
+			<input id="is_visibility" type="checkbox" class="checkbox" {if condition="$document_detail.is_visibility"}checked="checked"{/if}/>
+		</dd>
+	</dl>
+	<dl>
 		<dt>排序：</dt>
 		<dd>
 			<input id="sort" type="text" value="{$document_detail.sort}" onkeyup="this.value=this.value.replace(/\D/g,'')" class="input-common" />
@@ -139,6 +145,7 @@ function setConfigAjax() {
 	var link_url = $("#link_url").val();
 	var image = $("#logo").val();
 	var content = UE.getEditor('editor').getContent();
+	var is_visibility = $("#is_visibility").is(":checked") ? 1 : 0;
 	var sort = $("#sort").val();
 	if(title == ""){
 		showMessage('error', "请输入标题");
@@ -158,6 +165,7 @@ function setConfigAjax() {
 			'link_url' : link_url,
 			'content' : content,
 			'image' : image,
+			'is_visibility':is_visibility,
 			'sort' : sort
 		},
 		success : function(data) {

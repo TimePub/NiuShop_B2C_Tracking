@@ -88,7 +88,7 @@ class Login extends Controller
         // 使用那个手机模板
         $use_wap_template = $web_config->getUseWapTemplate($this->instance_id);
         if (empty($use_wap_template)) {
-            $use_wap_template['value'] = 'default';
+            $use_wap_template['value'] = 'default_new';
         }
         if (! checkTemplateIsExists("wap", $use_wap_template['value'])) {
             $this->error("模板配置有误，请联系商城管理员");
@@ -1170,5 +1170,143 @@ class Login extends Controller
                 $this->redirect($redirect);
             }
         }
+    }
+
+    
+    /**
+     * 忘记密码
+     */
+    public function findPasswd()
+    {
+        if (request()->isAjax()) {
+            // 获取数据库中的用户列表
+            $info = request()->get('info', '');
+            $type = request()->get('type', '');
+            $exist = false;
+            $member = new Member();
+            if($type == "mobile"){
+                $exist = $member -> memberIsMobile($info);
+            }else if($type == "email"){
+                $exist = $member -> memberIsEmail($info);
+            }
+            return $exist;
+        }
+        $type = request()->get('type', 1);
+        $this->assign("type", $type);
+        return view($this->style . "Login/findPasswd");
+    }
+
+    /**
+     * 邮箱短信验证
+     *
+     * @return Ambigous <string, \think\mixed>
+     */
+    public function forgotValidation()
+    {
+        $send_type = request()->post("type", "");
+        $send_param = request()->post("send_param", "");
+        $shop_id = 0;
+        // 手机注册验证
+        $member = new Member();
+        if ($send_type == 'sms') {
+            if (! $member->memberIsMobile($send_param)) {
+                $result = [
+                    'code' => - 1,
+                    'message' => "该手机号未注册"
+                ];
+                return $result;
+            } else {
+                Session::set("codeMobile", $send_param);
+            }
+        } elseif ($send_type == 'email') {
+            $member->memberIsEmail($send_param);
+            if (! $member->memberIsEmail($send_param)) {
+                $result = [
+                    'code' => - 1,
+                    'message' => "该邮箱未注册"
+                ];
+                return $result;
+            } else {
+                Session::set("codeEmail", $send_param);
+            }
+        }
+        $params = array(
+            "send_type" => $send_type,
+            "send_param" => $send_param,
+            "shop_id" => $shop_id
+        );
+        $result = runhook("Notify", "forgotPassword", $params);
+        Session::set('forgotPasswordVerificationCode', $result['param']);
+        
+        if (empty($result)) {
+            return $result = [
+                'code' => - 1,
+                'message' => "发送失败"
+            ];
+        } elseif ($result['code'] == 0) {
+            return $result = [
+                'code' => 0,
+                'message' => "发送成功"
+            ];
+        } else {
+            return $result = [
+                'code' => $result['code'],
+                'message' => $result['message']
+            ];
+        }
+    }
+
+    public function check_find_password_code()
+    {
+        $send_param = request()->post('send_param', '');
+        $param = Session::get('forgotPasswordVerificationCode');
+        if ($send_param == $param && $send_param != '') {
+            $retval = [
+                'code' => 0,
+                'message' => "验证码一致"
+            ];
+        } else {
+            $retval = [
+                'code' => 1,
+                'message' => "验证码不一致"
+            ];
+        }
+        return $retval;
+    }
+
+    /**
+     * 找回密码密码重置
+     *
+     * @return unknown[]
+     */
+    public function setNewPasswordByEmailOrmobile()
+    {
+        $userInfo = request()->post('userInfo', '');
+        $password = request()->post('password', '');
+        $type = request()->post('type', '');
+        if ($type == "email") {
+            $codeEmail = Session::get("codeEmail");
+            if ($userInfo != $codeEmail) {
+                return $retval = array(
+                    "code" => - 1,
+                    "message" => "该邮箱与验证邮箱不符"
+                );
+            } else {
+                $res = $this->user->updateUserPasswordByEmail($userInfo, $password);
+                Session::delete("codeEmail");
+            }
+        } elseif ($type == "mobile") {
+            $codeMobile = Session::get("codeMobile");
+            if ($userInfo != $codeMobile) {
+                return $retval = array(
+                    "code" => - 1,
+                    "message" => "该手机号与验证手机不符"
+                );
+            } else {
+                $res = $this->user->updateUserPasswordByMobile($userInfo, $password);
+                Session::delete("codeMobile");
+            }
+        }
+        return AjaxReturn($res);
     }
 }

@@ -7,11 +7,19 @@
 		height: 100%;
 		position: relative;
 	}
-	.facepic{
-		margin: 100px 2% 0 2%;
+	.face{
 		width: 96%;
-		position: absolute;
-		z-index: 5;
+		height: 80%;
+		text-align: center;
+		margin:0 2%;
+		position: relative;
+		top: 45px;
+	    line-height: 35;
+	}
+	.face .facepic{
+		max-width: 96%;
+		max-height: 100%;
+		vertical-align: middle;
 	}
 	.upload_face{
 		width: 96%;
@@ -38,14 +46,16 @@
 {/block}
 {block name="main"} 
 <section class="face-box">
-	{notempty name="$member_img"}
-	<img src="{:__IMG($member_img)}" alt="" class="facepic" id="imgLogo">
-	{else/}
-	<img src="__TEMP__/{$style}/public/images/member_default.png" alt="" class="facepic" id="imgLogo">
-	{/notempty}
+	<div class="face">
+		{notempty name="$member_img"}
+		<img src="{:__IMG($member_img)}" alt="" class="facepic"   id="imgLogo">
+		{else/}
+		<img src="__TEMP__/{$style}/public/images/member_default.png" alt="" class="facepic" id="imgLogo">
+		{/notempty}
+	</div>
 	<a href="javascript:void(0);">
    		<span style=""> 
-       		<input hidefocus="true" size="1" class="input-file" name="file_upload" id="uploadImg" nc_type="change_store_label" type="file" style="width: 95%;padding: 0;border: none 0;opacity: 0;filter: alpha(opacity = 0);cursor: pointer;margin: 0 2% 0 2%;position: absolute;z-index: 10;top: 20px;"
+       		<input hidefocus="true" size="1" class="input-file" name="file_upload" id="uploadImg" nc_type="change_store_label" type="file" style="width: 95%;padding: 0;border: none 0;opacity: 0;filter: alpha(opacity = 0);cursor: pointer;margin: 0 2% 0 2%;position: absolute;z-index: 10;top: 0;"
 				onchange="imgUpload(this);"> 
 			<input type="hidden" id="Logo" value="{$member_img}" />
 		</span>

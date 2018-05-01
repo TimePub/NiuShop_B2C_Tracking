@@ -1,7 +1,8 @@
 <style>
 .recommend-style{background-color:#FFF;margin-top:10px;}
 .recommend-style-nav{padding-top:10px;padding-bottom:10px;border-bottom:1px solid #eee;}
-.recommend-style-nav h2{font-weight:normal;border-left:5px  solid #0689e1;height:29px;line-height:29px;padding-left:10px;}
+.recommend-style-nav h2{font-weight:normal;border-left:5px  solid #0689e1;height:29px;line-height:29px;padding-left:10px;display: inline-block;}
+.recommend-style-nav a.more{float: right;margin: 5px 10px;}
 .focus-img{width:99%;position: relative;height:260px;}
 .focus-img-con{position: relative;overflow:hidden;margin: 0 auto;height:260px;}
 .focus-img-con ul{position:absolute;top:0;width:2420px;}
@@ -45,6 +46,7 @@ $(function(){
 <div class="w1210 recommend-style">
 	<div class="recommend-style-nav">
 		<h2>商品促销</h2>
+		<a href="{:__URL('SHOP_MAIN/goods/promotionZone')}" class="more">更多</a>
 	</div>
 	<div class="focus-img" id="focus-img">
 		
@@ -62,7 +64,7 @@ $(function(){
 								<a href="{:__URL('SHOP_MAIN/goods/goodsinfo','goodsid='.$v['goods_id'])}" target="_blank"><span>{$v['goods_name']}</span></a>
 							</div>
 						</div>
-						<div>¥{$v['price']}</div>
+						<div>¥{$v['promotion_price']}</div>
 					</div>
 					<div class="tag-small-block" style="overflow: hidden;">
 						{if condition="$v['pic_cover']!=''"}

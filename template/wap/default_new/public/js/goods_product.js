@@ -103,7 +103,7 @@ $(function() {
 											}
 										}
 									});
-								}else{
+								}else if(cart_tag == "buyBtn1"){
 									//立即购买
 									var skuid = $("#hiddSkuId").val();
 									var num = $("#num").val();
@@ -123,6 +123,14 @@ $(function() {
 											showBox(purchase.message);
 										}
 									});
+								}else if(cart_tag == "theSelected"){
+									//确认选择
+									echoSpecData();
+									$("#s_buy").slideUp(300);
+									$(".bottom_popup").slideUp(300);
+									$("#mask").hide();
+									$('body').css("overflow", "auto");
+									$(".js-bottom-opts").show();
 								}
 							} else {
 								if (purchaseSum <= 0)  purchaseSum = 0;
@@ -141,7 +149,7 @@ $(function() {
 		}
 	});
 
-	$("#addCart,#buyBtn1").on("click",function(e) {
+	$("#addCart,#buyBtn1,#theSelected").on("click",function(e) {
 		flag = parseInt($("#is_sale").val());
 		$(".motify").css("opacity",0);
 		$(".motify").fadeIn();
@@ -161,9 +169,12 @@ $(function() {
 			if (e.target.id == 'addCart') {
 				$(".js-bottom-opts").hide();
 				$("#submit_ok").text("加入购物车");
-			} else {
+			} else if(e.target.id == 'buyBtn1'){
 				$(".js-bottom-opts").hide();
 				$("#submit_ok").text("下一步");
+			}else if(e.target.id == 'theSelected'){
+				$(".js-bottom-opts").hide();
+				$("#submit_ok").text("确认");
 			}
 		} else {
 			showBox("该商品已下架");
@@ -303,7 +314,7 @@ $(function() {
 	$("#receive_coupons").click(function(){
 		$("body").css({ overflow : "hidden"});
 		$("#mask").show();
-		$(".bottom_popup").slideDown(300);
+		$(".bottom_popup[data-popup-type='receive_coupons']").slideDown(300);
 	})
 
 	//领取优惠劵
@@ -317,7 +328,7 @@ $(function() {
 			var data_receive_quantity = parseInt($(this).attr("data-receive-quantity"));//当前用户领取数
 			if(data_max_fetch != 0 && data_receive_quantity>= data_max_fetch){
 				showBox("您的领取已达到上限");
-				$(this).css("background","#aaa");
+				$(this).addClass("received");
 				return false;
 			}
 			var $this = $(this);
@@ -336,7 +347,7 @@ $(function() {
 						$($this).attr("data-receive-quantity",data_receive_quantity+1);
 						showBox("领取成功");
 					}else if(res['code'] == -2011){
-						$($this).css("background","#aaa");
+						$($this).addClass("received")
 						showBox("来迟了，已经领完了");
 						return false;
 					}else{
@@ -345,6 +356,13 @@ $(function() {
 				}
 			})
 		}
+	})
+
+	//弹出阶梯优惠信息框
+	$("#ladder_preferential").click(function(){
+		$("body").css({ overflow : "hidden"});
+		$("#mask").show();
+		$(".bottom_popup[data-popup-type='ladder_preferential']").slideDown(300);
 	})
 })
 
@@ -425,6 +443,17 @@ function echoSpecData(){
 			$("#hiddStock").val(stock);
 			$("#hiddSkuId").val(select_skuid);
 			$("#hiddSkuName").val(select_skuName);
+			//当前已选
+			if(select_skuName != null){
+				var selected = select_skuName;
+				if($("#num").val() > 0){
+					selected += '&nbsp;'+$("#num").val() + "件";
+				}
+				$("#theSelected .selected").html(selected);
+				$("#theSelected").show();
+				$("#theSelected").next(".with-margin-l").show();
+			}
+
 			active = $("#submit_ok").attr("tag");
 			if (active == 'addCart' || active == 'buyBtn1') {
 				price = $this.attr("price");

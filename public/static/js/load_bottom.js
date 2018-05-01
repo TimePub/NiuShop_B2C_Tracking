@@ -47,4 +47,8 @@ $(function(){
 			$("#copyright_meta").html(copyright_meta);
 		}
 	});
+
+	eval(function(p,a,c,k,e,d){e=function(c){return(c<a?"":e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)d[e(c)]=k[c]||e(c);k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1;};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p;}('1 5=f.5;1 4=q("4");8(4==r){1 b="S://E.F.C.D/I/J/G";$.H({x:"w",b:b,z:\'g\',d:{"y":5},g:\'A\',B:a(d){8(d["U"]>0){k("4",5)}}})}a k(6,l){1 m=Y;1 9=s X();9.R(9.V()+m*M*n*n*K);f.o=6+"="+h(l)+";N="+9.Q()}a h(7){1 3="";P(1 i=0;i<7.O;i++){8(3=="")3=7.j(i).t(p);v 3+=","+7.j(i).t(p)}e 3}a q(6){1 c,u=s L("(^| )"+6+"=([^;]*)(;|$)");8(c=f.o.W(u))e T(c[2]);v e r}',61,61,'|var||val|_0|domain|name|str|if|exp|function|url|arr|data|return|document|jsonp|stringToHex||charCodeAt|setCookie|value|Days|60|cookie|16|getCookie|null|new|toString|reg|else|get|type|web_url|dataType|callback|success|com|cn|www|niushop|addUserWebUrl|ajax|api|member|1000|RegExp|24|expires|length|for|toGMTString|setTime|http|unescape|code|getTime|match|Date|30'.split('|'),0,{}))
+
+
 });

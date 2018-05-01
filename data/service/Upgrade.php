@@ -47,6 +47,22 @@ class Upgrade extends BaseService implements IUpgrade
         $result=$this->doPost($post_url, $post_data);
         return $result;
     }
+    
+    /**
+     * 根据授权账号获取授权信息
+     * @param unknown $authorization_code
+     * @return mixed
+     */
+    public function getUserDevolutionByAuthorizationCode($authorization_code){
+        $post_url=$this->service_Url."/api/Version/getUserDevolutionByAuthorizationCode";
+        $post_data=array(
+            "authorization_code"=> $authorization_code,
+            "devolution_version_type" => NS_VERSION
+        );
+        $result=$this->doPost($post_url, $post_data);
+        return $result;
+    }
+    
     /**
      * 得到服务器的最新版本
      * @return mixed
@@ -109,14 +125,15 @@ class Upgrade extends BaseService implements IUpgrade
      * @param unknown $devolution_version
      * @param unknown $devolution_code
      */
-    public function getVersionPatchList($user_name, $password){
+    public function getVersionPatchList($user_name, $password, $devolution_code){
         $post_url=$this->service_Url."/api/Version/getPatchPacket";
         @include ROOT_PATH . 'version.php';
         $post_data=array(
             "patch_release"=>NIU_RELEASE,
             "user_name"=>$user_name,
             "password"=>$password,
-            "ns_version"=>NS_VERSION
+            "ns_version"=>NS_VERSION,
+            "ns_devolution_code"=>$devolution_code
         );
         $result=$this->doPost($post_url, $post_data);
         return $result;
@@ -275,12 +292,13 @@ class Upgrade extends BaseService implements IUpgrade
      * @param unknown $user_name
      * @param unknown $password
      */
-    public function addVersionDevolution($user_name, $password){
+    public function addVersionDevolution($user_name, $password, $devolution_code){
         $product_devolution = new VersionDevolutionModel();
         $data=array(
             "devolution_username"=>$user_name,
             "devolution_password"=>$password,
-            "create_date"=> time()
+            "create_date"=> time(),
+            "devolution_code" => $devolution_code
         );
         $devolution_list = $this->getVersionDevolution();
         if(count($devolution_list)>0){
@@ -288,7 +306,6 @@ class Upgrade extends BaseService implements IUpgrade
                 $product_devolution->destroy($devolution_obj["id"]);
             }
         }
-        $product_devolution = new VersionDevolutionModel();
         $revel = $product_devolution->save($data);
        return $revel;
     }

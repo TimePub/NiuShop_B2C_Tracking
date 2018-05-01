@@ -176,4 +176,54 @@ function getGoodsBrandList(brand_name,search_name){
 		}
 	});
 }
+//添加阶梯优惠
+$(".add_ladder_preference").click(function(){
+	var laddre_length = $(".ladder_preference_content .ladder_preference").length;
+	var html = '<div class="ladder_preference"><input type="number" class="input-common ladder" value="0"><input type="number" class="input-common preference" value="0"><a href="javascript:;" class="delete_preference">删除</a></div>';
+	var prev_obj = $("#ladder_preference").prev();
+	if(laddre_length <= 9){
+		if(prev_obj.find(".ladder").val() != undefined &&　prev_obj.find(".preference").val() != undefined){
+			if(prev_obj.find(".ladder").val() == 0 || prev_obj.find(".preference").val() == 0){
+				showTip("请输入数量和优惠价格","warning");
+			}else{
+	 			$("#ladder_preference").before(html);
+			}
+		}else{
+			$("#ladder_preference").before(html);
+		}
+	}
+})
+
+$(".ladder_preference_content .ladder_preference .delete_preference").live("click",function(){
+	$(this).parent().remove();
+})
+/**
+ * 删除已选择的视频
+ */
+function del_video(){
+	
+	// 通过ajax用php删除文件
+	var src = $("#video_url").val();
+	if(src!= ""){ 
+		
+		$("#my-video ").attr('src', "");
+		$("#my-video").attr('poster','__STATIC__/blue/img/vs.png');
+		$("#videoupload").val('');
+		$(".del-video").hide();
+		$("#video_url").val('');
+		/* $.ajax({
+			type : "post",
+			url : "{:__URL('ADMIN_MAIN/goods/delSelectedVideo')}",
+			data : {  
+				'src':src,
+			},
+			success : function(res){
+				//console.log(res);
+			}
+		}); */
+		
+	} 
+	
+	
+}
 </script>

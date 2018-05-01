@@ -18,7 +18,6 @@ namespace app\admin\controller;
 use data\service\Address;
 use data\service\Address as AddressService;
 use data\service\Config;
-use data\service\Express;
 use data\service\Express as ExpressService;
 use data\service\Order\OrderGoods;
 use data\service\Order\OrderStatus;
@@ -55,7 +54,10 @@ class Order extends BaseController
             $order_status = request()->post('order_status', '');
             $receiver_mobile = request()->post('receiver_mobile', '');
             $payment_type = request()->post('payment_type', 1);
-            $condition['order_type'] = 1; // 订单类型
+            $condition['order_type'] = array(
+                "in",
+                "1,3"
+            ); // 订单类型
             $condition['is_deleted'] = 0; // 未删除订单
             if ($start_date != 0 && $end_date != 0) {
                 $condition["create_time"] = [
@@ -399,19 +401,6 @@ class Order extends BaseController
             $detail['operation'] = $operation_array;
         }
         $this->assign("order", $detail);
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "order/orderlist",
-                    'menu_name' => "订单列表",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . "Order/orderDetail");
     }
 
@@ -441,19 +430,6 @@ class Order extends BaseController
             $detail['operation'] = $operation_array;
         }
         $this->assign("order", $detail);
-        $child_menu_list = array(
-            array(
-                'url' => "javascript:;",
-                'menu_name' => $this->module_info['module_name'],
-                'active' => 1,
-                "superior_menu" => array(
-                    'url' => "order/virtualorderlist",
-                    'menu_name' => "虚拟订单",
-                    'active' => 1,
-                )
-            )
-        );
-        $this->assign("child_menu_list", $child_menu_list);
         return view($this->style . "Order/virtualOrderDetail");
     }
 
@@ -859,12 +835,17 @@ class Order extends BaseController
             ),
             array(
                 'url' => "shop/pickuppointfreight",
-                'menu_name' => "自提点运费菜单",
+                'menu_name' => "自提点运费",
                 "active" => 0
             ),
             array(
                 'url' => "config/distributionareamanagement",
                 'menu_name' => "货到付款地区管理",
+                "active" => 0
+            ),
+            array(
+                'url' => "config/expressmessage",
+                'menu_name' => "物流跟踪设置",
                 "active" => 0
             )
         );
@@ -1167,13 +1148,16 @@ class Order extends BaseController
             $condition['receiver_mobile'] = $receiver_mobile;
         }
         $condition['shop_id'] = $this->instance_id;
-        $condition['order_type'] = 1; // 普通订单
+        $condition['order_type'] = array(
+            "in",
+            "1,3"
+        ); // 普通订单
         $order_service = new OrderService();
         $list = $order_service->getOrderList(1, 0, $condition, 'create_time desc');
         $list = $list["data"];
         foreach ($list as $k => $v) {
             $list[$k]["create_date"] = getTimeStampTurnTime($v["create_time"]); // 创建时间
-            $list[$k]["receiver_info"] = $v["receiver_name"] . "  " . $v["receiver_mobile"] . "  ".$v["fixed_telephone"]." " . $v["receiver_province_name"] . $v["receiver_city_name"] . $v["receiver_district_name"] . $v["receiver_address"] . "  " . $v["receiver_zip"]; // 创建时间
+            $list[$k]["receiver_info"] = $v["receiver_name"] . "  " . $v["receiver_mobile"] . "  " . $v["fixed_telephone"] . " " . $v["receiver_province_name"] . $v["receiver_city_name"] . $v["receiver_district_name"] . $v["receiver_address"] . "  " . $v["receiver_zip"]; // 创建时间
             if ($v['shipping_type'] == 1) {
                 $list[$k]["shipping_type_name"] = '商家配送';
             } elseif ($v['shipping_type'] == 2) {
@@ -1527,7 +1511,10 @@ class Order extends BaseController
                 $order_ids
             ),
             "shop_id" => $this->instance_id,
-            'order_type' => 1
+            'order_type' => array(
+                "in",
+                "1,3"
+            )
         );
         $list = $order_service->getOrderList(1, 0, $condition, '');
         foreach ($list["data"] as $k => $v) {

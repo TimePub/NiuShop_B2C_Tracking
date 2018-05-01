@@ -2563,4 +2563,62 @@ class Config extends BaseService implements IConfig
             return 0;
         }
     }
+
+    /**
+     * 设置手机端分类显示方式，1:缩略图模式，2：列表模式
+     * 创建时间：2018年1月23日15:26:25
+     *
+     * @param unknown $instanceid            
+     * @param unknown $value            
+     * @return Ambigous <number, boolean, \think\false, string>
+     */
+    public function setWapClassifiedDisplayMode($instanceid, $value)
+    {
+        $res = 0;
+        $key = 'WAP_CLASSIFIED_DISPLAY_MODE';
+        $config_model = new ConfigModel();
+        $info = $config_model->getInfo([
+            'key' => $key,
+            'instance_id' => $instanceid
+        ], 'value');
+        
+        $data['value'] = $value;
+        if (empty($info)) {
+            $data['instance_id'] = $instanceid;
+            $data['key'] = $key;
+            $data['create_time'] = time();
+            $data['desc'] = '手机端分类显示方式，1:缩略图模式，2：列表模式';
+            $data['is_use'] = 1;
+            $res = $config_model->save($data);
+        } else {
+            
+            $data['modify_time'] = time();
+            $res = $config_model->save($data, [
+                'key' => $key,
+                'instance_id' => $instanceid
+            ]);
+        }
+        return $res;
+    }
+
+     /**
+     * 获取手机端分类显示方式,1:缩略图模式，2：列表模式
+     * 创建时间：2018年1月23日15:44:16
+     *
+     * @param unknown $instanceid            
+     */
+    public function getWapClassifiedDisplayMode($instanceid)
+    {
+        $res = 1;
+        $key = 'WAP_CLASSIFIED_DISPLAY_MODE';
+        $config_model = new ConfigModel();
+        $info = $this->config_module->getInfo([
+            'key' => $key,
+            'instance_id' => $instanceid
+        ], 'value');
+        if (! empty($info)) {
+            $res = $info['value'];
+        }
+        return $res;
+    }
 }

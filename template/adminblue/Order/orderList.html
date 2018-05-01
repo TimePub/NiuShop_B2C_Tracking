@@ -1,4 +1,4 @@
-{extend name="adminblue/base" /} 
+{extend name="adminblue/base" /}
 {block name="resources"/}
 <script type="text/javascript" src="__STATIC__/My97DatePicker/WdatePicker.js"></script>
 <link href="__STATIC__/blue/css/order/ns_orderlist.css" rel="stylesheet" type="text/css" />
@@ -11,20 +11,13 @@
 .to-fixed{position: fixed;width: 85.5%;top: 50px;box-shadow: 0 2px 6px 0 rgba(0,0,0,.3);z-index: 5;}
 </style>
 {/block}
-{block name="thirdmenu"}{/block}
-{block name="warm_prompt"}{/block}
+<!-- {1block name="thirdmenu"}{/block} -->
+<!-- {1block name="warm_prompt"}{/block} -->
 {block name="right_tab_tip"}{/block}
 {block name="main"}
 <input type="hidden" id="order_id" />
 <input type="hidden" id="print_select_ids" />
 <input type="hidden" id="order_status" value="{$status}" />
-<div style="position:relative;margin:10px 0;">
-	<nav class="ns-third-menu" style="margin:0;">
-		<ul>
-			<li class="selected" onclick="location.href='{:__URL('ADMIN_MAIN/order/orderlist')}';">订单列表</li>
-		</ul>
-	</nav>
-</div>
 <div style="border:1px solid #e5e5e5;">
 	<table class="mytable select">
 		<tr>
@@ -217,6 +210,7 @@ function LoadingInfo(page_index) {
 					var shipping_money = data["data"][i]["shipping_money"];//运费
 					var seller_memo = data["data"][i]["seller_memo"];//订单备注
 					var goods_code = data["data"][i]["order_item_list"][0]["code"];
+					
 					html += '<tr class="title-tr">';
 					html += '<td colspan="7"><input id="'+out_trade_no+'" type="checkbox" value="'+order_id+'" name="sub">';
 					html +='<span>订单编号：'+order_no+' 交易号：'+out_trade_no+'</span><span>下单时间：'+create_time+'</span>';
@@ -246,6 +240,7 @@ function LoadingInfo(page_index) {
 						html += '<div class="cell" style="display: inline-block;float:right;">'+num+'件</div>';
 					}else{
 						html += '<td style="text-align:center;">';
+
 						html += '<div class="cell" style="display: inline-block;"><span>'+price+'元</span></div>';
 						html += '<div class="cell">'+num+'件</div>';
 					}
@@ -335,8 +330,9 @@ function LoadingInfo(page_index) {
 							html += '<p class="specification" style="margin-bottom: 0px;"><span style="color:#8e8c8c;font-size:12px;">'+sku_name+'</span></p>';
 						}
 						if(goods_code != null && goods_code != ''){
-							html += '<p class="specification"><span style="color:#8e8c8c;font-size:12px;">'+goods_code+'</span></p></div>';
+							html += '<p class="specification"><span style="color:#8e8c8c;font-size:12px;">'+goods_code+'</span></p>';
 						}
+
 						html += '</div></td>';
 
 						//只给中间的商品加
@@ -345,7 +341,8 @@ function LoadingInfo(page_index) {
 						}else{
 							html += '<td style="border-left:0px solid #fff;">';//商品信息与商品清单的分割线
 						}
-						
+
+						//添加赠品标识
 						html += '<div class="cell" style="display: inline-block;"><span>'+price+'元</span></div>';
 						html += '<div class="cell" style="display: inline-block;float:right">'+num+'件</div>';
 						//调价

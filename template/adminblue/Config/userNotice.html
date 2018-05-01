@@ -1,7 +1,8 @@
 {extend name="adminblue/base" /}
 {block name="resources"/}
 <style>
-	.num{width:40px;text-align:center;}
+.num{width:40px;text-align:center;}
+.
 </style>
 {/block}
 {block name="main"}
@@ -21,7 +22,7 @@
 		<tr align="center">
 			<th><input type="checkbox" onClick="CheckAll(this)" id="chek_all"></th>
 			<th>排序</th>
-			<th>公告标题</th>
+			<th align="left">公告标题</th>
 			<th>创建时间</th>
 			<th>操作</th>
 		</tr>
@@ -50,10 +51,10 @@ function LoadingInfo(page_index) {
 				for (var i = 0; i < data["data"].length; i++) {
 					html += '<tr align="center">';
 					html += '<td><input name="sub" type="checkbox" value="'+ data['data'][i]['id']+'"></td>';
-					html += '<td><input type="number" min="0" value="'+ data["data"][i]["sort"]+'" class="num" style="margin-bottom:0;" data-id="'+ data['data'][i]['id']+'"></td>';
-					html += '<td>'+data["data"][i]["notice_title"]+'</td>';
+					html += '<td><input type="number" min="0" value="'+ data["data"][i]["sort"]+'" class="num input-common input-common-sort" data-id="'+ data['data'][i]['id']+'"></td>';
+					html += '<td align="left">'+data["data"][i]["notice_title"]+'</td>';
 					html += '<td>' + timeStampTurnTime(data["data"][i]["create_time"])+ '</td>';
-				    html += '<td><a href="'+__URL('ADMIN_MAIN/config/updateHomeNotice?id='+ data['data'][i]['id'])+'">修改</a><a style="cursor: pointer;" onclick="deleteNotice('+data['data'][i]['id']+')">删除</a></td> ';
+					html += '<td><a href="'+__URL('ADMIN_MAIN/config/updateHomeNotice?id='+ data['data'][i]['id'])+'">修改</a><a style="cursor: pointer;" onclick="deleteNotice('+data['data'][i]['id']+')">删除</a></td> ';
 					html += '</tr>';
 				}
 			} else {

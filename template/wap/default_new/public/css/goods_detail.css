@@ -262,4 +262,4 @@ a#global-cart {
 	-webkit-transform: scale(.5);
 }
 .js-shelves {display: none;}
-.goods-introduction{font-size: 12px;color: #F44336;margin: 3px 0;}
+.goods-introduction{font-size: 12px;color: #F44336;margin: 3px 0;width: 85%;}

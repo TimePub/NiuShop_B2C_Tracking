@@ -39,7 +39,7 @@
 		<tr>
 			<th><input type="checkbox" onclick="CheckAll(this)" /></th>
 			<th>图片</th>
-			<th>品牌名称</th>
+			<th align="left">品牌名称</th>
 			<th>品牌首字母</th>
 			<th>商品分类</th>
 			<th>操作</th>
@@ -107,7 +107,7 @@ function LoadingInfo(page_index) {
 					}else{
 						html += '<td><div class="brand_img"><img src="'+ __IMG(data["data"][i]["brand_pic"]) +'"></div></td>';
 					}
-					html += '<td>' + data["data"][i]["brand_name"] + '</td>';
+					html += '<td align="left">' + data["data"][i]["brand_name"] + '</td>';
 					html += '<td>' + data["data"][i]["brand_initial"] + '</td>';
 					html += '<td>'+data["data"][i]['category_id_1_name']+'&nbsp;'+data["data"][i]['category_id_2_name']+'&nbsp;'+data["data"][i]['category_id_3_name']+'</td>';
 					html += '<td><a href="'+__URL('ADMIN_MAIN/goods/updategoodsbrand?brand_id=' + data["data"][i]["brand_id"] )+ '">修改</a>  <a href="javascript:delBrand(' + data["data"][i]["brand_id"] + ')">删除</a></td> ';

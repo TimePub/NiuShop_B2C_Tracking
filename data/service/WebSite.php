@@ -69,9 +69,10 @@ class WebSite extends BaseService implements IWebSite
 
     /**
      * (non-PHPdoc)
+     *
      * @see \data\api\IWebsite::updateWebSite()
      */
-    function updateWebSite($title, $logo, $web_desc, $key_words, $web_icp, $web_style_pc, $web_style_admin, $visit_pattern, $web_qrcode, $web_url, $web_phone, $web_email, $web_qq, $web_weixin, $web_address, $web_status, $wap_status, $third_count, $close_reason, $web_popup_title = "", $web_wechat_share_logo, $web_gov_record, $web_gov_record_url)
+    function updateWebSite($title, $logo, $web_desc, $key_words, $web_icp, $web_style_pc, $web_qrcode, $web_url, $web_phone, $web_email, $web_qq, $web_weixin, $web_address, $third_count, $web_popup_title, $web_wechat_share_logo, $web_gov_record, $web_gov_record_url)
     {
         $data = array(
             'title' => $title,
@@ -80,8 +81,6 @@ class WebSite extends BaseService implements IWebSite
             'key_words' => $key_words,
             'web_icp' => $web_icp,
             'style_id_pc' => $web_style_pc,
-            'style_id_admin' => $web_style_admin,
-            'url_type' => $visit_pattern,
             'web_qrcode' => $web_qrcode,
             'web_url' => $web_url,
             'web_phone' => $web_phone,
@@ -89,14 +88,11 @@ class WebSite extends BaseService implements IWebSite
             'web_qq' => $web_qq,
             'web_weixin' => $web_weixin,
             'web_address' => $web_address,
-            'web_status' => $web_status,
-            'wap_status' => $wap_status,
             'third_count' => $third_count,
-            'close_reason' => $close_reason,
             'modify_time' => time(),
             'web_popup_title' => $web_popup_title,
             'web_wechat_share_logo' => $web_wechat_share_logo,
-            'web_gov_record' => $web_gov_record,  
+            'web_gov_record' => $web_gov_record,
             'web_gov_record_url' => $web_gov_record_url
         );
         $this->website = new WebSiteModel();
@@ -200,19 +196,19 @@ class WebSite extends BaseService implements IWebSite
         $this->updateUserModule();
         return $res;
     }
+
     /**
      * 清除菜单
      */
-    private function updateUserModule(){
+    private function updateUserModule()
+    {
         $module = request()->module();
-        Session::set('module_list.'.$module.'module_list_0', []);
+        Session::set('module_list.' . $module . 'module_list_0', []);
         $mod = new ModuleModel();
         $module_id_list = $mod->getQuery('', 'module_id', '');
-        foreach ($module_id_list as $k => $v)
-        {
-            Session::set('module_list.'.$module.'module_list_' . $v['module_id'], []);
+        foreach ($module_id_list as $k => $v) {
+            Session::set('module_list.' . $module . 'module_list_' . $v['module_id'], []);
         }
-        
     }
 
     /**
@@ -539,7 +535,7 @@ class WebSite extends BaseService implements IWebSite
         $style_list = $webstyle->getQuery($condition, '*', '');
         return $style_list;
     }
-
+    
     /*
      * (non-PHPdoc)
      * @see \ata\api\IWebsite::getWebDetail()
@@ -552,8 +548,10 @@ class WebSite extends BaseService implements IWebSite
         ));
         return $web_info;
     }
+
     /**
      * (non-PHPdoc)
+     *
      * @see \data\api\IWebsite::getUrlRouteList()
      */
     public function getUrlRouteList($page_index = 1, $page_size = 0, $condition = '', $order = '')
@@ -562,101 +560,170 @@ class WebSite extends BaseService implements IWebSite
         $route_list = $url_route_model->pageQuery($page_index, $page_size, $condition, $order, '*');
         return $route_list;
     }
+
     /**
      * 获取路由
+     *
      * @return Ambigous <mixed, \think\cache\Driver, boolean>
      */
-    public function getUrlRoute(){
+    public function getUrlRoute()
+    {
         $cache = Cache::get("url_route");
-          if ($cache) {
+        if ($cache) {
             return $cache;
         } else {
             $url_route_model = new SysUrlRouteModel();
-            $route_list = $url_route_model->pageQuery(1, 0, ['is_open' => 1], '', 'rule,route');
+            $route_list = $url_route_model->pageQuery(1, 0, [
+                'is_open' => 1
+            ], '', 'rule,route');
             Cache::set("url_route", $route_list);
             return $route_list;
         }
-        
-       
     }
+
     /**
      * (non-PHPdoc)
+     *
      * @see \data\api\IWebsite::addUrlRoute()
      */
-    public function addUrlRoute($rule, $route, $is_open,$route_model = 1, $remark)
+    public function addUrlRoute($rule, $route, $is_open, $route_model = 1, $remark)
     {
         $data = array(
-        	"rule" => $rule,
-        	"route" => $route,
-        	"is_open" => $is_open,
-        	"route_model" => $route_model,
+            "rule" => $rule,
+            "route" => $route,
+            "is_open" => $is_open,
+            "route_model" => $route_model,
             "is_system" => 0,
-        	"remark" => $remark,
+            "remark" => $remark
         );
         $url_route_model = new SysUrlRouteModel();
-        $url_route_model -> save($data);
-        return $url_route_model -> routeid;
+        $url_route_model->save($data);
+        return $url_route_model->routeid;
     }
+
     /**
      * (non-PHPdoc)
+     *
      * @see \data\api\IWebsite::updateUrlRoute()
      */
     public function updateUrlRoute($routeid, $rule, $route, $is_open, $route_model = 1, $remark)
     {
         $data = array(
-        	"rule" => $rule,
-        	"route" => $route,
-        	"is_open" => $is_open,
-        	"route_model" => $route_model,
-        	"remark" => $remark,
+            "rule" => $rule,
+            "route" => $route,
+            "is_open" => $is_open,
+            "route_model" => $route_model,
+            "remark" => $remark
         );
         $url_route_model = new SysUrlRouteModel();
-        $res = $url_route_model -> save($data, ["routeid" => $routeid]);
+        $res = $url_route_model->save($data, [
+            "routeid" => $routeid
+        ]);
         return $res;
     }
-    
+
     /**
-     * 
+     *
      * {@inheritDoc}
+     *
      * @see \data\api\IWebsite::getUrlRouteDetail()
      */
-    public function getUrlRouteDetail($routeid){
+    public function getUrlRouteDetail($routeid)
+    {
         $url_route_model = new SysUrlRouteModel();
-        $res = $url_route_model -> get($routeid);
+        $res = $url_route_model->get($routeid);
         return $res;
     }
-    
+
     /**
-     * 
+     *
      * {@inheritDoc}
+     *
      * @see \data\api\IWebsite::url_route_if_exists()
      */
-    public function url_route_if_exists($type, $value){
+    public function url_route_if_exists($type, $value)
+    {
         $is_exists = false;
         $url_route_model = new SysUrlRouteModel();
-        if($type == "rule"){
-            $count = $url_route_model -> getCount(["rule"=>trim($value)]);
-            if($count > 0){
+        if ($type == "rule") {
+            $count = $url_route_model->getCount([
+                "rule" => trim($value)
+            ]);
+            if ($count > 0) {
                 $is_exists = true;
             }
-        }else if($type == "route"){
-            $count = $url_route_model -> getCount(["route"=>trim($value)]);
-            if($count > 0){
-                $is_exists = true;
+        } else 
+            if ($type == "route") {
+                $count = $url_route_model->getCount([
+                    "route" => trim($value)
+                ]);
+                if ($count > 0) {
+                    $is_exists = true;
+                }
             }
-        }
         return $is_exists;
     }
-    
+
     /**
      * 删除路由规则
      */
-    public function delete_url_route($routeid){
+    public function delete_url_route($routeid)
+    {
         $url_route_model = new SysUrlRouteModel();
-        $res = $url_route_model ->destroy([
-            "routeid" => array("in", $routeid),
+        $res = $url_route_model->destroy([
+            "routeid" => array(
+                "in",
+                $routeid
+            ),
             "is_system" => 0
         ]);
+        return $res;
+    }
+
+    /**
+     * (non-PHPdoc)
+     *
+     * @see \data\api\IWebsite::updateVisitWebSite()
+     */
+    public function updateVisitWebSite($web_style_admin, $visit_pattern, $web_status, $wap_status, $close_reason)
+    {
+        $data = array(
+            'style_id_admin' => $web_style_admin,
+            'url_type' => $visit_pattern,
+            'web_status' => $web_status,
+            'wap_status' => $wap_status,
+            'close_reason' => $close_reason,
+            'modify_time' => time()
+        );
+        $this->website = new WebSiteModel();
+        $res = $this->website->save($data, [
+            "website_id" => 1
+        ]);
+        if ($res) {
+            cache("WEBSITEINFO", null);
+        }
+        return $res;
+    }
+
+    /**
+     * 修改一键关注设置
+     * (non-PHPdoc)
+     *
+     * @see \data\api\IWebsite::updateKeyConcernConfig()
+     */
+    public function updateKeyConcernConfig($is_show_follow)
+    {
+        $data = array(
+            'modify_time' => time(),
+            'is_show_follow' => $is_show_follow
+        );
+        $this->website = new WebSiteModel();
+        $res = $this->website->save($data, [
+            "website_id" => 1
+        ]);
+        if ($res) {
+            cache("WEBSITEINFO", null);
+        }
         return $res;
     }
 }

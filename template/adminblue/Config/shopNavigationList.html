@@ -28,8 +28,8 @@
 		<tr align="center">
 			<th><input type="checkbox" onClick="CheckAll(this)" id="chek_all"></th>
 			<th>排序</th>
-			<th>导航名称</th>
-			<th>链接地址</th>
+			<th align="left">导航名称</th>
+			<th align="left">链接地址</th>
 			<th>所在位置</th>
 			<th>创建时间</th>
 			<th>是否新窗口打开</th>
@@ -64,12 +64,12 @@
 				for (var i = 0; i < data["data"].length; i++) {
 					html += '<tr align="center">';
 					html += '<td><input name="sub" type="checkbox" value="'+ data['data'][i]['nav_id']+'"></td>';
-					html += '<td><input type="number" min="0" value="'+ data["data"][i]["sort"]+'" nav_id="'+ data['data'][i]['nav_id']+'" class="num" style="margin-bottom:0;"></td>';
-					html += '<td class="cell_total" title="'+data["data"][i]["nav_title"]+'"><a href="'+ __URL('SHOP_MAIN'+data['data'][i]['nav_url'])+'" target="_blank">' + data["data"][i]["nav_title"]+ '</a></td>';
+					html += '<td><input type="number" min="0" value="'+ data["data"][i]["sort"]+'" nav_id="'+ data['data'][i]['nav_id']+'" class="num  input-common input-common-sort" style="margin-bottom:0;"></td>';
+					html += '<td align="left" class="cell_total" title="'+data["data"][i]["nav_title"]+'"><a href="'+ __URL('SHOP_MAIN'+data['data'][i]['nav_url'])+'" target="_blank">' + data["data"][i]["nav_title"]+ '</a></td>';
 					if(data["data"][i]["nav_type"] == 0){
-						html += '<td style="word-break:break-word;">' + data["data"][i]["template_name"]+ '</td>';
+						html += '<td style="word-break:break-word;text-align:left;">' + data["data"][i]["template_name"]+ '</td>';
 					}else if(data["data"][i]["nav_type"] == 1){
-						html += '<td style="word-break:break-word;">' + data["data"][i]["nav_url"]+ '</td>';
+						html += '<td style="word-break:break-word;text-align:left;">' + data["data"][i]["nav_url"]+ '</td>';
 					}
 
 					if(data["data"][i]["type"]==1){

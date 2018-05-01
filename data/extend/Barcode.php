@@ -17,7 +17,7 @@ class Barcode{
         $this->color_black = new \BCGColor(0, 0, 0);
         $this->color_white = new \BCGColor(255, 255, 255);
         $this->size = $size;
-        $this->fontPath = dirname(__FILE__)."\barcode\\font\Arial.ttf";
+        $this->fontPath = str_replace("\\", "/", ROOT_PATH."data/extend/barcode/font/Arial.ttf");
         $this->font = new \BCGFontFile($this->fontPath, $this->size);
         $this->content = $content;
     }

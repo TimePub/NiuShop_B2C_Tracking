@@ -587,4 +587,26 @@ class WchatOauth
         $url = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=%s";
         return $this->get_url_return($url, $json);
     }
+    
+    /**
+     * 获取openid(前台会员)
+     *
+     * @return unknown
+     */
+    public function get_weixin_member_access_token($code)
+    {
+        // 通过code获得openid
+        if (empty($code)) {
+            // 触发微信返回code码
+            $baseUrl = request()->url(true);
+            $url = $this->get_single_authorize_url($baseUrl, "123");
+    
+            Header("Location: $url");
+            exit();
+        } else {
+            // 获取code码，以获取openid
+            $data = $this->get_single_access_token($code);
+            return $data;
+        }
+    }
 }

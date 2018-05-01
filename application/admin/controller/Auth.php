@@ -19,6 +19,7 @@ namespace app\admin\controller;
  * 用户权限控制器
  */
 use data\service\AuthGroup as AuthGroup;
+use think\Request;
 
 class Auth extends BaseController
 {
@@ -55,6 +56,19 @@ class Auth extends BaseController
             $user_list = $this->user->adminUserList($page_index, $page_size, $condition);
             return $user_list;
         } else {
+            $child_menu_list = array(
+                array(
+                    'url' => "auth/userlist",
+                    'menu_name' => "用户列表",
+                    "active" => 1
+                ),
+                array(
+                    'url' => "auth/authgrouplist",
+                    'menu_name' => "权限组",
+                    "active" => 0
+                )
+            );
+            $this->assign("child_menu_list", $child_menu_list);
             return view($this->style . 'Auth/userList');
         }
     }
@@ -123,6 +137,19 @@ class Auth extends BaseController
                 $first_per = array();
             }
             $this->assign("list", $p);
+            $child_menu_list = array(
+                array(
+                    'url' => "auth/userlist",
+                    'menu_name' => "用户列表",
+                    "active" => 0
+                ),
+                array(
+                    'url' => "auth/authgrouplist",
+                    'menu_name' => "权限组",
+                    "active" => 1
+                )
+            );
+            $this->assign("child_menu_list", $child_menu_list);
             return view($this->style . 'Auth/authGroupList');
         }
     }
@@ -165,19 +192,6 @@ class Auth extends BaseController
             $condition["instance_id"] = $this->instance_id;
             $list = $this->auth_group->getSystemUserGroupAll($condition);
             $this->assign('auth_group', $list);
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "auth/userlist",
-                        'menu_name' => "用户列表",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
             return view($this->style . 'Auth/addUser');
         }
     }
@@ -207,19 +221,6 @@ class Auth extends BaseController
             $condition["instance_id"] = $this->instance_id;
             $list = $this->auth_group->getSystemUserGroupAll($condition);
             $this->assign('auth_group', $list);
-            $child_menu_list = array(
-                array(
-                    'url' => "javascript:;",
-                    'menu_name' => $this->module_info['module_name'],
-                    'active' => 1,
-                    "superior_menu" => array(
-                        'url' => "auth/userlist",
-                        'menu_name' => "用户列表",
-                        'active' => 1,
-                    )
-                )
-            );
-            $this->assign("child_menu_list", $child_menu_list);
             return view($this->style . 'Auth/editUser');
         }
     }
@@ -287,7 +288,7 @@ class Auth extends BaseController
             $res2 = $this->user->modifyQQ($this->uid, $user_qq);
             return AjaxReturn(1);
         }
-        $_SESSION['bund_pre_url'] = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        $_SESSION['bund_pre_url'] = Request::instance()->domain() . $_SERVER['REQUEST_URI'];
         $info = $this->user->getUserDetail();
         $this->assign('info', $info);
         return view($this->style . "Auth/userDetail");

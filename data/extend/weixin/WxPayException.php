@@ -10,6 +10,7 @@ class WxPayException extends \Exception {
 	public function __construct($message)
 	{
 	    parent::__construct();
+	    $this->message=$message;
 		\Think\Log::record("微信支付报错".$message,'WARN');;
 	}
 }
